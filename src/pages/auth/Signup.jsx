@@ -30,7 +30,7 @@ export default function Signup() {
       email: form.email,
       password: form.password,
       options: {
-        data: { full_name: form.fullName, role }
+        data: { full_name: form.fullName, role, phone: form.phone, housing_authority: form.ha }
       }
     })
 
@@ -40,19 +40,15 @@ export default function Signup() {
       return
     }
 
-    const userId = data.user.id
-
-    // Trigger auto-creates the profile row — we just update the extra fields
-    const { error: profileError } = await supabase.from('profiles').update({
+    // Fire-and-forget profile update — trigger already created the row
+    // Don't block redirect on this
+    supabase.from('profiles').update({
       full_name: form.fullName,
       phone: form.phone || null,
       housing_authority: form.ha || null,
-    }).eq('id', userId)
-
-    if (profileError) {
-      // Profile may not exist yet if email confirmation is required — that's OK
-      console.warn('Profile update skipped:', profileError.message)
-    }
+    }).eq('id', data.user.id).then(({ error }) => {
+      if (error) console.warn('Profile update:', error.message)
+    })
 
     toast.success('Account created! Welcome to Settleed.')
     navigate(role === 'landlord' ? '/landlord' : '/tenant')

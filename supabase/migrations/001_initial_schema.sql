@@ -1,13 +1,12 @@
 -- ============================================================
--- SETTLEED DATABASE SCHEMA
+-- SETTLEED DATABASE SCHEMA  v1.1
+-- Run in Supabase SQL Editor
 -- ============================================================
 
--- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
 -- ============================================================
--- PROFILES
--- One row per user. Linked to Supabase auth.users.
+-- PROFILES — one row per user
 -- ============================================================
 create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -15,58 +14,29 @@ create table profiles (
   full_name text,
   phone text,
   email text,
-  market text not null default 'atlanta', -- city/market field, required for expansion
-  ha text check (ha in ('AHA', 'DCA', 'other')), -- housing authority
+  market text not null default 'atlanta',
+  -- Housing authority + voucher (for tenants)
+  housing_authority text,
+  voucher_size int,
+  -- Stripe / subscription
   stripe_customer_id text,
   subscription_status text default 'inactive' check (subscription_status in ('inactive', 'trialing', 'active', 'canceled', 'past_due')),
-  subscription_tier text, -- 'founding', 'starter', 'professional', 'portfolio', 'enterprise', 'tenant_premium'
+  subscription_tier text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
 -- ============================================================
--- LANDLORD PROFILES
--- Extra details for landlord users
--- ============================================================
-create table landlord_profiles (
-  id uuid primary key references profiles(id) on delete cascade,
-  company_name text,
-  properties_count int default 0,
-  match_criteria jsonb default '{}', -- bedrooms, zip codes, ha, voucher range for instant match alerts
-  notifications_email boolean default true,
-  notifications_sms boolean default false,
-  created_at timestamptz default now()
-);
-
--- ============================================================
--- TENANT PROFILES
--- Extra details for tenant users
--- ============================================================
-create table tenant_profiles (
-  id uuid primary key references profiles(id) on delete cascade,
-  voucher_number text,
-  voucher_expiry_date date,
-  voucher_amount numeric(10,2), -- max monthly subsidy
-  bedrooms_needed int check (bedrooms_needed between 0 and 6),
-  zip_codes_preferred text[], -- array of preferred zip codes
-  is_verified boolean default false, -- verified voucher badge
-  notifications_email boolean default true,
-  notifications_sms boolean default false,
-  created_at timestamptz default now()
-);
-
--- ============================================================
 -- PROPERTIES
--- Listings created by landlords
 -- ============================================================
 create table properties (
   id uuid primary key default uuid_generate_v4(),
   landlord_id uuid not null references profiles(id) on delete cascade,
   market text not null default 'atlanta',
 
-  -- Address (full address hidden until application submitted)
-  street_address text, -- hidden from tenants until matched
-  neighborhood text not null, -- shown publicly
+  -- Address
+  street_address text,
+  neighborhood text not null,
   city text not null default 'Atlanta',
   state text not null default 'GA',
   zip_code text not null,
@@ -80,18 +50,14 @@ create table properties (
   available_date date,
   description text,
 
-  -- Section 8 specific
+  -- Section 8
   accepts_section8 boolean default true,
-  ha_accepted text[] default array['AHA','DCA','other'], -- which HAs accepted
-  voucher_min numeric(10,2), -- minimum voucher amount accepted
-  voucher_max numeric(10,2), -- maximum voucher amount accepted
-
-  -- Media
-  photos text[], -- Cloudinary URLs
+  ha_accepted text[] default array['AHA','DCA','other'],
+  photos text[],
 
   -- Status
   status text not null default 'active' check (status in ('active', 'inactive', 'rented')),
-  move_in_special text, -- e.g. "First month free"
+  move_in_special text,
   credit_friendly boolean default false,
 
   created_at timestamptz default now(),
@@ -100,38 +66,50 @@ create table properties (
 
 -- ============================================================
 -- APPLICATIONS
--- Tenant applies to a property
 -- ============================================================
 create table applications (
   id uuid primary key default uuid_generate_v4(),
   property_id uuid not null references properties(id) on delete cascade,
   tenant_id uuid not null references profiles(id) on delete cascade,
-  landlord_id uuid not null references profiles(id),
+  landlord_id uuid references profiles(id),
   market text not null default 'atlanta',
 
   -- Status
-  status text not null default 'pending' check (status in ('pending', 'reviewing', 'approved', 'denied', 'withdrawn')),
+  status text not null default 'pending' check (status in ('pending', 'reviewing', 'approved', 'rejected', 'withdrawn')),
 
   -- Application content
   message text,
-  move_in_date date,
+  desired_move_in date,
   household_size int,
-  income numeric(10,2),
 
   -- Voucher details at time of application
-  voucher_amount numeric(10,2),
-  voucher_expiry_date date,
-  ha text,
+  housing_authority text,
+  voucher_size int,
+  voucher_expiration date,
 
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
 
-  unique(property_id, tenant_id) -- one application per tenant per property
+  unique(property_id, tenant_id)
 );
+
+-- Trigger: auto-fill landlord_id from property on insert
+create or replace function applications_set_landlord_id()
+returns trigger as $$
+begin
+  if new.landlord_id is null then
+    select landlord_id into new.landlord_id from properties where id = new.property_id;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger applications_landlord_id_trigger
+  before insert on applications
+  for each row execute function applications_set_landlord_id();
 
 -- ============================================================
 -- HQS INSPECTIONS
--- Housing Quality Standards inspection tracking per property
 -- ============================================================
 create table hqs_inspections (
   id uuid primary key default uuid_generate_v4(),
@@ -139,20 +117,15 @@ create table hqs_inspections (
   landlord_id uuid not null references profiles(id),
   market text not null default 'atlanta',
 
-  -- Inspection dates
-  last_inspection_date date,
-  next_inspection_date date generated always as (last_inspection_date + interval '365 days') stored,
-
-  -- Result
+  inspection_date date,
+  next_inspection_date date,
   result text check (result in ('pass', 'fail', 'pending', 'scheduled')),
   notes text,
-  failed_items text[], -- list of items that failed
+  failed_items text[],
 
-  -- Re-inspection
   reinspection_scheduled boolean default false,
   reinspection_date date,
 
-  -- Payment status
   hap_suspended boolean default false,
   hap_suspended_date date,
 
@@ -162,7 +135,6 @@ create table hqs_inspections (
 
 -- ============================================================
 -- LEASES
--- Active lease records linking landlord, tenant, and property
 -- ============================================================
 create table leases (
   id uuid primary key default uuid_generate_v4(),
@@ -171,18 +143,15 @@ create table leases (
   tenant_id uuid not null references profiles(id),
   market text not null default 'atlanta',
 
-  -- Lease terms
   lease_start_date date not null,
   lease_end_date date,
   rent_amount numeric(10,2) not null,
-  ha_portion numeric(10,2), -- what the HA pays
-  tenant_portion numeric(10,2), -- what the tenant pays
+  ha_portion numeric(10,2),
+  tenant_portion numeric(10,2),
 
-  -- HAP contract
   hap_contract_number text,
-  recertification_date date, -- annual recertification date
+  recertification_date date,
 
-  -- Status
   status text not null default 'active' check (status in ('active', 'expired', 'terminated')),
 
   created_at timestamptz default now(),
@@ -190,8 +159,7 @@ create table leases (
 );
 
 -- ============================================================
--- MATCH ALERTS CRITERIA
--- Landlords set criteria; tenants notified when match found
+-- MATCH ALERT CRITERIA
 -- ============================================================
 create table match_criteria (
   id uuid primary key default uuid_generate_v4(),
@@ -199,83 +167,58 @@ create table match_criteria (
   user_role text not null check (user_role in ('landlord', 'tenant')),
   market text not null default 'atlanta',
 
-  -- Matching fields
   bedrooms int[],
   zip_codes text[],
   ha text[],
   rent_min numeric(10,2),
   rent_max numeric(10,2),
-  voucher_min numeric(10,2),
-  voucher_max numeric(10,2),
 
-  -- Notifications
   notify_email boolean default true,
   notify_sms boolean default false,
-
   active boolean default true,
-  created_at timestamptz default now()
-);
 
--- ============================================================
--- NOTIFICATIONS LOG
--- Track all sent alerts
--- ============================================================
-create table notifications (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid not null references profiles(id) on delete cascade,
-  type text not null, -- 'match_alert', 'hqs_reminder', 'recert_reminder', 'payment_reminder'
-  channel text not null check (channel in ('email', 'sms')),
-  subject text,
-  body text,
-  sent_at timestamptz default now(),
-  status text default 'sent' check (status in ('sent', 'failed'))
+  created_at timestamptz default now()
 );
 
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
-
 alter table profiles enable row level security;
-alter table landlord_profiles enable row level security;
-alter table tenant_profiles enable row level security;
 alter table properties enable row level security;
 alter table applications enable row level security;
 alter table hqs_inspections enable row level security;
 alter table leases enable row level security;
 alter table match_criteria enable row level security;
-alter table notifications enable row level security;
 
--- Profiles: users can only read/update their own profile
-create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
-create policy "Users can update own profile" on profiles for update using (auth.uid() = id);
+-- Profiles
+create policy "Users view own profile" on profiles for select using (auth.uid() = id);
+create policy "Users update own profile" on profiles for update using (auth.uid() = id);
+create policy "Users insert own profile" on profiles for insert with check (auth.uid() = id);
 
--- Properties: anyone can view active listings, only landlord can edit their own
-create policy "Anyone can view active properties" on properties for select using (status = 'active');
-create policy "Landlords can manage own properties" on properties for all using (auth.uid() = landlord_id);
+-- Properties: public can see active listings; landlords manage their own
+create policy "Public view active properties" on properties for select using (status = 'active');
+create policy "Landlords manage own properties" on properties for all using (auth.uid() = landlord_id);
 
--- Applications: tenants see their own, landlords see applications to their properties
-create policy "Tenants can view own applications" on applications for select using (auth.uid() = tenant_id);
-create policy "Landlords can view applications to their properties" on applications for select using (auth.uid() = landlord_id);
-create policy "Tenants can create applications" on applications for insert with check (auth.uid() = tenant_id);
-create policy "Landlords can update application status" on applications for update using (auth.uid() = landlord_id);
+-- Applications
+create policy "Tenants view own applications" on applications for select using (auth.uid() = tenant_id);
+create policy "Landlords view their applications" on applications for select using (auth.uid() = landlord_id);
+create policy "Tenants create applications" on applications for insert with check (auth.uid() = tenant_id);
+create policy "Landlords update application status" on applications for update using (auth.uid() = landlord_id);
+create policy "Tenants update own applications" on applications for update using (auth.uid() = tenant_id);
 
--- HQS: landlords can only see/edit their own
-create policy "Landlords can manage own HQS records" on hqs_inspections for all using (auth.uid() = landlord_id);
+-- HQS: landlords manage their own
+create policy "Landlords manage own HQS" on hqs_inspections for all using (auth.uid() = landlord_id);
 
--- Leases: landlords and tenants can view their own leases
-create policy "Users can view own leases" on leases for select using (auth.uid() = landlord_id or auth.uid() = tenant_id);
-create policy "Landlords can manage leases" on leases for all using (auth.uid() = landlord_id);
+-- Leases
+create policy "Users view own leases" on leases for select using (auth.uid() = landlord_id or auth.uid() = tenant_id);
+create policy "Landlords manage leases" on leases for all using (auth.uid() = landlord_id);
 
--- Match criteria: users can only manage their own
-create policy "Users can manage own match criteria" on match_criteria for all using (auth.uid() = user_id);
-
--- Notifications: users can only view their own
-create policy "Users can view own notifications" on notifications for select using (auth.uid() = user_id);
+-- Match criteria
+create policy "Users manage own match criteria" on match_criteria for all using (auth.uid() = user_id);
 
 -- ============================================================
 -- INDEXES
 -- ============================================================
-
 create index idx_properties_market on properties(market);
 create index idx_properties_status on properties(status);
 create index idx_properties_zip on properties(zip_code);
@@ -285,12 +228,10 @@ create index idx_applications_landlord on applications(landlord_id);
 create index idx_hqs_property on hqs_inspections(property_id);
 create index idx_hqs_next_date on hqs_inspections(next_inspection_date);
 create index idx_leases_recert on leases(recertification_date);
-create index idx_profiles_market on profiles(market);
 
 -- ============================================================
--- UPDATED_AT TRIGGER
+-- AUTO-UPDATE updated_at
 -- ============================================================
-
 create or replace function update_updated_at()
 returns trigger as $$
 begin
@@ -304,3 +245,25 @@ create trigger properties_updated_at before update on properties for each row ex
 create trigger applications_updated_at before update on applications for each row execute function update_updated_at();
 create trigger hqs_updated_at before update on hqs_inspections for each row execute function update_updated_at();
 create trigger leases_updated_at before update on leases for each row execute function update_updated_at();
+
+-- ============================================================
+-- PROFILE AUTO-CREATE ON SIGNUP
+-- Automatically create a profile row when a user signs up
+-- ============================================================
+create or replace function handle_new_user()
+returns trigger as $$
+begin
+  insert into profiles (id, email, role, market)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'role', 'tenant'),
+    'atlanta'
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();

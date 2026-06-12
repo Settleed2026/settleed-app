@@ -4,6 +4,11 @@ import { useAuth } from './hooks/useAuth'
 // Auth pages
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+import ForgotPassword from './pages/auth/ForgotPassword'
+
+// Legal pages
+import Terms from './pages/legal/Terms'
+import Privacy from './pages/legal/Privacy'
 
 // Landlord pages
 import LandlordDashboard from './pages/landlord/Dashboard'
@@ -39,6 +44,9 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
 
       {/* Landlord routes */}
       <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

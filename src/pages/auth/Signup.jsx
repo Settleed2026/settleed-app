@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { HOUSING_AUTHORITIES } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
 
 export default function Signup() {
@@ -41,28 +42,16 @@ export default function Signup() {
 
     const userId = data.user.id
 
-    // Create profile
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: userId,
-      role,
+    // Trigger auto-creates the profile row — we just update the extra fields
+    const { error: profileError } = await supabase.from('profiles').update({
       full_name: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      ha: form.ha || null,
-      market: 'atlanta',
-    })
+      phone: form.phone || null,
+      housing_authority: form.ha || null,
+    }).eq('id', userId)
 
     if (profileError) {
-      toast.error('Account created but profile setup failed. Please contact support.')
-      setLoading(false)
-      return
-    }
-
-    // Create role-specific profile
-    if (role === 'landlord') {
-      await supabase.from('landlord_profiles').insert({ id: userId })
-    } else {
-      await supabase.from('tenant_profiles').insert({ id: userId })
+      // Profile may not exist yet if email confirmation is required — that's OK
+      console.warn('Profile update skipped:', profileError.message)
     }
 
     toast.success('Account created! Welcome to Settleed.')
@@ -174,9 +163,9 @@ export default function Signup() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] bg-white"
                 >
                   <option value="">Select your housing authority</option>
-                  <option value="AHA">Atlanta Housing Authority (AHA)</option>
-                  <option value="DCA">Georgia DCA</option>
-                  <option value="other">Other</option>
+                  {HOUSING_AUTHORITIES.map(ha => (
+                    <option key={ha.value} value={ha.value}>{ha.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -203,12 +192,6 @@ export default function Signup() {
               </button>
 
               <p className="text-xs text-gray-400 text-center">
-                By signing up you agree to our Terms of Service and Privacy Policy.
-              </p>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
+                By signing up you agree to our{' '}
+                <Link to="/terms" className="underline hover:text-gray-600">Terms of Service</Link>
+                {' '}and{'

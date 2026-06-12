@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { checkRentEligibility } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
 import { ChevronLeft, Upload, X } from 'lucide-react'
 
@@ -215,6 +216,22 @@ export default function ListingForm() {
                 placeholder="1200" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
             </div>
           </div>
+          {/* Payment standard badge */}
+          {(() => {
+            const ps = form.zip_code?.length === 5 && form.bedrooms !== '' && form.rent_amount
+              ? checkRentEligibility(form.zip_code, parseInt(form.bedrooms), parseFloat(form.rent_amount))
+              : null
+            if (!ps) return null
+            return (
+              <div className={`rounded-lg px-3 py-2.5 text-xs ${ps.withinStandard ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                {ps.withinStandard
+                  ? `✓ Within ${ps.regionLabel} payment standard — max rent for this zip is $${ps.maxRent.toLocaleString()}`
+                  : `⚠ Above ${ps.regionLabel} payment standard by $${ps.overBy} — DCA vouchers max out at $${ps.maxRent.toLocaleString()} here`
+                }
+                <span className="ml-1 text-gray-400">({ps.county} County)</span>
+              </div>
+            )
+          })()}
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Available date</label>
             <input name="available_date" type="date" value={form.available_date} onChange={handleChange}

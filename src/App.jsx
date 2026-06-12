@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
 // Auth pages
@@ -28,12 +28,12 @@ import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
-  const { user, role, loading } = useAuth()
+  const { loading } = useAuth()
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-navy-DEFAULT border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

@@ -12,9 +12,10 @@ const tenantLinks = [
   { to: '/tenant', label: 'Home', icon: Home, end: true },
   { to: '/tenant/search', label: 'Search', icon: () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      <circle cx="11" cy="11" r="8" strokeWidth="2"/><path d="m21 21-4.35-4.35" strokeWidth="2"/>
     </svg>
   )},
+  { to: '/tenant/applications', label: 'Applied', icon: Inbox },
 ]
 
 export default function BottomNav({ role }) {

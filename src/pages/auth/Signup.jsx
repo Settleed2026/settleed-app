@@ -35,7 +35,11 @@ export default function Signup() {
     })
 
     if (error) {
-      toast.error(error.message)
+      if (error.message.toLowerCase().includes('already registered')) {
+        toast.error('An account with this email already exists. Try signing in instead.')
+      } else {
+        toast.error(error.message)
+      }
       setLoading(false)
       return
     }

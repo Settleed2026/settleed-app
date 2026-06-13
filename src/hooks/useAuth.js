@@ -7,21 +7,19 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchRole(session.user.id)
+        fetchRole(session.user)
       } else {
         setLoading(false)
       }
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchRole(session.user.id)
+        fetchRole(session.user)
       } else {
         setRole(null)
         setLoading(false)
@@ -31,15 +29,38 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function fetchRole(userId) {
+  async function fetchRole(user) {
+    // First try the profiles table
     const { data } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', userId)
+      .eq('id', user.id)
       .single()
 
-    setRole(data?.role ?? null)
-    setLoading(false)
+    if (data?.role) {
+      setRole(data.role)
+      setLoading(false)
+      return
+    }
+
+    // Profile trigger may not have fired yet — fall back to auth metadata
+    const metaRole = user.user_metadata?.role
+    if (metaRole) {
+      setRole(metaRole)
+      setLoading(false)
+      return
+    }
+
+    // Last resort: retry once after 1s (handles slow trigger)
+    setTimeout(async () => {
+      const { data: retryData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      setRole(retryData?.role ?? null)
+      setLoading(false)
+    }, 1000)
   }
 
   return { user, role, loading }

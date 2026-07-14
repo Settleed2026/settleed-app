@@ -194,4 +194,13 @@ export default function Signup() {
               <p className="text-xs text-gray-400 text-center">
                 By signing up you agree to our{' '}
                 <Link to="/terms" className="underline hover:text-gray-600">Terms of Service</Link>
-                {' '}and{'
+                {' '}and{' '}
+                <Link to="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
+              </p>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

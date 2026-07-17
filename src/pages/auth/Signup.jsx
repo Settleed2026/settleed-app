@@ -268,14 +268,4 @@ export default function Signup() {
                 <Link to="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
               </p>
 
-              <p className="text-center text-sm text-gray-500">
-                Already have an account?{' '}
-                <Link to="/login" className="text-[#1D9E75] font-medium">Sign in</Link>
-              </p>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
+              <p class

@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Home, PlusSquare, Inbox, ClipboardCheck } from 'lucide-react'
+import { Home, PlusSquare, Inbox, ClipboardCheck, User } from 'lucide-react'
 
 const landlordLinks = [
   { to: '/landlord', label: 'Home', icon: Home, end: true },
   { to: '/landlord/listing/new', label: 'Add', icon: PlusSquare },
   { to: '/landlord/applications', label: 'Inbox', icon: Inbox },
   { to: '/landlord/hqs', label: 'HQS', icon: ClipboardCheck },
+  { to: '/landlord/profile', label: 'Account', icon: User },
 ]
 
 const tenantLinks = [
@@ -34,10 +35,4 @@ export default function BottomNav({ role }) {
             }`
           }
         >
-          <Icon className="w-5 h-5 mb-0.5" />
-          {label}
-        </NavLink>
-      ))}
-    </nav>
-  )
-}
+          <Icon className="w-5 h-5 mb-0.5" 

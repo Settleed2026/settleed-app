@@ -15,6 +15,7 @@ import LandlordDashboard from './pages/landlord/Dashboard'
 import ListingForm from './pages/landlord/ListingForm'
 import ApplicationInbox from './pages/landlord/ApplicationInbox'
 import HQSTracker from './pages/landlord/HQSTracker'
+import LandlordProfile from './pages/landlord/Profile'
 
 // Tenant pages
 import TenantDashboard from './pages/tenant/Dashboard'
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="listing/:id/edit" element={<ListingForm />} />
         <Route path="applications" element={<ApplicationInbox />} />
         <Route path="hqs" element={<HQSTracker />} />
+        <Route path="profile" element={<LandlordProfile />} />
       </Route>
 
       {/* Tenant routes */}
@@ -63,10 +65,4 @@ export default function App() {
         <Route path="search" element={<SearchListings />} />
         <Route path="listing/:id" element={<ListingDetail />} />
         <Route path="apply/:id" element={<ApplicationForm />} />
-        <Route path="applications" element={<TenantDashboard />} />
-      </Route>
-
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
+        <Route path="applications"

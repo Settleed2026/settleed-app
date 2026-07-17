@@ -61,10 +61,12 @@ export default function Signup() {
 
     if (error) {
       if (error.message.toLowerCase().includes('already registered')) {
-        toast.error('An account with this email already exists. Try signing in instead.')
-      } else {
-        toast.error(error.message)
+        toast.error('An account with this email already exists.')
+        setLoading(false)
+        navigate(`/login?email=${encodeURIComponent(form.email)}`)
+        return
       }
+      toast.error(error.message)
       setLoading(false)
       return
     }
@@ -265,17 +267,4 @@ export default function Signup() {
                 By signing up you agree to our{' '}
                 <Link to="/terms" className="underline hover:text-gray-600">Terms of Service</Link>
                 {' '}and{' '}
-                <Link to="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
-              </p>
-
-              <p className="text-center text-sm text-gray-500">
-                Already have an account?{' '}
-                <Link to="/login" className="text-[#1D9E75] font-medium">Sign in</Link>
-              </p>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
+                <Link to="/privacy" className="underline hover:text-gray-600"

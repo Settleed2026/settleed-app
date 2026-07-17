@@ -30,7 +30,7 @@ export default function Landing() {
             Find housing with my voucher
           </Link>
           <Link
-            to="/signup"
+            to="/signup?role=landlord"
             className="bg-white text-[#1B3A6B] font-semibold py-3 rounded-lg text-sm"
           >
             List my Section 8 property

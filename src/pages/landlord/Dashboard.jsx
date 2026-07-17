@@ -59,8 +59,9 @@ export default function LandlordDashboard() {
     )
   }
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'there'
+  const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || 'there'
   const activeProperties = properties.filter(p => p.status === 'active')
+  const draftProperties  = properties.filter(p => p.status === 'draft')
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -91,6 +92,21 @@ export default function LandlordDashboard() {
           </div>
           <Plus className="w-5 h-5" />
         </Link>
+
+        {/* Draft listing banner */}
+        {draftProperties.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-4">
+            <div className="font-semibold text-sm text-amber-800 mb-1">
+              📝 {draftProperties.length} draft listing{draftProperties.length > 1 ? 's' : ''} — finish to go live
+            </div>
+            {draftProperties.map(p => (
+              <Link key={p.id} to={`/landlord/listing/${p.id}/edit`}
+                className="block text-xs text-amber-700 underline mt-1">
+                {p.street_address || p.neighborhood || 'Untitled listing'} → Complete & publish
+              </Link>
+            ))}
+          </div>
+        )}
 
         {appCount > 0 && (
           <Link to="/landlord/applications" className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-4">

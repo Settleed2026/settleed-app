@@ -6,37 +6,31 @@ const CATEGORIES = [
     label: 'Freshly Renovated',
     tag: 'Freshly Renovated',
     img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80',
-    search: 'renovated',
   },
   {
     label: 'New on Market',
     tag: 'New on Market',
     img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&q=80',
-    search: 'new',
   },
   {
     label: 'Move-in Ready',
     tag: 'Move-in Ready',
     img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80',
-    search: 'move_in_ready',
   },
   {
     label: 'Pets Allowed',
     tag: 'Pets Allowed',
     img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80',
-    search: 'pets',
   },
   {
     label: 'Large Families',
     tag: 'Large Families',
     img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-    search: 'large',
   },
   {
     label: 'Near Transit',
     tag: 'Near Transit',
     img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80',
-    search: 'transit',
   },
 ]
 
@@ -58,30 +52,25 @@ export default function Landing() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f7f3ee' }}>
 
-      {/* ── Nav ── */}
+      {/* Nav */}
       <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          {/* House icon */}
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <path d="M14 3L3 12h3v12h6v-7h4v7h6V12h3L14 3z" fill="#c96a2b"/>
           </svg>
           <span className="text-xl font-bold text-gray-900 tracking-tight">Settleed</span>
         </Link>
-        <Link
-          to="/login"
-          className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-        >
+        <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
           Sign in
         </Link>
       </nav>
 
-      {/* ── Search Bar ── */}
+      {/* Search Bar */}
       <div className="bg-white px-4 py-6 flex justify-center border-b border-gray-100">
         <form
           onSubmit={handleSearch}
           className="flex items-center gap-0 w-full max-w-2xl rounded-full border border-gray-300 bg-white shadow-sm overflow-hidden"
         >
-          {/* Location */}
           <div className="flex items-center gap-2 flex-1 px-4 py-3">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-gray-400 shrink-0">
               <path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.5 4.5 8.5 4.5 8.5s4.5-5 4.5-8.5c0-2.49-2.01-4.5-4.5-4.5zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="currentColor"/>
@@ -94,11 +83,7 @@ export default function Landing() {
               className="flex-1 text-sm text-gray-700 placeholder-gray-400 outline-none bg-transparent"
             />
           </div>
-
-          {/* Divider */}
           <div className="w-px h-6 bg-gray-200 shrink-0" />
-
-          {/* Price */}
           <select
             value={price}
             onChange={e => setPrice(e.target.value)}
@@ -111,11 +96,7 @@ export default function Landing() {
             <option value="0-1500">Up to $1,500</option>
             <option value="0-2000">Up to $2,000</option>
           </select>
-
-          {/* Divider */}
           <div className="w-px h-6 bg-gray-200 shrink-0" />
-
-          {/* Property type */}
           <select
             value={propertyType}
             onChange={e => setPropertyType(e.target.value)}
@@ -127,8 +108,6 @@ export default function Landing() {
             <option value="Townhome">Townhome</option>
             <option value="Duplex">Duplex</option>
           </select>
-
-          {/* Search button */}
           <button
             type="submit"
             className="m-1 rounded-full p-3 flex items-center justify-center"
@@ -142,12 +121,9 @@ export default function Landing() {
         </form>
       </div>
 
-      {/* ── Category Cards ── */}
+      {/* Category Cards */}
       <div className="px-4 pt-6 pb-2">
-        <div
-          className="flex gap-4 overflow-x-auto pb-2"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
           {CATEGORIES.map(cat => (
             <Link
               key={cat.label}
@@ -175,17 +151,13 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── How are you using Settleed? ── */}
+      {/* How are you using Settleed? */}
       <div className="px-4 py-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-5">How are you using Settleed?</h2>
-
         <div className="flex flex-col gap-4 sm:flex-row">
 
-          {/* Tenants card */}
-          <div
-            className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row"
-            style={{ backgroundColor: '#ede8e0' }}
-          >
+          {/* Tenants */}
+          <div className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row" style={{ backgroundColor: '#ede8e0' }}>
             <div className="p-5 flex-1">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Tenants</h3>
               <ul className="space-y-1.5 mb-5">
@@ -218,11 +190,8 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Landlord card */}
-          <div
-            className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row"
-            style={{ backgroundColor: '#ede8e0' }}
-          >
+          {/* Landlord */}
+          <div className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row" style={{ backgroundColor: '#ede8e0' }}>
             <div className="p-5 flex-1">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Landlord</h3>
               <ul className="space-y-1.5 mb-5">
@@ -258,7 +227,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── Features strip ── */}
+      {/* Features strip */}
       <div className="px-4 pb-10">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
@@ -276,7 +245,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <div className="mt-auto border-t border-gray-200 bg-white px-6 py-4 flex items-center justify-between text-xs text-gray-400">
         <span>© 2026 Settleed</span>
         <div className="flex gap-4">

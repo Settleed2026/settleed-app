@@ -300,18 +300,7 @@ export default function TenantDashboard() {
         setApplications(apps || [])
         setProfile(prof)
 
-        // Check wizard completion separately so a missing column never crashes the dashboard
-        if (prof) {
-          const { data: wizardRow } = await supabase
-            .from('profiles')
-            .select('profile_wizard_completed')
-            .eq('id', user.id)
-            .single()
-          if (wizardRow && wizardRow.profile_wizard_completed === false) {
-            navigate('/tenant/profile/setup')
-            return
-          }
-        }
+
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {

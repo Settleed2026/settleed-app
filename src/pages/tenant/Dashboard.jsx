@@ -283,25 +283,39 @@ export default function TenantDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      const [{ data: apps }, { data: prof }] = await Promise.all([
-        supabase
-          .from('applications')
-          .select('id, status, created_at, properties:property_id(id, neighborhood, zip_code, bedrooms, rent_amount, photos)')
-          .eq('tenant_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        supabase
-          .from('profiles')
-          .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type, profile_wizard_completed')
-          .eq('id', user.id)
-          .single(),
-      ])
-      setApplications(apps || [])
-      setProfile(prof)
-      setLoading(false)
-      // Auto-launch wizard for new tenants who haven't completed it
-      if (prof && prof.profile_wizard_completed === false) {
-        navigate('/tenant/profile/setup')
+      try {
+        const [{ data: apps }, { data: prof }] = await Promise.all([
+          supabase
+            .from('applications')
+            .select('id, status, created_at, properties:property_id(id, neighborhood, zip_code, bedrooms, rent_amount, photos)')
+            .eq('tenant_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20),
+          supabase
+            .from('profiles')
+            .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type')
+            .eq('id', user.id)
+            .single(),
+        ])
+        setApplications(apps || [])
+        setProfile(prof)
+
+        // Check wizard completion separately so a missing column never crashes the dashboard
+        if (prof) {
+          const { data: wizardRow } = await supabase
+            .from('profiles')
+            .select('profile_wizard_completed')
+            .eq('id', user.id)
+            .single()
+          if (wizardRow && wizardRow.profile_wizard_completed === false) {
+            navigate('/tenant/profile/setup')
+            return
+          }
+        }
+      } catch (err) {
+        console.error('Dashboard fetch error:', err)
+      } finally {
+        setLoading(false)
       }
     }
     fetchData()

@@ -52,17 +52,9 @@ export default function TenantProfileSetup() {
   const [saving, setSaving] = useState(false)
 
   const [data, setData] = useState({
-<<<<<<< HEAD
-    // Step 1 - Address
     currentStreetAddress: '', currentAptUnit: '',
     currentCity: '', currentState: 'GA', currentZip: '',
     currentHousingSituation: '',
-    // Step 2 - Voucher
-=======
-    currentStreetAddress: '', currentAptUnit: '',
-    currentCity: '', currentState: 'GA', currentZip: '',
-    currentHousingSituation: '',
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
     voucherStatus: '', housingAuthority: '', voucherBedroomSize: '',
     voucherExpirationDate: '', searchRadius: '', porting: false, portInHousingAuthority: '',
     numAdults: 1, numChildren: 0, totalHouseholdMembers: 1,
@@ -70,13 +62,7 @@ export default function TenantProfileSetup() {
     desiredMoveInDate: '', preferredCities: '', preferredZipCodes: '',
     maxRent: '', neighborhoodPreferences: '', distanceFromWork: '', distanceFromTransit: '',
     propertyTypePreferences: [], minBedrooms: '', minBathrooms: '', amenityPreferences: [],
-<<<<<<< HEAD
-    // Step 6 - Pets
     hasPets: null, petTypes: [], numPets: 1, petBreed: '', petWeight: '',
-    // Step 7 - Employment
-=======
-    hasPets: null, petTypes: [], numPets: 1, petBreed: '', petWeight: '',
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
     employmentStatus: '', employerName: '', currentLandlord: '',
     lengthOfStay: '', reasonForMoving: '', ownsVehicle: false, numVehicles: 0,
     needsPublicTransit: false, parkingRequired: false,
@@ -107,10 +93,6 @@ export default function TenantProfileSetup() {
     setData(prev => ({ ...prev, [parent]: { ...prev[parent], [key]: !prev[parent][key] } }))
   }
 
-<<<<<<< HEAD
-  // Build full payload from all steps
-=======
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
   function buildFullPayload() {
     return {
       current_street_address: data.currentStreetAddress || null,
@@ -129,24 +111,12 @@ export default function TenantProfileSetup() {
       num_adults: parseInt(data.numAdults) || 1,
       num_children: parseInt(data.numChildren) || 0,
       total_household_members: parseInt(data.totalHouseholdMembers) || 1,
-<<<<<<< HEAD
-      household_member_ages: data.householdMemberAges
-        ? data.householdMemberAges.split(',').map(s => s.trim()).filter(Boolean) : [],
-      requires_accessible_unit: data.requiresAccessibleUnit,
-      accessibility_needs: data.accessibilityNeeds,
-      desired_move_in_date: data.desiredMoveInDate || null,
-      preferred_cities: data.preferredCities
-        ? data.preferredCities.split(',').map(s => s.trim()).filter(Boolean) : [],
-      preferred_zip_codes: data.preferredZipCodes
-        ? data.preferredZipCodes.split(',').map(s => s.trim()).filter(Boolean) : [],
-=======
       household_member_ages: data.householdMemberAges ? data.householdMemberAges.split(',').map(s => s.trim()).filter(Boolean) : [],
       requires_accessible_unit: data.requiresAccessibleUnit,
       accessibility_needs: data.accessibilityNeeds,
       desired_move_in_date: data.desiredMoveInDate || null,
       preferred_cities: data.preferredCities ? data.preferredCities.split(',').map(s => s.trim()).filter(Boolean) : [],
       preferred_zip_codes: data.preferredZipCodes ? data.preferredZipCodes.split(',').map(s => s.trim()).filter(Boolean) : [],
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
       max_rent: data.maxRent ? parseFloat(data.maxRent) : null,
       neighborhood_preferences: data.neighborhoodPreferences || null,
       distance_from_work: data.distanceFromWork || null,
@@ -183,24 +153,11 @@ export default function TenantProfileSetup() {
     }
   }
 
-<<<<<<< HEAD
-  // Navigate to next step immediately, save in background
-  function goNext() {
-    if (stepIndex < STEPS.length - 1) {
-      setStepIndex(i => i + 1)
-      // Background save (silent)
-      if (user) {
-        supabase.from('profiles')
-          .update({ current_city: data.currentCity || null }) // lightweight heartbeat
-          .eq('id', user.id)
-          .then(() => {})
-=======
   function goNext() {
     if (stepIndex < STEPS.length - 1) {
       setStepIndex(i => i + 1)
       if (user) {
         supabase.from('profiles').update({ current_city: data.currentCity || null }).eq('id', user.id).then(() => {})
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
       }
     } else {
       finishWizard()
@@ -210,21 +167,9 @@ export default function TenantProfileSetup() {
   async function finishWizard() {
     if (!user) return
     setSaving(true)
-<<<<<<< HEAD
-    const { error } = await supabase
-      .from('profiles')
-      .update(buildFullPayload())
-      .eq('id', user.id)
-    setSaving(false)
-    if (error) {
-      toast.error('Could not save profile. Try again.')
-      return
-    }
-=======
     const { error } = await supabase.from('profiles').update(buildFullPayload()).eq('id', user.id)
     setSaving(false)
     if (error) { toast.error('Could not save profile. Try again.'); return }
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
     toast.success('Profile saved!')
     navigate('/tenant')
   }
@@ -233,15 +178,7 @@ export default function TenantProfileSetup() {
     if (stepIndex < STEPS.length - 1) {
       setStepIndex(i => i + 1)
     } else {
-<<<<<<< HEAD
-      if (user) {
-        await supabase.from('profiles')
-          .update({ profile_wizard_completed: true })
-          .eq('id', user.id)
-      }
-=======
       if (user) await supabase.from('profiles').update({ profile_wizard_completed: true }).eq('id', user.id)
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
       navigate('/tenant')
     }
   }
@@ -257,13 +194,7 @@ export default function TenantProfileSetup() {
     return (
       <button type="button" onClick={onClick}
         className={`px-4 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-<<<<<<< HEAD
-          active
-            ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]'
-            : 'bg-white text-gray-600 border-gray-200 hover:border-[#1B3A6B]'
-=======
           active ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#1B3A6B]'
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
         }`}>
         {label}
       </button>
@@ -291,10 +222,6 @@ export default function TenantProfileSetup() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-<<<<<<< HEAD
-      {/* Header */}
-=======
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
       <div className="bg-[#1B3A6B] px-4 pt-10 pb-5">
         <div className="flex items-center gap-3 mb-3">
           {stepIndex > 0 && (
@@ -308,25 +235,8 @@ export default function TenantProfileSetup() {
         </div>
         <h1 className="text-white text-2xl font-bold">{STEPS[stepIndex].label}</h1>
         <p className="text-blue-200 text-sm mt-1">{STEPS[stepIndex].subtitle}</p>
-<<<<<<< HEAD
-        {/* Progress bar */}
-        <div className="mt-4 bg-white/20 rounded-full h-1.5">
-          <div
-            className="bg-[#1D9E75] h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        {/* Step dots */}
-        <div className="flex gap-1 mt-2">
-          {STEPS.map((_, i) => (
-            <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
-              i < stepIndex ? 'bg-[#1D9E75]' : i === stepIndex ? 'bg-white' : 'bg-white/20'
-            }`} />
-          ))}
-=======
         <div className="mt-4 bg-white/20 rounded-full h-1.5">
           <div className="bg-[#1D9E75] h-1.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
         </div>
         <div className="flex gap-1 mt-2">
           {STEPS.map((_, i) => (
@@ -337,45 +247,12 @@ export default function TenantProfileSetup() {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Step content */}
       <div className="flex-1 px-4 py-6 pb-32 max-w-lg mx-auto w-full space-y-4">
 
-        {/* ── Step 1: Current Address ── */}
-=======
-      <div className="flex-1 px-4 py-6 pb-32 max-w-lg mx-auto w-full space-y-4">
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
         {stepId === 'housing' && (
           <>
             <div>
               <label className={labelClass}>Street address *</label>
-<<<<<<< HEAD
-              <input
-                className={inputClass}
-                placeholder="123 Main Street"
-                value={data.currentStreetAddress}
-                onChange={e => set('currentStreetAddress', e.target.value)}
-                autoComplete="street-address"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Apt / Unit <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input
-                className={inputClass}
-                placeholder="Apt 4B"
-                value={data.currentAptUnit}
-                onChange={e => set('currentAptUnit', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>City *</label>
-              <input
-                className={inputClass}
-                placeholder="Atlanta"
-                value={data.currentCity}
-                onChange={e => set('currentCity', e.target.value)}
-              />
-=======
               <input className={inputClass} placeholder="123 Main Street" value={data.currentStreetAddress}
                 onChange={e => set('currentStreetAddress', e.target.value)} autoComplete="street-address" />
             </div>
@@ -388,56 +265,24 @@ export default function TenantProfileSetup() {
               <label className={labelClass}>City *</label>
               <input className={inputClass} placeholder="Atlanta" value={data.currentCity}
                 onChange={e => set('currentCity', e.target.value)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>State</label>
-<<<<<<< HEAD
-                <select
-                  className={`${inputClass}`}
-                  value={data.currentState}
-                  onChange={e => set('currentState', e.target.value)}
-                >
-=======
                 <select className={inputClass} value={data.currentState} onChange={e => set('currentState', e.target.value)}>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>ZIP Code *</label>
-<<<<<<< HEAD
-                <input
-                  className={inputClass}
-                  placeholder="30301"
-                  value={data.currentZip}
-                  onChange={e => set('currentZip', e.target.value)}
-                  maxLength={5}
-                  inputMode="numeric"
-                />
-=======
                 <input className={inputClass} placeholder="30301" value={data.currentZip}
                   onChange={e => set('currentZip', e.target.value)} maxLength={5} inputMode="numeric" />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
               </div>
             </div>
             <div>
               <label className={labelClass}>Current housing situation</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-<<<<<<< HEAD
-                  { label: 'Renting',            value: 'renting' },
-                  { label: 'Staying with Family', value: 'staying_with_family' },
-                  { label: 'Homeless',            value: 'homeless' },
-                  { label: 'Shelter',             value: 'shelter' },
-                  { label: 'Hotel / Motel',       value: 'hotel' },
-                  { label: 'Transitional Housing',value: 'transitional' },
-                  { label: 'Other',               value: 'other' },
-                ].map(opt => (
-                  <Pill key={opt.value} label={opt.label}
-                    active={data.currentHousingSituation === opt.value}
-=======
                   { label: 'Renting',             value: 'renting' },
                   { label: 'Staying with Family', value: 'staying_with_family' },
                   { label: 'Homeless',             value: 'homeless' },
@@ -447,7 +292,6 @@ export default function TenantProfileSetup() {
                   { label: 'Other',                value: 'other' },
                 ].map(opt => (
                   <Pill key={opt.value} label={opt.label} active={data.currentHousingSituation === opt.value}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     onClick={() => set('currentHousingSituation', opt.value)} />
                 ))}
               </div>
@@ -460,47 +304,25 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>Do you have a Housing Choice Voucher (Section 8)?</label>
               <div className="flex gap-2">
-<<<<<<< HEAD
-                {[['Yes', 'yes'], ['No', 'no'], ['Pending', 'pending']].map(([label, val]) => (
-                  <Pill key={val} label={label} active={data.voucherStatus === val}
-                    onClick={() => set('voucherStatus', val)} />
-=======
                 {[['Yes','yes'],['No','no'],['Pending','pending']].map(([label,val]) => (
                   <Pill key={val} label={label} active={data.voucherStatus === val} onClick={() => set('voucherStatus', val)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 ))}
               </div>
             </div>
-
             {data.voucherStatus === 'yes' && (
               <>
                 <div>
                   <label className={labelClass}>Housing Authority</label>
-<<<<<<< HEAD
-                  <select className={inputClass} value={data.housingAuthority}
-                    onChange={e => set('housingAuthority', e.target.value)}>
-                    <option value="">Select your housing authority</option>
-                    {HOUSING_AUTHORITIES.map(ha => (
-                      <option key={ha.value} value={ha.value}>{ha.label}</option>
-                    ))}
-=======
                   <select className={inputClass} value={data.housingAuthority} onChange={e => set('housingAuthority', e.target.value)}>
                     <option value="">Select your housing authority</option>
                     {HOUSING_AUTHORITIES.map(ha => <option key={ha.value} value={ha.value}>{ha.label}</option>)}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                   </select>
                 </div>
                 <div>
                   <label className={labelClass}>Voucher bedroom size</label>
                   <div className="flex flex-wrap gap-2">
-<<<<<<< HEAD
-                    {[['Studio', 'studio'], ['1 BR', '1br'], ['2 BR', '2br'], ['3 BR', '3br'], ['4 BR', '4br'], ['5+ BR', '5br+']].map(([label, val]) => (
-                      <Pill key={val} label={label} active={data.voucherBedroomSize === val}
-                        onClick={() => set('voucherBedroomSize', val)} />
-=======
                     {[['Studio','studio'],['1 BR','1br'],['2 BR','2br'],['3 BR','3br'],['4 BR','4br'],['5+ BR','5br+']].map(([label,val]) => (
                       <Pill key={val} label={label} active={data.voucherBedroomSize === val} onClick={() => set('voucherBedroomSize', val)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     ))}
                   </div>
                 </div>
@@ -512,23 +334,12 @@ export default function TenantProfileSetup() {
                 <div>
                   <label className={labelClass}>Search area</label>
                   <div className="flex gap-2">
-<<<<<<< HEAD
-                    {[['City', 'city'], ['County', 'county'], ['Statewide', 'state']].map(([label, val]) => (
-                      <Pill key={val} label={label} active={data.searchRadius === val}
-                        onClick={() => set('searchRadius', val)} />
-                    ))}
-                  </div>
-                </div>
-                <Toggle label="I am porting from another housing authority"
-                  checked={data.porting} onChange={() => set('porting', !data.porting)} />
-=======
                     {[['City','city'],['County','county'],['Statewide','state']].map(([label,val]) => (
                       <Pill key={val} label={label} active={data.searchRadius === val} onClick={() => set('searchRadius', val)} />
                     ))}
                   </div>
                 </div>
                 <Toggle label="I am porting from another housing authority" checked={data.porting} onChange={() => set('porting', !data.porting)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 {data.porting && (
                   <div>
                     <label className={labelClass}>Port-in housing authority</label>
@@ -544,22 +355,10 @@ export default function TenantProfileSetup() {
         {stepId === 'household' && (
           <>
             <div className="grid grid-cols-3 gap-3">
-<<<<<<< HEAD
-              {[
-                ['numAdults', 'Adults', '0'],
-                ['numChildren', 'Children', '0'],
-                ['totalHouseholdMembers', 'Total', '1'],
-              ].map(([field, label, min]) => (
-                <div key={field}>
-                  <label className={labelClass}>{label}</label>
-                  <input type="number" min={min} className={inputClass} value={data[field]}
-                    onChange={e => set(field, e.target.value)} />
-=======
               {[['numAdults','Adults','0'],['numChildren','Children','0'],['totalHouseholdMembers','Total','1']].map(([field,label,min]) => (
                 <div key={field}>
                   <label className={labelClass}>{label}</label>
                   <input type="number" min={min} className={inputClass} value={data[field]} onChange={e => set(field, e.target.value)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 </div>
               ))}
             </div>
@@ -568,21 +367,6 @@ export default function TenantProfileSetup() {
               <input className={inputClass} placeholder="35, 32, 8, 5" value={data.householdMemberAges}
                 onChange={e => set('householdMemberAges', e.target.value)} />
             </div>
-<<<<<<< HEAD
-            <Toggle
-              label="We require an accessible unit"
-              description="Wheelchair ramp, elevator, etc."
-              checked={data.requiresAccessibleUnit}
-              onChange={() => set('requiresAccessibleUnit', !data.requiresAccessibleUnit)}
-            />
-            {data.requiresAccessibleUnit && (
-              <div>
-                <label className={labelClass}>Accessibility needs (select all that apply)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {ACCESSIBILITY.map(item => (
-                    <Toggle key={item} label={item}
-                      checked={data.accessibilityNeeds.includes(item)}
-=======
             <Toggle label="We require an accessible unit" description="Wheelchair ramp, elevator, etc."
               checked={data.requiresAccessibleUnit} onChange={() => set('requiresAccessibleUnit', !data.requiresAccessibleUnit)} />
             {data.requiresAccessibleUnit && (
@@ -591,7 +375,6 @@ export default function TenantProfileSetup() {
                 <div className="grid grid-cols-2 gap-2">
                   {ACCESSIBILITY.map(item => (
                     <Toggle key={item} label={item} checked={data.accessibilityNeeds.includes(item)}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                       onChange={() => toggleArray('accessibilityNeeds', item)} />
                   ))}
                 </div>
@@ -605,12 +388,7 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>Desired move-in date</label>
               <input type="date" className={inputClass} value={data.desiredMoveInDate}
-<<<<<<< HEAD
-                min={new Date().toISOString().split('T')[0]}
-                onChange={e => set('desiredMoveInDate', e.target.value)} />
-=======
                 min={new Date().toISOString().split('T')[0]} onChange={e => set('desiredMoveInDate', e.target.value)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
             </div>
             <div>
               <label className={labelClass}>Preferred cities <span className="text-gray-400 font-normal">(comma-separated)</span></label>
@@ -638,34 +416,16 @@ export default function TenantProfileSetup() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Max from work</label>
-<<<<<<< HEAD
-                <select className={inputClass} value={data.distanceFromWork}
-                  onChange={e => set('distanceFromWork', e.target.value)}>
-                  <option value="">Any distance</option>
-                  {['5 min','10 min','15 min','20 min','30 min','45 min','1 hr+'].map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-=======
                 <select className={inputClass} value={data.distanceFromWork} onChange={e => set('distanceFromWork', e.target.value)}>
                   <option value="">Any</option>
                   {['5 min','10 min','15 min','20 min','30 min','45 min','1 hr+'].map(d => <option key={d} value={d}>{d}</option>)}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Max from transit</label>
-<<<<<<< HEAD
-                <select className={inputClass} value={data.distanceFromTransit}
-                  onChange={e => set('distanceFromTransit', e.target.value)}>
-                  <option value="">Any distance</option>
-                  {['Walking','5 min','10 min','15 min','20 min+'].map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-=======
                 <select className={inputClass} value={data.distanceFromTransit} onChange={e => set('distanceFromTransit', e.target.value)}>
                   <option value="">Any</option>
                   {['Walking','5 min','10 min','15 min','20 min+'].map(d => <option key={d} value={d}>{d}</option>)}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 </select>
               </div>
             </div>
@@ -686,42 +446,24 @@ export default function TenantProfileSetup() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Min bedrooms</label>
-<<<<<<< HEAD
-                <select className={inputClass} value={data.minBedrooms}
-                  onChange={e => set('minBedrooms', e.target.value)}>
-=======
                 <select className={inputClass} value={data.minBedrooms} onChange={e => set('minBedrooms', e.target.value)}>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                   <option value="">Any</option>
                   {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}+</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Min bathrooms</label>
-<<<<<<< HEAD
-                <select className={inputClass} value={data.minBathrooms}
-                  onChange={e => set('minBathrooms', e.target.value)}>
-=======
                 <select className={inputClass} value={data.minBathrooms} onChange={e => set('minBathrooms', e.target.value)}>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                   <option value="">Any</option>
                   {[1,1.5,2,2.5,3].map(n => <option key={n} value={n}>{n}+</option>)}
                 </select>
               </div>
             </div>
             <div>
-<<<<<<< HEAD
-              <label className={labelClass}>Amenities I want <span className="text-gray-400 font-normal">(select all that apply)</span></label>
-              <div className="grid grid-cols-2 gap-2">
-                {AMENITIES.map(item => (
-                  <Toggle key={item} label={item}
-                    checked={data.amenityPreferences.includes(item)}
-=======
               <label className={labelClass}>Amenities I want</label>
               <div className="grid grid-cols-2 gap-2">
                 {AMENITIES.map(item => (
                   <Toggle key={item} label={item} checked={data.amenityPreferences.includes(item)}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     onChange={() => toggleArray('amenityPreferences', item)} />
                 ))}
               </div>
@@ -743,14 +485,8 @@ export default function TenantProfileSetup() {
                 <div>
                   <label className={labelClass}>Type of pet(s)</label>
                   <div className="flex gap-2 flex-wrap">
-<<<<<<< HEAD
-                    {[['Dog', 'dog'], ['Cat', 'cat'], ['Other', 'other']].map(([label, val]) => (
-                      <Pill key={val} label={label} active={data.petTypes.includes(val)}
-                        onClick={() => toggleArray('petTypes', val)} />
-=======
                     {[['Dog','dog'],['Cat','cat'],['Other','other']].map(([label,val]) => (
                       <Pill key={val} label={label} active={data.petTypes.includes(val)} onClick={() => toggleArray('petTypes', val)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     ))}
                   </div>
                 </div>
@@ -774,11 +510,7 @@ export default function TenantProfileSetup() {
                   </div>
                 )}
                 <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-<<<<<<< HEAD
-                  <p className="text-xs text-amber-800 font-medium">⚠️ Always disclose pets honestly. Misrepresenting pets on an application can jeopardize your voucher.</p>
-=======
                   <p className="text-xs text-amber-800 font-medium">Always disclose pets honestly. Misrepresenting pets on an application can jeopardize your voucher.</p>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 </div>
               </>
             )}
@@ -790,21 +522,8 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>Employment status</label>
               <div className="grid grid-cols-2 gap-2">
-<<<<<<< HEAD
-                {[
-                  ['Full-Time', 'full_time'],
-                  ['Part-Time', 'part_time'],
-                  ['Self-Employed', 'self_employed'],
-                  ['Disabled', 'disabled'],
-                  ['Retired', 'retired'],
-                  ['Unemployed', 'unemployed'],
-                ].map(([label, val]) => (
-                  <Pill key={val} label={label} active={data.employmentStatus === val}
-                    onClick={() => set('employmentStatus', val)} />
-=======
                 {[['Full-Time','full_time'],['Part-Time','part_time'],['Self-Employed','self_employed'],['Disabled','disabled'],['Retired','retired'],['Unemployed','unemployed']].map(([label,val]) => (
                   <Pill key={val} label={label} active={data.employmentStatus === val} onClick={() => set('employmentStatus', val)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 ))}
               </div>
             </div>
@@ -815,52 +534,6 @@ export default function TenantProfileSetup() {
                   onChange={e => set('employerName', e.target.value)} />
               </div>
             )}
-<<<<<<< HEAD
-
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Rental History</p>
-              <div className="space-y-3">
-                <div>
-                  <label className={labelClass}>Current landlord <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <input className={inputClass} placeholder="Name or company" value={data.currentLandlord}
-                    onChange={e => set('currentLandlord', e.target.value)} />
-                </div>
-                <div>
-                  <label className={labelClass}>How long at current address?</label>
-                  <select className={inputClass} value={data.lengthOfStay}
-                    onChange={e => set('lengthOfStay', e.target.value)}>
-                    <option value="">Select</option>
-                    {['Less than 6 months','6–12 months','1–2 years','2–5 years','5+ years'].map(o => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelClass}>Reason for moving</label>
-                  <input className={inputClass} placeholder="e.g. Looking for a larger unit"
-                    value={data.reasonForMoving} onChange={e => set('reasonForMoving', e.target.value)} />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Transportation</p>
-              <div className="space-y-2">
-                <Toggle label="I own a vehicle" checked={data.ownsVehicle}
-                  onChange={() => set('ownsVehicle', !data.ownsVehicle)} />
-                {data.ownsVehicle && (
-                  <div>
-                    <label className={labelClass}>Number of vehicles</label>
-                    <input type="number" min="1" className={inputClass} value={data.numVehicles}
-                      onChange={e => set('numVehicles', e.target.value)} />
-                  </div>
-                )}
-                <Toggle label="I need MARTA / public transit access" checked={data.needsPublicTransit}
-                  onChange={() => set('needsPublicTransit', !data.needsPublicTransit)} />
-                <Toggle label="Parking is required" checked={data.parkingRequired}
-                  onChange={() => set('parkingRequired', !data.parkingRequired)} />
-              </div>
-=======
             <div className="border-t border-gray-200 pt-4 space-y-3">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Rental History</p>
               <div>
@@ -895,7 +568,6 @@ export default function TenantProfileSetup() {
                 onChange={() => set('needsPublicTransit', !data.needsPublicTransit)} />
               <Toggle label="Parking is required" checked={data.parkingRequired}
                 onChange={() => set('parkingRequired', !data.parkingRequired)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
             </div>
           </>
         )}
@@ -903,11 +575,7 @@ export default function TenantProfileSetup() {
         {stepId === 'screening' && (
           <>
             <p className="text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-<<<<<<< HEAD
-              Answering these questions upfront helps you match with landlords who are the right fit — no surprises later.
-=======
               Answering these questions upfront helps you match with landlords who are the right fit.
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
             </p>
             <div>
               <label className={labelClass}>Are you comfortable with a background check?</label>
@@ -926,14 +594,8 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>Do you have a previous eviction on record?</label>
               <div className="flex flex-wrap gap-2">
-<<<<<<< HEAD
-                {[['Yes', 'yes'], ['No', 'no'], ['Prefer to Discuss', 'prefer_to_discuss']].map(([label, val]) => (
-                  <Pill key={val} label={label} active={data.previousEviction === val}
-                    onClick={() => set('previousEviction', val)} />
-=======
                 {[['Yes','yes'],['No','no'],['Prefer to Discuss','prefer_to_discuss']].map(([label,val]) => (
                   <Pill key={val} label={label} active={data.previousEviction === val} onClick={() => set('previousEviction', val)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 ))}
               </div>
             </div>
@@ -955,11 +617,7 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>About me</label>
               <textarea rows={5} className={`${inputClass} resize-none`}
-<<<<<<< HEAD
-                placeholder="Introduce yourself. Tell landlords about your household, your rental history, and what you're looking for in a home..."
-=======
                 placeholder="Introduce yourself. Tell landlords about your household, rental history, and what you are looking for in a home..."
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 value={data.bio} onChange={e => set('bio', e.target.value)} />
               <p className="text-xs text-gray-400 mt-1">{data.bio.length}/500 characters</p>
             </div>
@@ -971,11 +629,7 @@ export default function TenantProfileSetup() {
             <div>
               <label className={labelClass}>How should landlords contact you?</label>
               <div className="flex flex-wrap gap-2">
-<<<<<<< HEAD
-                {[['Phone', 'phone'], ['Text', 'text'], ['Email', 'email'], ['In-App', 'in-app']].map(([label, val]) => (
-=======
                 {[['Phone','phone'],['Text','text'],['Email','email'],['In-App','in-app']].map(([label,val]) => (
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                   <Pill key={val} label={label} active={data.contactPreferences.includes(val)}
                     onClick={() => toggleArray('contactPreferences', val)} />
                 ))}
@@ -985,16 +639,6 @@ export default function TenantProfileSetup() {
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Notify me when</p>
               <div className="space-y-2">
                 {[
-<<<<<<< HEAD
-                  ['new_matches',        'New listings match my voucher'],
-                  ['landlord_message',   'A landlord messages me'],
-                  ['profile_viewed',     'A landlord views my profile'],
-                  ['favorite_available', 'A favorited property becomes available'],
-                  ['voucher_expiry',     'My voucher expiration is approaching'],
-                ].map(([key, label]) => (
-                  <Toggle key={key} label={label}
-                    checked={data.notificationPreferences[key]}
-=======
                   ['new_matches','New listings match my voucher'],
                   ['landlord_message','A landlord messages me'],
                   ['profile_viewed','A landlord views my profile'],
@@ -1002,7 +646,6 @@ export default function TenantProfileSetup() {
                   ['voucher_expiry','My voucher expiration is approaching'],
                 ].map(([key,label]) => (
                   <Toggle key={key} label={label} checked={data.notificationPreferences[key]}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     onChange={() => toggleNested('notificationPreferences', key)} />
                 ))}
               </div>
@@ -1011,18 +654,6 @@ export default function TenantProfileSetup() {
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Landlords can see my</p>
               <div className="space-y-2">
                 {[
-<<<<<<< HEAD
-                  ['show_full_name',       'Full name'],
-                  ['show_phone',           'Phone number'],
-                  ['show_email',           'Email address'],
-                  ['show_photo',           'Profile photo'],
-                  ['show_voucher_status',  'Voucher status'],
-                  ['show_household_size',  'Household size'],
-                  ['show_preferred_areas', 'Preferred neighborhoods'],
-                ].map(([key, label]) => (
-                  <Toggle key={key} label={label}
-                    checked={data.privacySettings[key]}
-=======
                   ['show_full_name','Full name'],
                   ['show_phone','Phone number'],
                   ['show_email','Email address'],
@@ -1032,7 +663,6 @@ export default function TenantProfileSetup() {
                   ['show_preferred_areas','Preferred neighborhoods'],
                 ].map(([key,label]) => (
                   <Toggle key={key} label={label} checked={data.privacySettings[key]}
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                     onChange={() => toggleNested('privacySettings', key)} />
                 ))}
               </div>
@@ -1041,29 +671,13 @@ export default function TenantProfileSetup() {
         )}
       </div>
 
-<<<<<<< HEAD
-      {/* Fixed footer — always visible */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 z-50">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button
-            onClick={goNext}
-            disabled={saving}
-            className="flex-1 bg-[#1D9E75] text-white rounded-xl py-4 text-base font-bold disabled:opacity-50 shadow-lg shadow-[#1D9E75]/20 active:scale-[0.98] transition-transform"
-          >
-            {saving ? 'Saving...' : isLastStep ? '✓ Finish & Save Profile' : 'Next →'}
-          </button>
-          <button onClick={skip} className="text-sm text-gray-400 whitespace-nowrap px-2">
-            Skip
-          </button>
-=======
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 z-50">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <button onClick={goNext} disabled={saving}
             className="flex-1 bg-[#1D9E75] text-white rounded-xl py-4 text-base font-bold disabled:opacity-50 shadow-lg shadow-[#1D9E75]/20 active:scale-[0.98] transition-transform">
-            {saving ? 'Saving...' : isLastStep ? 'Finish & Save Profile' : 'Next →'}
+            {saving ? 'Saving...' : isLastStep ? 'Finish & Save Profile' : 'Next ->'}
           </button>
           <button onClick={skip} className="text-sm text-gray-400 whitespace-nowrap px-2">Skip</button>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
         </div>
       </div>
     </div>

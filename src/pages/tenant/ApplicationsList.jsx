@@ -87,18 +87,9 @@ export default function ApplicationsList() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
-<<<<<<< HEAD
-      {/* Header */}
       <div className="bg-[#1B3A6B] px-4 pt-10 pb-6">
         <h1 className="text-white text-2xl font-bold">My Applications</h1>
         <p className="text-blue-200 text-sm mt-1">{applications.length} total</p>
-
-        {/* Stats row */}
-=======
-      <div className="bg-[#1B3A6B] px-4 pt-10 pb-6">
-        <h1 className="text-white text-2xl font-bold">My Applications</h1>
-        <p className="text-blue-200 text-sm mt-1">{applications.length} total</p>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
         {applications.length > 0 && (
           <div className="flex gap-3 mt-4">
             <div className="bg-white/10 rounded-xl px-3 py-2 text-center flex-1">
@@ -117,24 +108,12 @@ export default function ApplicationsList() {
         )}
       </div>
 
-<<<<<<< HEAD
-      {/* Filter tabs */}
-      {applications.length > 0 && (
-        <div className="px-4 pt-4 flex gap-2 overflow-x-auto no-scrollbar">
-          {FILTERS.map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
-                filter === f
-                  ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]'
-                  : 'bg-white text-gray-600 border-gray-200'
-=======
       {applications.length > 0 && (
         <div className="px-4 pt-4 flex gap-2 overflow-x-auto">
           {FILTERS.map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
                 filter === f ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200'
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
               }`}>
               {f}
             </button>
@@ -142,18 +121,10 @@ export default function ApplicationsList() {
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* List */}
-      <div className="px-4 mt-4 space-y-3">
-        {loading ? (
-          <>
-            {[1, 2, 3].map(i => (
-=======
       <div className="px-4 mt-4 space-y-3">
         {loading ? (
           <>
             {[1,2,3].map(i => (
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
               <div key={i} className="bg-white rounded-xl p-3 flex gap-3 animate-pulse border border-gray-100">
                 <div className="w-16 h-16 bg-gray-200 rounded-xl shrink-0" />
                 <div className="flex-1 space-y-2 py-1">
@@ -172,11 +143,7 @@ export default function ApplicationsList() {
             {applications.length === 0 ? (
               <>
                 <p className="text-gray-700 font-semibold text-base">No applications yet</p>
-<<<<<<< HEAD
-                <p className="text-gray-400 text-sm mt-2 mb-5">Apply to listings with your Section 8 voucher and they'll appear here.</p>
-=======
                 <p className="text-gray-400 text-sm mt-2 mb-5">Apply to listings with your Section 8 voucher and they appear here.</p>
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
                 <button onClick={() => navigate('/tenant/search')}
                   className="bg-[#1D9E75] text-white px-6 py-3 rounded-xl text-sm font-semibold">
                   Browse Listings
@@ -188,16 +155,8 @@ export default function ApplicationsList() {
           </div>
         ) : (
           filtered.map(app => (
-<<<<<<< HEAD
-            <ApplicationCard
-              key={app.id}
-              application={app}
-              onClick={() => navigate(`/tenant/listing/${app.properties?.id}`)}
-            />
-=======
             <ApplicationCard key={app.id} application={app}
               onClick={() => navigate(`/tenant/listing/${app.properties?.id}`)} />
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
           ))
         )}
       </div>

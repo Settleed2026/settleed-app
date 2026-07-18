@@ -44,32 +44,21 @@ function ApplicationCard({ application, onClick }) {
 
 function OnboardingCard({ profile, onAddVoucherSize, onBrowse, onDismiss }) {
   const steps = [
-    {
-      label: 'Account created',
-      done: true,
-    },
+    { label: 'Account created', done: true },
     {
       label: profile?.voucher_size != null && profile?.household_size != null && profile?.has_pet != null
-        ? `Profile set — ${profile.voucher_size === 0 ? 'Studio' : `${profile.voucher_size} BR`} · ${profile.household_size} person${profile.household_size !== 1 ? 's' : ''}${profile.has_pet ? ' · 🐾 Pet' : ''}`
+        ? `Profile set — ${profile.voucher_size === 0 ? 'Studio' : `${profile.voucher_size} BR`} · ${profile.household_size} person${profile.household_size !== 1 ? 's' : ''}${profile.has_pet ? ' · Pet' : ''}`
         : 'Add your voucher & household info',
       done: profile?.voucher_size != null && profile?.household_size != null && profile?.has_pet != null,
       action: onAddVoucherSize,
       cta: 'Add now',
     },
-    {
-      label: 'Browse available listings',
-      done: false,
-      action: onBrowse,
-      cta: 'Search',
-    },
+    { label: 'Browse available listings', done: false, action: onBrowse, cta: 'Search' },
   ]
-
   const completedCount = steps.filter(s => s.done).length
   const allDone = completedCount === steps.length
   const pct = Math.round((completedCount / steps.length) * 100)
-
   if (allDone) return null
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-start justify-between mb-1">
@@ -79,35 +68,19 @@ function OnboardingCard({ profile, onAddVoucherSize, onBrowse, onDismiss }) {
         </div>
         <button onClick={onDismiss} className="text-gray-300 text-xs hover:text-gray-400">skip</button>
       </div>
-
       <p className="text-xs text-gray-400 mb-4">{completedCount} of {steps.length} complete</p>
-
-      {/* Progress bar */}
       <div className="h-1.5 bg-gray-100 rounded-full mb-5 overflow-hidden">
-        <div
-          className="h-full bg-[#1D9E75] rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full bg-[#1D9E75] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
-
       <div className="space-y-3">
         {steps.map((step, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-              step.done ? 'bg-[#1D9E75]' : 'border-2 border-gray-200'
-            }`}>
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-[#1D9E75]' : 'border-2 border-gray-200'}`}>
               {step.done && <CheckCircle2 size={12} className="text-white" />}
             </div>
-            <span className={`flex-1 text-sm ${step.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-              {step.label}
-            </span>
+            <span className={`flex-1 text-sm ${step.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{step.label}</span>
             {!step.done && step.action && (
-              <button
-                onClick={step.action}
-                className="text-xs font-semibold text-[#1D9E75] shrink-0"
-              >
-                {step.cta} →
-              </button>
+              <button onClick={step.action} className="text-xs font-semibold text-[#1D9E75] shrink-0">{step.cta} →</button>
             )}
           </div>
         ))}
@@ -144,127 +117,70 @@ function VoucherSizeModal({ onSave, onClose }) {
     { value: '3', label: '3 Bedrooms' },
     { value: '4', label: '4 Bedrooms' },
   ]
-
-  const householdOptions = [1,2,3,4,5,6,7,8].map(n => ({
-    value: String(n),
-    label: n === 1 ? '1 person (just me)' : `${n} people`,
-  }))
-
+  const householdOptions = [1,2,3,4,5,6,7,8].map(n => ({ value: String(n), label: n === 1 ? '1 person (just me)' : `${n} people` }))
   const petOptions = [
-    { value: 'Dog', label: '🐕 Dog' },
-    { value: 'Cat', label: '🐈 Cat' },
-    { value: 'Dog & Cat', label: '🐕🐈 Dog & Cat' },
-    { value: 'Other', label: '🐾 Other' },
+    { value: 'Dog', label: 'Dog' },
+    { value: 'Cat', label: 'Cat' },
+    { value: 'Dog & Cat', label: 'Dog & Cat' },
+    { value: 'Other', label: 'Other' },
   ]
-
   const canSave = size !== '' && household !== '' && hasPet !== null && (hasPet === false || petType !== '')
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
       <div className="bg-white w-full rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold text-gray-900 mb-1">Your rental profile</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Landlords see this when you apply — fill it out accurately.
-        </p>
-
+        <p className="text-sm text-gray-500 mb-6">Landlords see this when you apply.</p>
         <div className="mb-5">
           <p className="text-sm font-semibold text-gray-700 mb-2">Voucher bedroom size</p>
           <div className="grid grid-cols-2 gap-2">
             {bedroomOptions.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setSize(opt.value)}
-                className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${
-                  size === opt.value
-                    ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]'
-                    : 'border-gray-200 text-gray-700'
-                }`}
-              >
+              <button key={opt.value} onClick={() => setSize(opt.value)}
+                className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${size === opt.value ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]' : 'border-gray-200 text-gray-700'}`}>
                 {opt.label}
               </button>
             ))}
           </div>
         </div>
-
         <div className="mb-5">
           <p className="text-sm font-semibold text-gray-700 mb-2">People on your voucher</p>
           <div className="grid grid-cols-2 gap-2">
             {householdOptions.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setHousehold(opt.value)}
-                className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${
-                  household === opt.value
-                    ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]'
-                    : 'border-gray-200 text-gray-700'
-                }`}
-              >
+              <button key={opt.value} onClick={() => setHousehold(opt.value)}
+                className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${household === opt.value ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]' : 'border-gray-200 text-gray-700'}`}>
                 {opt.label}
               </button>
             ))}
           </div>
         </div>
-
         <div className="mb-6">
           <p className="text-sm font-semibold text-gray-700 mb-2">Do you have a pet?</p>
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <button
-              onClick={() => { setHasPet(false); setPetType('') }}
-              className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${
-                hasPet === false
-                  ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]'
-                  : 'border-gray-200 text-gray-700'
-              }`}
-            >
+            <button onClick={() => { setHasPet(false); setPetType('') }}
+              className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${hasPet === false ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]' : 'border-gray-200 text-gray-700'}`}>
               No pets
             </button>
-            <button
-              onClick={() => setHasPet(true)}
-              className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${
-                hasPet === true
-                  ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]'
-                  : 'border-gray-200 text-gray-700'
-              }`}
-            >
+            <button onClick={() => setHasPet(true)}
+              className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${hasPet === true ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]' : 'border-gray-200 text-gray-700'}`}>
               Yes, I have a pet
             </button>
           </div>
-
           {hasPet === true && (
-            <div>
-              <p className="text-xs text-gray-500 mb-2">What type?</p>
-              <div className="grid grid-cols-2 gap-2">
-                {petOptions.map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setPetType(opt.value)}
-                    className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${
-                      petType === opt.value
-                        ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]'
-                        : 'border-gray-200 text-gray-700'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3">
-                ⚠️ Always disclose pets honestly. Misrepresenting this on an application can get you rejected or lose your voucher.
-              </p>
+            <div className="grid grid-cols-2 gap-2">
+              {petOptions.map(opt => (
+                <button key={opt.value} onClick={() => setPetType(opt.value)}
+                  className={`border-2 rounded-xl py-3 text-sm font-medium transition-colors ${petType === opt.value ? 'border-[#1D9E75] bg-green-50 text-[#1D9E75]' : 'border-gray-200 text-gray-700'}`}>
+                  {opt.label}
+                </button>
+              ))}
             </div>
           )}
         </div>
-
-        <button
-          onClick={handleSave}
-          disabled={!canSave || saving}
-          className="w-full bg-[#1B3A6B] text-white rounded-xl py-3 text-sm font-semibold disabled:opacity-40"
-        >
+        <button onClick={handleSave} disabled={!canSave || saving}
+          className="w-full bg-[#1B3A6B] text-white rounded-xl py-3 text-sm font-semibold disabled:opacity-40">
           {saving ? 'Saving...' : 'Save profile'}
         </button>
-        <button onClick={onClose} className="w-full text-center text-sm text-gray-400 mt-3">
-          Cancel
-        </button>
+        <button onClick={onClose} className="w-full text-center text-sm text-gray-400 mt-3">Cancel</button>
       </div>
     </div>
   )
@@ -299,19 +215,6 @@ export default function TenantDashboard() {
         ])
         setApplications(apps || [])
         setProfile(prof)
-
-        // Check wizard completion separately so a missing column never crashes the dashboard
-        if (prof) {
-          const { data: wizardRow } = await supabase
-            .from('profiles')
-            .select('profile_wizard_completed')
-            .eq('id', user.id)
-            .single()
-          if (wizardRow && wizardRow.profile_wizard_completed === false) {
-            navigate('/tenant/profile/setup')
-            return
-          }
-        }
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -326,15 +229,6 @@ export default function TenantDashboard() {
     setShowVoucherModal(false)
   }
 
-  function handleDismissOnboarding() {
-    localStorage.setItem('settleed_onboarding_done', 'true')
-    setOnboardingDismissed(true)
-  }
-
-  function handleBrowse() {
-    navigate('/tenant/search')
-  }
-
   const pending  = applications.filter(a => a.status === 'pending').length
   const approved = applications.filter(a => a.status === 'approved').length
   const firstName = profile?.full_name?.split(' ')[0] || 'there'
@@ -342,27 +236,21 @@ export default function TenantDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
       <div className="bg-[#1B3A6B] px-4 pt-10 pb-6">
-        <p className="text-white/60 text-sm">{isNewUser ? 'Welcome to Settleed 👋' : 'Welcome back'}</p>
+        <p className="text-white/60 text-sm">{isNewUser ? 'Welcome to Settleed' : 'Welcome back'}</p>
         <h1 className="text-white text-xl font-bold">{firstName}</h1>
         {profile?.housing_authority && (
           <div className="mt-3 bg-white/10 rounded-xl px-3 py-2.5 inline-flex items-center gap-2">
             <div className="w-2 h-2 bg-[#1D9E75] rounded-full" />
             <span className="text-white text-xs font-medium">
               {profile.housing_authority} Voucher
-              {profile.voucher_size != null
-                ? ` · ${profile.voucher_size === 0 ? 'Studio' : `${profile.voucher_size} BR`}`
-                : ''}
-              {profile.household_size != null
-                ? ` · ${profile.household_size} person${profile.household_size !== 1 ? 's' : ''}`
-                : ''}
+              {profile.voucher_size != null ? ` · ${profile.voucher_size === 0 ? 'Studio' : `${profile.voucher_size} BR`}` : ''}
+              {profile.household_size != null ? ` · ${profile.household_size} person${profile.household_size !== 1 ? 's' : ''}` : ''}
             </span>
           </div>
         )}
       </div>
 
-      {/* Stats (only after first application) */}
       {applications.length > 0 && (
         <div className="mx-4 -mt-3 bg-white rounded-xl shadow-sm border border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
           <div className="py-3 text-center">
@@ -381,41 +269,34 @@ export default function TenantDashboard() {
       )}
 
       <div className="px-4 mt-5 space-y-4">
-        {/* Onboarding checklist */}
         {!onboardingDismissed && !loading && (
           <OnboardingCard
             profile={profile}
             onAddVoucherSize={() => setShowVoucherModal(true)}
-            onBrowse={handleBrowse}
-            onDismiss={handleDismissOnboarding}
+            onBrowse={() => navigate('/tenant/search')}
+            onDismiss={() => { localStorage.setItem('settleed_onboarding_done', 'true'); setOnboardingDismissed(true) }}
           />
         )}
 
-        {/* Search CTA */}
-        <button
-          onClick={handleBrowse}
-          className="w-full bg-[#1D9E75] text-white rounded-xl py-4 flex items-center justify-center gap-2 font-semibold shadow-lg shadow-[#1D9E75]/20"
-        >
+        <button onClick={() => navigate('/tenant/search')}
+          className="w-full bg-[#1D9E75] text-white rounded-xl py-4 flex items-center justify-center gap-2 font-semibold shadow-lg shadow-[#1D9E75]/20">
           <Search className="w-5 h-5" />
           Browse Available Listings
         </button>
 
-        {/* Applications */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">My Applications</h2>
-            <span className="text-xs text-gray-400">{applications.length}</span>
+            <h2 className="font-semibold text-gray-900">Recent Applications</h2>
+            <button onClick={() => navigate('/tenant/applications')} className="text-xs text-[#1D9E75] font-medium">View all →</button>
           </div>
-
           {loading ? (
             <div className="space-y-3">
-              {[1, 2].map(i => (
+              {[1,2].map(i => (
                 <div key={i} className="bg-white rounded-xl p-3 flex gap-3 animate-pulse border border-gray-100">
                   <div className="w-14 h-14 bg-gray-200 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2 py-1">
                     <div className="h-4 bg-gray-200 rounded w-28" />
                     <div className="h-3 bg-gray-200 rounded w-20" />
-                    <div className="h-4 bg-gray-200 rounded w-16" />
                   </div>
                 </div>
               ))}
@@ -430,25 +311,18 @@ export default function TenantDashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {applications.map(app => (
-                <ApplicationCard
-                  key={app.id}
-                  application={app}
-                  onClick={() => navigate(`/tenant/listing/${app.properties?.id}`)}
-                />
+              {applications.slice(0, 3).map(app => (
+                <ApplicationCard key={app.id} application={app}
+                  onClick={() => navigate(`/tenant/listing/${app.properties?.id}`)} />
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Voucher size modal */}
       {showVoucherModal && (
-        <VoucherSizeModal
-          onSave={handleVoucherSave}
-          onClose={() => setShowVoucherModal(false)}
-        />
+        <VoucherSizeModal onSave={handleVoucherSave} onClose={() => setShowVoucherModal(false)} />
       )}
     </div>
   )
-    }
+}

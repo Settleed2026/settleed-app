@@ -60,13 +60,17 @@ export default function LandlordDashboard() {
   }
 
   const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || 'there'
+  const hour = new Date().getHours()
+  const greeting = hour >= 5 && hour <= 11 ? 'Good morning'
+                 : hour >= 12 && hour <= 20 ? 'Good evening'
+                 : 'Good night'
   const activeProperties = properties.filter(p => p.status === 'active')
   const draftProperties  = properties.filter(p => p.status === 'draft')
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-[#1B3A6B] px-4 pt-10 pb-6">
-        <p className="text-blue-200 text-sm">Good morning</p>
+        <p className="text-blue-200 text-sm">{greeting}</p>
         <h1 className="text-white text-2xl font-bold">{firstName}</h1>
         <div className="flex gap-3 mt-4">
           <div className="bg-white/10 rounded-xl p-3 flex-1 text-center">

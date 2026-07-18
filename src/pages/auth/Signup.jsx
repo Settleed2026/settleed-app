@@ -267,4 +267,17 @@ export default function Signup() {
                 By signing up you agree to our{' '}
                 <Link to="/terms" className="underline hover:text-gray-600">Terms of Service</Link>
                 {' '}and{' '}
-                <Link to="/privacy" className="underline hover:text-gray-600"
+                <Link to="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>.
+              </p>
+
+              <p className="text-center text-sm text-gray-500">
+                Already have an account?{' '}
+                <Link to="/login" className="text-[#1D9E75] font-medium">Sign in</Link>
+              </p>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

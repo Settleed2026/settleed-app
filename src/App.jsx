@@ -65,4 +65,10 @@ export default function App() {
         <Route path="search" element={<SearchListings />} />
         <Route path="listing/:id" element={<ListingDetail />} />
         <Route path="apply/:id" element={<ApplicationForm />} />
-        <Route path="applications"
+        <Route path="applications" element={<TenantDashboard />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  )
+}

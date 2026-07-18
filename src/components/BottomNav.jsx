@@ -35,4 +35,10 @@ export default function BottomNav({ role }) {
             }`
           }
         >
-          <Icon className="w-5 h-5 mb-0.5" 
+          <Icon className="w-5 h-5 mb-0.5" />
+          {label}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}

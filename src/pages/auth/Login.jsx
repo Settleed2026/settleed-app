@@ -94,4 +94,24 @@ export default function Login() {
             <Link to="/forgot-password" className="text-xs text-[#1D9E75] hover:underline">
               Forgot password?
             </Link>
-      
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#1B3A6B] text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-[#1D9E75] font-medium">
+            Sign up
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}

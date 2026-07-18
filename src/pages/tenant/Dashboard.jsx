@@ -198,6 +198,7 @@ export default function TenantDashboard() {
   )
 
   useEffect(() => {
+    if (!user?.id) return
     async function fetchData() {
       try {
         const [{ data: apps }, { data: prof }] = await Promise.all([
@@ -214,12 +215,9 @@ export default function TenantDashboard() {
             .single(),
         ])
         setApplications(apps || [])
-        setProfile(prof)
-<<<<<<< HEAD
+        setProfile(prof || null)
 
 
-=======
->>>>>>> 916c6791bc01800d734a9f04f982a1ed9f597490
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {

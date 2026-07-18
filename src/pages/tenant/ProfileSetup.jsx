@@ -153,7 +153,16 @@ export default function TenantProfileSetup() {
     }
   }
 
+  function getStepError() {
+    if (stepId === 'voucher' && data.voucherStatus === 'yes' && !data.voucherBedroomSize) {
+      return 'Please select your voucher bedroom size before continuing.'
+    }
+    return null
+  }
+
   function goNext() {
+    const err = getStepError()
+    if (err) { toast.error(err); return }
     if (stepIndex < STEPS.length - 1) {
       setStepIndex(i => i + 1)
       if (user) {

@@ -162,7 +162,7 @@ export default function Signup() {
             </h1>
             <p className="text-gray-500 text-sm mb-6">Create your free account</p>
 
-            <form onSubmit={handleSignup} className="space-y-4">
+            <form onSubmit={handleSignup} className="space-y-4" autoComplete="off">
 
               {/* Name */}
               <div className="grid grid-cols-2 gap-3">
@@ -191,7 +191,7 @@ export default function Signup() {
               <div>
                 <label className={labelClass}>Email address *</label>
                 <input name="email" type="email" required value={form.email} onChange={handleChange}
-                  className={inputClass} placeholder="you@example.com" />
+                  className={inputClass} placeholder="you@example.com" autoComplete="username" />
               </div>
 
               {/* Mobile Phone */}
@@ -273,7 +273,7 @@ export default function Signup() {
               <div>
                 <label className={labelClass}>Password *</label>
                 <input name="password" type="password" required minLength={8} value={form.password}
-                  onChange={handleChange} className={inputClass} placeholder="At least 8 characters" />
+                  onChange={handleChange} className={inputClass} placeholder="At least 8 characters" autoComplete="new-password" />
               </div>
 
               <button

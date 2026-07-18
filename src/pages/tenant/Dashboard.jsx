@@ -292,13 +292,17 @@ export default function TenantDashboard() {
           .limit(20),
         supabase
           .from('profiles')
-          .select('full_name, housing_authority, voucher_size, household_size, has_pet, pet_type')
+          .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type, profile_wizard_completed')
           .eq('id', user.id)
           .single(),
       ])
       setApplications(apps || [])
       setProfile(prof)
       setLoading(false)
+      // Auto-launch wizard for new tenants who haven't completed it
+      if (prof && prof.profile_wizard_completed === false) {
+        navigate('/tenant/profile/setup')
+      }
     }
     fetchData()
   }, [user.id])

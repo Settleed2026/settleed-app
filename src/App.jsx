@@ -22,6 +22,7 @@ import TenantDashboard from './pages/tenant/Dashboard'
 import SearchListings from './pages/tenant/SearchListings'
 import ListingDetail from './pages/tenant/ListingDetail'
 import ApplicationForm from './pages/tenant/ApplicationForm'
+import TenantProfileSetup from './pages/tenant/ProfileSetup'
 
 // Shared
 import Landing from './pages/Landing'
@@ -62,6 +63,7 @@ export default function App() {
       {/* Tenant routes */}
       <Route path="/tenant" element={<ProtectedRoute role="tenant" />}>
         <Route index element={<TenantDashboard />} />
+        <Route path="profile/setup" element={<TenantProfileSetup />} />
         <Route path="search" element={<SearchListings />} />
         <Route path="listing/:id" element={<ListingDetail />} />
         <Route path="apply/:id" element={<ApplicationForm />} />

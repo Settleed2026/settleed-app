@@ -20,7 +20,8 @@ export default function Signup() {
     officePhone: '',
     preferredContact: 'email',
     bestTimeToContact: '',
-    ha: '', // tenants only
+    ha: '',
+    dateOfBirth: '',
     password: '',
   })
 
@@ -42,6 +43,17 @@ export default function Signup() {
     setLoading(true)
 
     const fullName = `${form.firstName} ${form.lastName}`.trim()
+
+    // 18+ age check for tenants
+    if (role === 'tenant' && form.dateOfBirth) {
+      const dob = new Date(form.dateOfBirth)
+      const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 60 * 60 * 1000))
+      if (age < 18) {
+        toast.error('You must be 18 or older to create an account.')
+        setLoading(false)
+        return
+      }
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
@@ -72,23 +84,31 @@ export default function Signup() {
     }
 
     // Fire-and-forget profile update — trigger already created the row
-    supabase.from('profiles').update({
+    const profileUpdate = {
       full_name: fullName,
       first_name: form.firstName,
       last_name: form.lastName,
       phone: form.mobilePhone || null,
-      office_phone: form.officePhone || null,
-      company_name: form.companyName || null,
-      preferred_contact: form.preferredContact || null,
-      best_time_to_contact: form.bestTimeToContact || null,
       housing_authority: form.ha || null,
-    }).eq('id', data.user.id).then(({ error }) => {
-      if (error) console.warn('Profile update:', error.message)
-    })
+    }
+    if (role === 'landlord') {
+      Object.assign(profileUpdate, {
+        office_phone: form.officePhone || null,
+        company_name: form.companyName || null,
+        preferred_contact: form.preferredContact || null,
+        best_time_to_contact: form.bestTimeToContact || null,
+      })
+    }
+    if (role === 'tenant' && form.dateOfBirth) {
+      profileUpdate.date_of_birth = form.dateOfBirth
+    }
+
+    supabase.from('profiles').update(profileUpdate)
+      .eq('id', data.user.id)
+      .then(({ error }) => { if (error) console.warn('Profile update:', error.message) })
 
     toast.success('Account created! Welcome to Settleed.')
-    // Landlords go straight to the listing form to add their first property
-    navigate(role === 'landlord' ? '/landlord/listing/new' : '/tenant')
+    navigate(role === 'landlord' ? '/landlord/listing/new' : '/tenant/profile/setup')
   }
 
   const inputClass = 'w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]'
@@ -228,18 +248,25 @@ export default function Signup() {
                 </div>
               )}
 
-              {/* Housing Authority (tenants only) */}
+              {/* Tenant-only fields */}
               {role === 'tenant' && (
-                <div>
-                  <label className={labelClass}>Housing Authority</label>
-                  <select name="ha" value={form.ha} onChange={handleChange}
-                    className={`${inputClass} bg-white`}>
-                    <option value="">Select your housing authority</option>
-                    {HOUSING_AUTHORITIES.map(ha => (
-                      <option key={ha.value} value={ha.value}>{ha.label}</option>
-                    ))}
-                  </select>
-                </div>
+                <>
+                  <div>
+                    <label className={labelClass}>Date of birth * <span className="text-gray-400 font-normal">(must be 18+)</span></label>
+                    <input name="dateOfBirth" type="date" required value={form.dateOfBirth} onChange={handleChange}
+                      className={inputClass} max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Housing Authority <span className="text-gray-400 font-normal">(optional)</span></label>
+                    <select name="ha" value={form.ha} onChange={handleChange}
+                      className={`${inputClass} bg-white`}>
+                      <option value="">Select your housing authority</option>
+                      {HOUSING_AUTHORITIES.map(ha => (
+                        <option key={ha.value} value={ha.value}>{ha.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
               )}
 
               {/* Password */}
@@ -254,7 +281,7 @@ export default function Signup() {
                 disabled={loading}
                 className="w-full bg-[#1B3A6B] text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 mt-2"
               >
-                {loading ? 'Creating account...' : role === 'landlord' ? 'Create account & list property' : 'Create account'}
+                {loading ? 'Creating account...' : role === 'landlord' ? 'Create account & list property' : 'Create account →'}
               </button>
 
               {role === 'landlord' && (

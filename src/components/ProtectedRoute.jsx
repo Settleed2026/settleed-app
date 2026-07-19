@@ -29,4 +29,4 @@ export default function ProtectedRoute({ role }) {
       {!hideNav && <BottomNav role={userRole} />}
     </>
   )
-}
+  }

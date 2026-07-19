@@ -77,4 +77,4 @@ export function useAuth() {
   }
 
   return { user, role, loading }
-}
+  }

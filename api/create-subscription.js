@@ -139,12 +139,15 @@ export default async function handler(req, res) {
       ? 'Settleed Voucher Holder'
       : 'Settleed Landlord'
 
+    // Subscriptions API requires an existing product ID — create one on the fly
+    const product = await stripe.products.create({ name: productName })
+
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [{
         price_data: {
           currency: 'usd',
-          product_data: { name: productName },
+          product: product.id,
           unit_amount: amount,
           recurring: { interval: 'month' },
         },

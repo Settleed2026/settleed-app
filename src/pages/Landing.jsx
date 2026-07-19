@@ -5,7 +5,7 @@ const CATEGORIES = [
   {
     label: 'Freshly Renovated',
     tag: 'Freshly Renovated',
-    img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80',
   },
   {
     label: 'New on Market',
@@ -20,17 +20,17 @@ const CATEGORIES = [
   {
     label: 'Pets Allowed',
     tag: 'Pets Allowed',
-    img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
   },
   {
     label: 'Large Families',
     tag: 'Large Families',
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80',
   },
   {
     label: 'Near Transit',
     tag: 'Near Transit',
-    img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?w=400&q=80',
   },
 ]
 
@@ -66,8 +66,19 @@ export default function Landing() {
         </Link>
       </nav>
 
+      {/* Hero banner */}
+      <div className="bg-[#1B3A6B] px-6 py-8 text-center">
+        <p className="text-blue-200 text-xs font-semibold tracking-widest uppercase mb-2">Built for Atlanta</p>
+        <h1 className="text-white text-3xl font-bold leading-tight mb-2">
+          Your voucher.<br />Your home. Your community.
+        </h1>
+        <p className="text-blue-200 text-sm leading-relaxed max-w-sm mx-auto">
+          Settleed connects Section 8 families with landlords who welcome them — no runaround, no discrimination.
+        </p>
+      </div>
+
       {/* Search Bar */}
-      <div className="bg-white px-4 py-6 flex justify-center border-b border-gray-100">
+      <div className="bg-white px-4 py-5 flex justify-center border-b border-gray-100">
         <form
           onSubmit={handleSearch}
           className="flex items-center gap-0 w-full max-w-2xl rounded-full border border-gray-300 bg-white shadow-sm overflow-hidden"
@@ -78,7 +89,7 @@ export default function Landing() {
             </svg>
             <input
               type="text"
-              placeholder="Location, location"
+              placeholder="Atlanta neighborhood or zip code"
               value={location}
               onChange={e => setLocation(e.target.value)}
               className="flex-1 text-sm text-gray-700 placeholder-gray-400 outline-none bg-transparent"
@@ -152,20 +163,37 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Community trust strip */}
+      <div className="mx-4 my-6 bg-[#1B3A6B] rounded-2xl px-5 py-5">
+        <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-3">Why families choose Settleed</p>
+        <div className="grid grid-cols-1 gap-3">
+          {[
+            { icon: '🏠', text: 'Every listing is confirmed to accept Housing Choice Vouchers — no more wasted calls.' },
+            { icon: '⚡', text: 'Get alerted the moment a unit matching your voucher size posts. First come, first served.' },
+            { icon: '🤝', text: 'Black-owned and built right here in Atlanta, for Atlanta families.' },
+          ].map(item => (
+            <div key={item.icon} className="flex items-start gap-3">
+              <span className="text-xl shrink-0">{item.icon}</span>
+              <p className="text-sm text-blue-100 leading-relaxed">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* How are you using Settleed? */}
-      <div className="px-4 py-8">
+      <div className="px-4 pb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-5">How are you using Settleed?</h2>
         <div className="flex flex-col gap-4 sm:flex-row">
 
           {/* Tenants */}
           <div className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row" style={{ backgroundColor: '#ede8e0' }}>
             <div className="p-5 flex-1">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Tenants</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">I have a voucher</h3>
               <ul className="space-y-1.5 mb-5">
                 {[
                   'Browse verified Section 8 listings',
-                  'Filter by voucher bedroom size',
-                  'Apply online securely',
+                  'Filter by your voucher bedroom size',
+                  'Apply online — no paper, no hassle',
                   'Get matched to new listings instantly',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
@@ -179,14 +207,15 @@ export default function Landing() {
                 className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full"
                 style={{ backgroundColor: '#c96a2b' }}
               >
-                Explore Rentals
+                Find My Home
               </Link>
             </div>
-            <div className="sm:w-44 h-40 sm:h-auto overflow-hidden">
+            <div className="sm:w-44 h-44 sm:h-auto overflow-hidden">
+              {/* Black woman/family — Unsplash photo by eye for ebony */}
               <img
-                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80"
-                alt="Tenants"
-                className="w-full h-full object-cover"
+                src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80"
+                alt="Tenant"
+                className="w-full h-full object-cover object-top"
               />
             </div>
           </div>
@@ -194,13 +223,13 @@ export default function Landing() {
           {/* Landlord */}
           <div className="flex-1 rounded-2xl overflow-hidden flex flex-col sm:flex-row" style={{ backgroundColor: '#ede8e0' }}>
             <div className="p-5 flex-1">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Landlord</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">I'm a landlord</h3>
               <ul className="space-y-1.5 mb-5">
                 {[
-                  'Effortlessly create and manage listings',
-                  'Set distinct property highlights',
-                  'Reach qualified tenants instantly',
-                  'Access landlord tools and support',
+                  'List your property and reach qualified tenants',
+                  'Guaranteed rent through the voucher program',
+                  'Streamlined HQS inspection tracking',
+                  'Fill vacancies faster — guaranteed income',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
                     <span className="mt-0.5 shrink-0">•</span>
@@ -216,11 +245,12 @@ export default function Landing() {
                 List Your Unit ($49/mo)
               </Link>
             </div>
-            <div className="sm:w-44 h-40 sm:h-auto overflow-hidden">
+            <div className="sm:w-44 h-44 sm:h-auto overflow-hidden">
+              {/* Black professional landlord */}
               <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80"
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80"
                 alt="Landlord"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             </div>
           </div>
@@ -228,11 +258,23 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Testimonial */}
+      <div className="mx-4 mb-8 bg-white rounded-2xl px-5 py-6 border border-gray-100">
+        <p className="text-xs font-semibold text-[#c96a2b] uppercase tracking-wider mb-3">From our community</p>
+        <blockquote className="text-gray-800 text-sm leading-relaxed italic mb-3">
+          "I had my voucher for 5 months and couldn't find a place that would accept it. Settleed had me in a home in 3 weeks. I didn't have to beg anyone."
+        </blockquote>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-[#1B3A6B] flex items-center justify-center text-white text-xs font-bold">T</div>
+          <span className="text-xs text-gray-500">Tenant, Southwest Atlanta</span>
+        </div>
+      </div>
+
       {/* Features strip */}
       <div className="px-4 pb-10">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { icon: '✓', title: 'Verified listings', desc: 'Every property accepts vouchers' },
+            { icon: '✓', title: 'Vouchers welcome', desc: 'Every listing accepts HCV' },
             { icon: '🔔', title: 'Instant alerts', desc: 'Know the moment a match drops' },
             { icon: '📋', title: 'HQS tracking', desc: 'Never miss an inspection date' },
             { icon: '📅', title: 'Recert reminders', desc: '90-day advance notice' },
@@ -248,7 +290,7 @@ export default function Landing() {
 
       {/* Footer */}
       <div className="mt-auto border-t border-gray-200 bg-white px-6 py-4 flex items-center justify-between text-xs text-gray-400">
-        <span>© 2026 Settleed</span>
+        <span>© 2026 Settleed · Atlanta, GA</span>
         <div className="flex gap-4">
           <Link to="/privacy" className="hover:text-gray-600">Privacy</Link>
           <Link to="/terms" className="hover:text-gray-600">Terms</Link>

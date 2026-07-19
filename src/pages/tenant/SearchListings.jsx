@@ -1,3 +1,39 @@
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+import { getPaymentStandard } from '../../lib/paymentStandards'
+import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown } from 'lucide-react'
+
+const HA_OPTIONS = [
+  { value: '', label: 'All HAs' },
+  { value: 'AHA', label: 'AHA' },
+  { value: 'DCA', label: 'DCA' },
+  { value: 'COBB', label: 'Cobb HA' },
+  { value: 'DEKALB', label: 'DeKalb HA' },
+  { value: 'other', label: 'Other' },
+]
+
+const BED_OPTIONS = [
+  { value: '', label: 'Any Beds' },
+  { value: '0', label: 'Studio' },
+  { value: '1', label: '1 BR' },
+  { value: '2', label: '2 BR' },
+  { value: '3', label: '3 BR' },
+  { value: '4', label: '4+ BR' },
+]
+
+function PSBadge({ zip, bedrooms, rent }) {
+  if (!zip || bedrooms === '' || !rent) return null
+  const ps = getPaymentStandard(zip, parseInt(bedrooms))
+  if (!ps) return null
+  const ok = rent <= ps.maxRent
+  return (
+    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${ok ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+      {ok ? '✓ DCA OK' : '⚠ Above DCA'}
+    </span>
+  )
+}
+
+
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
@@ -115,6 +151,7 @@ export default function SearchListings() {
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
+  const [queryError, setQueryError] = useState(null)
 
   const [search, setSearch] = useState('')
   const [ha, setHa] = useState('')
@@ -129,7 +166,6 @@ export default function SearchListings() {
       .from('properties')
       .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials', { count: 'exact' })
       .eq('status', 'active')
-      .eq('is_test', false)
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -147,7 +183,9 @@ export default function SearchListings() {
     const { data, count, error } = await query
     if (error) {
       console.error('[SearchListings] Supabase error:', error)
+      setQueryError(error.message || 'Unknown error')
     } else {
+      setQueryError(null)
       setListings(data || [])
       setTotal(count || 0)
     }
@@ -232,6 +270,11 @@ export default function SearchListings() {
         <p className="text-xs text-gray-500">
           {loading ? 'Searching...' : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} found`}
         </p>
+        {queryError && (
+          <p className="text-xs text-red-600 mt-1 font-mono bg-red-50 px-2 py-1 rounded break-all">
+            DB error: {queryError}
+          </p>
+        )}
       </div>
 
       <div className="px-4">
@@ -272,4 +315,4 @@ export default function SearchListings() {
       </div>
     </div>
   )
-            }
+  }TEST

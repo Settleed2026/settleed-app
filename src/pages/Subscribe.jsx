@@ -57,7 +57,9 @@ function PlanSelect({ role, onSelect }) {
       </div>
 
       <div className="space-y-4">
-        {Object.entries(PLANS).map(([planRole, plan]) => {
+        {Object.entries(PLANS)
+          .filter(([planRole]) => !role || role === planRole)
+          .map(([planRole, plan]) => {
           const isCurrentRole = role === planRole
           return (
             <div

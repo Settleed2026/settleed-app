@@ -244,17 +244,14 @@ export default function Subscribe() {
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-subscription`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ role: planRole }),
-        }
-      )
+      const res = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ role: planRole }),
+      })
       const { clientSecret: cs, error } = await res.json()
       if (error) throw new Error(error)
 

@@ -31,6 +31,9 @@ import ApplicationsList from './pages/tenant/ApplicationsList'
 import TenantMaintenance from './pages/tenant/Maintenance'
 import TenantRentPayment from './pages/tenant/RentPayment'
 
+// Tools (public)
+import RentAnalyzer from './pages/tools/RentAnalyzer'
+
 // Shared
 import Landing from './pages/Landing'
 import Subscribe from './pages/Subscribe'
@@ -60,6 +63,7 @@ export default function App() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/subscribe/success" element={<SubscribeSuccess />} />
+      <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
 
       {/* Landlord routes */}
       <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

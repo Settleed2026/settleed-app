@@ -1,0 +1,890 @@
+{
+  "30002": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1100,
+      1150,
+      1270,
+      1530,
+      1840
+    ]
+  },
+  "30006": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30007": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30008": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1440,
+      1500,
+      1660,
+      2000,
+      2410
+    ]
+  },
+  "30012": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1280,
+      1330,
+      1470,
+      1770,
+      2130
+    ]
+  },
+  "30021": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1370,
+      1420,
+      1570,
+      1890,
+      2280
+    ]
+  },
+  "30030": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1990,
+      2070,
+      2290,
+      2760,
+      3320
+    ]
+  },
+  "30031": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30032": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1350,
+      1400,
+      1550,
+      1870,
+      2250
+    ]
+  },
+  "30033": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1650,
+      1720,
+      1900,
+      2290,
+      2750
+    ]
+  },
+  "30034": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1370,
+      1430,
+      1580,
+      1900,
+      2290
+    ]
+  },
+  "30035": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1500,
+      1550,
+      1720,
+      2070,
+      2490
+    ]
+  },
+  "30036": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30038": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1510,
+      1570,
+      1740,
+      2100,
+      2520
+    ]
+  },
+  "30039": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1860,
+      1930,
+      2140,
+      2580,
+      3100
+    ]
+  },
+  "30058": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1610,
+      1670,
+      1850,
+      2230,
+      2680
+    ]
+  },
+  "30060": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1440,
+      1500,
+      1660,
+      2000,
+      2410
+    ]
+  },
+  "30061": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30062": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1820,
+      1890,
+      2090,
+      2520,
+      3030
+    ]
+  },
+  "30064": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30065": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30067": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1790,
+      1860,
+      2060,
+      2480,
+      2990
+    ]
+  },
+  "30068": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1650,
+      1720,
+      1900,
+      2290,
+      2750
+    ]
+  },
+  "30072": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1370,
+      1430,
+      1580,
+      1900,
+      2290
+    ]
+  },
+  "30079": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1260,
+      1310,
+      1450,
+      1750,
+      2100
+    ]
+  },
+  "30080": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1800,
+      1870,
+      2070,
+      2490,
+      3000
+    ]
+  },
+  "30081": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30082": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1780,
+      1850,
+      2050,
+      2470,
+      2970
+    ]
+  },
+  "30083": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1480,
+      1540,
+      1700,
+      2050,
+      2460
+    ]
+  },
+  "30084": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1640,
+      1710,
+      1890,
+      2280,
+      2740
+    ]
+  },
+  "30085": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30086": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30087": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1770,
+      1830,
+      2030,
+      2450,
+      2940
+    ]
+  },
+  "30088": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1490,
+      1540,
+      1710,
+      2060,
+      2480
+    ]
+  },
+  "30090": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30093": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1690,
+      1750,
+      1940,
+      2340,
+      2810
+    ]
+  },
+  "30094": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1610,
+      1670,
+      1850,
+      2230,
+      2680
+    ]
+  },
+  "30106": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1470,
+      1530,
+      1690,
+      2040,
+      2450
+    ]
+  },
+  "30111": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30122": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1500,
+      1550,
+      1720,
+      2070,
+      2490
+    ]
+  },
+  "30126": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1550,
+      1610,
+      1780,
+      2140,
+      2580
+    ]
+  },
+  "30127": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1850,
+      1920,
+      2130,
+      2570,
+      3090
+    ]
+  },
+  "30141": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30144": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1910,
+      1990,
+      2200,
+      2650,
+      3190
+    ]
+  },
+  "30152": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1750,
+      1820,
+      2010,
+      2420,
+      2910
+    ]
+  },
+  "30156": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30157": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1570,
+      1630,
+      1800,
+      2170,
+      2610
+    ]
+  },
+  "30160": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  },
+  "30168": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1380,
+      1440,
+      1590,
+      1920,
+      2310
+    ]
+  },
+  "30306": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2070,
+      2150,
+      2380,
+      2870,
+      3450
+    ]
+  },
+  "30307": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2010,
+      2090,
+      2310,
+      2780,
+      3350
+    ]
+  },
+  "30315": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1170,
+      1220,
+      1350,
+      1630,
+      1960
+    ]
+  },
+  "30316": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1670,
+      1730,
+      1920,
+      2310,
+      2780
+    ]
+  },
+  "30317": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1650,
+      1720,
+      1900,
+      2290,
+      2750
+    ]
+  },
+  "30319": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2300,
+      2380,
+      2640,
+      3180,
+      3830
+    ]
+  },
+  "30322": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2020,
+      2100,
+      2330,
+      2800,
+      3370
+    ]
+  },
+  "30324": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2340,
+      2430,
+      2690,
+      3240,
+      3900
+    ]
+  },
+  "30326": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2290,
+      2380,
+      2630,
+      3170,
+      3810
+    ]
+  },
+  "30328": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2190,
+      2280,
+      2520,
+      3040,
+      3650
+    ]
+  },
+  "30329": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2050,
+      2130,
+      2360,
+      2840,
+      3420
+    ]
+  },
+  "30333": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30338": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2200,
+      2280,
+      2530,
+      3050,
+      3670
+    ]
+  },
+  "30339": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      2160,
+      2240,
+      2480,
+      2990,
+      3600
+    ]
+  },
+  "30340": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1530,
+      1590,
+      1760,
+      2120,
+      2550
+    ]
+  },
+  "30341": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1990,
+      2070,
+      2290,
+      2760,
+      3320
+    ]
+  },
+  "30345": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1830,
+      1900,
+      2100,
+      2530,
+      3040
+    ]
+  },
+  "30346": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      2010,
+      2090,
+      2310,
+      2780,
+      3350
+    ]
+  },
+  "30350": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1940,
+      2010,
+      2230,
+      2690,
+      3230
+    ]
+  },
+  "30356": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30359": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30360": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1630,
+      1690,
+      1870,
+      2250,
+      2710
+    ]
+  },
+  "30362": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "30366": {
+    "county": "DeKalb",
+    "pha": "HADC",
+    "phaName": "Housing Authority of DeKalb County",
+    "ps": [
+      1600,
+      1660,
+      1840,
+      2220,
+      2670
+    ]
+  },
+  "31139": {
+    "county": "Cobb",
+    "pha": "MHA",
+    "phaName": "Marietta Housing Authority",
+    "ps": [
+      1660,
+      1730,
+      1910,
+      2300,
+      2770
+    ]
+  }
+}

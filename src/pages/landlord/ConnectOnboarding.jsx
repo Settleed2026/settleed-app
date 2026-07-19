@@ -40,11 +40,11 @@ export default function ConnectOnboarding() {
   }
 
   async function verifyOnboarding() {
-    // Re-call the edge function — it checks details_submitted and updates DB
+    // Re-call the API — it checks details_submitted and updates DB
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
+        '/api/create-connect-account',
         {
           method: 'POST',
           headers: {
@@ -75,7 +75,7 @@ export default function ConnectOnboarding() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
+        '/api/create-connect-account',
         {
           method: 'POST',
           headers: {

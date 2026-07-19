@@ -2,36 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const CATEGORIES = [
-  {
-    label: 'Freshly Renovated',
-    tag: 'Freshly Renovated',
-    img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80',
-  },
-  {
-    label: 'New on Market',
-    tag: 'New on Market',
-    img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&q=80',
-  },
-  {
-    label: 'Move-in Ready',
-    tag: 'Move-in Ready',
-    img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80',
-  },
-  {
-    label: 'Pets Allowed',
-    tag: 'Pets Allowed',
-    img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80',
-  },
-  {
-    label: 'Large Families',
-    tag: 'Large Families',
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-  },
-  {
-    label: 'Near Transit',
-    tag: 'Near Transit',
-    img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80',
-  },
+  { label: 'Freshly Renovated', tag: 'Freshly Renovated', img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80' },
+  { label: 'New on Market', tag: 'New on Market', img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&q=80' },
+  { label: 'Move-in Ready', tag: 'Move-in Ready', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80' },
+  { label: 'Pets Allowed', tag: 'Pets Allowed', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80' },
+  { label: 'Large Families', tag: 'Large Families', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80' },
+  { label: 'Near Transit', tag: 'Near Transit', img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80' },
 ]
 
 export default function Landing() {
@@ -46,6 +22,7 @@ export default function Landing() {
     if (location) params.set('q', location)
     if (price) params.set('price', price)
     if (propertyType) params.set('type', propertyType)
+    params.set('role', 'tenant')
     navigate(`/signup?${params.toString()}`)
   }
 
@@ -84,11 +61,7 @@ export default function Landing() {
             />
           </div>
           <div className="w-px h-6 bg-gray-200 shrink-0" />
-          <select
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-            className="px-4 py-3 text-sm text-gray-600 bg-transparent outline-none cursor-pointer"
-          >
+          <select value={price} onChange={e => setPrice(e.target.value)} className="px-4 py-3 text-sm text-gray-600 bg-transparent outline-none cursor-pointer">
             <option value="">Price</option>
             <option value="0-800">Up to $800</option>
             <option value="0-1000">Up to $1,000</option>
@@ -97,22 +70,14 @@ export default function Landing() {
             <option value="0-2000">Up to $2,000</option>
           </select>
           <div className="w-px h-6 bg-gray-200 shrink-0" />
-          <select
-            value={propertyType}
-            onChange={e => setPropertyType(e.target.value)}
-            className="px-4 py-3 text-sm text-gray-600 bg-transparent outline-none cursor-pointer"
-          >
+          <select value={propertyType} onChange={e => setPropertyType(e.target.value)} className="px-4 py-3 text-sm text-gray-600 bg-transparent outline-none cursor-pointer">
             <option value="">Property type</option>
             <option value="Apartment">Apartment</option>
             <option value="Single Family Home">Single Family</option>
             <option value="Townhome">Townhome</option>
             <option value="Duplex">Duplex</option>
           </select>
-          <button
-            type="submit"
-            className="m-1 rounded-full p-3 flex items-center justify-center"
-            style={{ backgroundColor: '#c96a2b' }}
-          >
+          <button type="submit" className="m-1 rounded-full p-3 flex items-center justify-center" style={{ backgroundColor: '#c96a2b' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="6.5" cy="6.5" r="4.5" stroke="white" strokeWidth="1.5"/>
               <path d="M10 10l3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
@@ -125,23 +90,12 @@ export default function Landing() {
       <div className="px-4 pt-6 pb-2">
         <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
           {CATEGORIES.map(cat => (
-            <Link
-              key={cat.label}
-              to="/signup"
-              className="flex-shrink-0 flex flex-col items-start"
-              style={{ width: 160 }}
-            >
+            <Link key={cat.label} to="/signup?role=tenant" className="flex-shrink-0 flex flex-col items-start" style={{ width: 160 }}>
               <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: 130 }}>
-                <img
-                  src={cat.img}
-                  alt={cat.label}
-                  className="w-full h-full object-cover"
-                  onError={e => { e.target.src = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80' }}
-                />
-                <span
-                  className="absolute top-2 left-2 text-xs font-semibold px-2 py-1 rounded-full"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.88)', color: '#222' }}
-                >
+                <img src={cat.img} alt={cat.label} className="w-full h-full object-cover"
+                  onError={e => { e.target.src = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80' }} />
+                <span className="absolute top-2 left-2 text-xs font-semibold px-2 py-1 rounded-full"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.88)', color: '#222' }}>
                   {cat.tag}
                 </span>
               </div>
@@ -161,32 +115,18 @@ export default function Landing() {
             <div className="p-5 flex-1">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Tenants</h3>
               <ul className="space-y-1.5 mb-5">
-                {[
-                  'Browse verified Section 8 listings',
-                  'Filter by voucher bedroom size',
-                  'Apply online securely',
-                  'Get matched to new listings instantly',
-                ].map(item => (
+                {['Browse verified Section 8 listings','Filter by voucher bedroom size','Apply online securely','Get matched to new listings instantly'].map(item => (
                   <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="mt-0.5 shrink-0">•</span>
-                    <span>{item}</span>
+                    <span className="mt-0.5 shrink-0">•</span><span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/signup"
-                className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full"
-                style={{ backgroundColor: '#c96a2b' }}
-              >
+              <Link to="/signup?role=tenant" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full" style={{ backgroundColor: '#c96a2b' }}>
                 Explore Rentals
               </Link>
             </div>
             <div className="sm:w-44 h-40 sm:h-auto overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80"
-                alt="Tenants"
-                className="w-full h-full object-cover"
-              />
+              <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80" alt="Tenants" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -195,32 +135,18 @@ export default function Landing() {
             <div className="p-5 flex-1">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Landlord</h3>
               <ul className="space-y-1.5 mb-5">
-                {[
-                  'Effortlessly create and manage listings',
-                  'Set distinct property highlights',
-                  'Reach qualified tenants instantly',
-                  'Access landlord tools and support',
-                ].map(item => (
+                {['Effortlessly create and manage listings','Set distinct property highlights','Reach qualified tenants instantly','Access landlord tools and support'].map(item => (
                   <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="mt-0.5 shrink-0">•</span>
-                    <span>{item}</span>
+                    <span className="mt-0.5 shrink-0">•</span><span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/signup?role=landlord"
-                className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full"
-                style={{ backgroundColor: '#c96a2b' }}
-              >
+              <Link to="/signup?role=landlord" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full" style={{ backgroundColor: '#c96a2b' }}>
                 List Your Unit ($49/mo)
               </Link>
             </div>
             <div className="sm:w-44 h-40 sm:h-auto overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80"
-                alt="Landlord"
-                className="w-full h-full object-cover"
-              />
+              <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" alt="Landlord" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -256,4 +182,4 @@ export default function Landing() {
 
     </div>
   )
-}
+    }

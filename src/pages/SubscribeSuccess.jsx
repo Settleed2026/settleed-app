@@ -10,7 +10,7 @@ export default function SubscribeSuccess() {
   // Auto-redirect after 5 seconds
   useEffect(() => {
     const t = setTimeout(() => {
-      navigate(role === 'landlord' ? '/landlord' : '/tenant')
+      navigate(role === 'landlord' ? '/landlord?subscribed=true' : '/tenant?subscribed=true')
     }, 5000)
     return () => clearTimeout(t)
   }, [role])
@@ -29,7 +29,7 @@ export default function SubscribeSuccess() {
           You'll be redirected automatically in a few seconds.
         </p>
         <Link
-          to={role === 'landlord' ? '/landlord' : '/tenant'}
+          to={role === 'landlord' ? '/landlord?subscribed=true' : '/tenant?subscribed=true'}
           className="block w-full bg-[#1B3A6B] text-white rounded-xl py-3 text-sm font-semibold text-center"
         >
           {role === 'landlord' ? 'Go to your dashboard →' : 'Browse listings →'}

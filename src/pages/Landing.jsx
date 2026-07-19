@@ -209,6 +209,12 @@ export default function Landing() {
               >
                 Find My Home
               </Link>
+              <Link
+                to="/tools/voucher-estimator"
+                className="block mt-2.5 text-xs font-semibold text-[#c96a2b] underline underline-offset-2"
+              >
+                Estimate my voucher first →
+              </Link>
             </div>
             <div className="sm:w-44 h-44 sm:h-auto overflow-hidden">
               {/* Black woman/family — Unsplash photo by eye for ebony */}
@@ -243,6 +249,12 @@ export default function Landing() {
                 style={{ backgroundColor: '#c96a2b' }}
               >
                 List Your Unit ($49/mo)
+              </Link>
+              <Link
+                to="/tools/rent-analyzer"
+                className="block mt-2.5 text-xs font-semibold text-[#c96a2b] underline underline-offset-2"
+              >
+                Check rent limits in your area →
               </Link>
             </div>
             <div className="sm:w-44 h-44 sm:h-auto overflow-hidden">

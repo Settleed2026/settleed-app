@@ -289,6 +289,20 @@ export default function RentAnalyzer() {
       </div>
 
       {/* Coverage note */}
+      {/* Other tools */}
+      <div className="px-4 mb-4 max-w-lg mx-auto w-full">
+        <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">More free tools</p>
+          <Link to="/tools/voucher-estimator" className="flex items-center justify-between py-2 group">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Voucher Estimator</p>
+              <p className="text-xs text-gray-500">See how much your voucher covers based on your income</p>
+            </div>
+            <span className="text-[#1B3A6B] text-sm group-hover:translate-x-1 transition-transform">→</span>
+          </Link>
+        </div>
+      </div>
+
       <div className="px-4 mb-8 max-w-lg mx-auto w-full">
         <div className="bg-white rounded-2xl px-5 py-4 border border-gray-100">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Data Coverage</p>

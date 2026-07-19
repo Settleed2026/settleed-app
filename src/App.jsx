@@ -33,6 +33,7 @@ import TenantRentPayment from './pages/tenant/RentPayment'
 
 // Tools (public)
 import RentAnalyzer from './pages/tools/RentAnalyzer'
+import VoucherEstimator from './pages/tools/VoucherEstimator'
 
 // Shared
 import Landing from './pages/Landing'
@@ -64,6 +65,7 @@ export default function App() {
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/subscribe/success" element={<SubscribeSuccess />} />
       <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
+      <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
 
       {/* Landlord routes */}
       <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

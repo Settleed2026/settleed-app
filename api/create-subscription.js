@@ -170,9 +170,32 @@ export default async function handler(req, res) {
       return jsonError(res, 500, 'Subscription created but payment setup failed — contact support.')
     }
 
+    // Persist subscription status so the dashboard knows this account is subscribed.
+    // With trial_period_days set, Stripe starts the subscription in 'trialing' status
+    // immediately — no payment is due yet, we're just saving the card for day 8.
+
+    // subscription_status column exists since migration 001 — always safe to update.
+    const { error: statusErr } = await supabase
+      .from('profiles')
+      .update({ subscription_status: subscription.status })
+      .eq('id', user.id)
+    if (statusErr) {
+      console.warn('[create-subscription] Failed to update subscription_status:', statusErr.message)
+    }
+
+    // stripe_subscription_id added in migration 009 — fails gracefully if not yet applied.
+    const { error: subIdErr } = await supabase
+      .from('profiles')
+      .update({ stripe_subscription_id: subscription.id })
+      .eq('id', user.id)
+    if (subIdErr) {
+      console.warn('[create-subscription] stripe_subscription_id update skipped (run migration 009):', subIdErr.message)
+    }
+
     console.log('[create-subscription] Success:', {
       userId: user.id,
       subscriptionId: subscription.id,
+      status: subscription.status,
       role,
     })
 

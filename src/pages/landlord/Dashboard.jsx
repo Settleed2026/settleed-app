@@ -119,6 +119,19 @@ export default function LandlordDashboard() {
           </Link>
         )}
 
+        {/* Connect bank account prompt for subscribed landlords who haven't connected */}
+        {isSubscribed && profile?.connect_onboarding_status !== 'complete' && (
+          <Link to="/landlord/connect" className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-4 block">
+            <div>
+              <div className="font-semibold text-sm text-blue-900 flex items-center gap-1.5">
+                🏦 Connect your bank account
+              </div>
+              <div className="text-blue-700 text-xs mt-0.5">Set up payouts to receive rent payments from tenants</div>
+            </div>
+            <span className="text-xs font-bold text-blue-900 bg-blue-200 px-2.5 py-1 rounded-full">Set up →</span>
+          </Link>
+        )}
+
         <Link to="/landlord/listing/new" className="flex items-center justify-between bg-[#1D9E75] text-white rounded-xl px-4 py-4">
           <div>
             <div className="font-semibold text-sm">Add a new listing</div>

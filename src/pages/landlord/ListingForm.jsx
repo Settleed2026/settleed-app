@@ -213,6 +213,7 @@ export default function ListingForm() {
       holding_fee: form.holding_fee ? parseFloat(form.holding_fee) : null,
       move_in_fee: form.move_in_fee ? parseFloat(form.move_in_fee) : null,
       min_lease_months: form.min_lease_months ? parseInt(form.min_lease_months) : null,
+      available_date: form.available_date || null,
       // Remove agreement fields — not stored in DB
       agree_accurate: undefined, agree_terms: undefined,
       agree_publish: undefined, agree_no_false_info: undefined,

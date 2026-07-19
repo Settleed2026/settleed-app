@@ -189,6 +189,18 @@ export default function ListingDetail() {
               🎁 <span className="font-semibold">Move-in special:</span> {listing.move_in_special}
             </div>
           )}
+          {(listing.specials || []).length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-gray-500 mb-2">Landlord Specials</p>
+              <div className="flex flex-wrap gap-1.5">
+                {listing.specials.map(s => (
+                  <span key={s} className="bg-[#EBF9F4] text-[#1D9E75] text-xs font-semibold px-3 py-1 rounded-full">
+                    {s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {listing.description && (

@@ -17,6 +17,9 @@ import ApplicationInbox from './pages/landlord/ApplicationInbox'
 import HQSTracker from './pages/landlord/HQSTracker'
 import LandlordProfile from './pages/landlord/Profile'
 import ConnectOnboarding from './pages/landlord/ConnectOnboarding'
+import LandlordMaintenance from './pages/landlord/Maintenance'
+import LandlordRentDashboard from './pages/landlord/RentDashboard'
+import LandlordBackgroundChecks from './pages/landlord/BackgroundChecks'
 
 // Tenant pages
 import TenantDashboard from './pages/tenant/Dashboard'
@@ -25,6 +28,8 @@ import ListingDetail from './pages/tenant/ListingDetail'
 import ApplicationForm from './pages/tenant/ApplicationForm'
 import TenantProfileSetup from './pages/tenant/ProfileSetup'
 import ApplicationsList from './pages/tenant/ApplicationsList'
+import TenantMaintenance from './pages/tenant/Maintenance'
+import TenantRentPayment from './pages/tenant/RentPayment'
 
 // Shared
 import Landing from './pages/Landing'
@@ -65,6 +70,9 @@ export default function App() {
         <Route path="hqs" element={<HQSTracker />} />
         <Route path="profile" element={<LandlordProfile />} />
         <Route path="connect" element={<ConnectOnboarding />} />
+        <Route path="maintenance" element={<LandlordMaintenance />} />
+        <Route path="rent" element={<LandlordRentDashboard />} />
+        <Route path="background-checks" element={<LandlordBackgroundChecks />} />
       </Route>
 
       {/* Tenant routes */}
@@ -75,6 +83,8 @@ export default function App() {
         <Route path="listing/:id" element={<ListingDetail />} />
         <Route path="apply/:id" element={<ApplicationForm />} />
         <Route path="applications" element={<ApplicationsList />} />
+        <Route path="maintenance" element={<TenantMaintenance />} />
+        <Route path="rent" element={<TenantRentPayment />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

@@ -89,6 +89,18 @@ function ListingCard({ listing, onClick }) {
             {'🎁'} {listing.move_in_special}
           </p>
         )}
+        {(listing.specials || []).length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {listing.specials.slice(0, 3).map(s => (
+              <span key={s} className="text-[10px] bg-[#EBF9F4] text-[#1D9E75] font-semibold px-2 py-0.5 rounded-full">
+                {s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+              </span>
+            ))}
+            {listing.specials.length > 3 && (
+              <span className="text-[10px] text-gray-400 px-1 py-0.5">+{listing.specials.length - 3} more</span>
+            )}
+          </div>
+        )}
         <button className="mt-3 w-full border border-[#1B3A6B] text-[#1B3A6B] text-xs font-semibold py-2 rounded-lg hover:bg-[#1B3A6B] hover:text-white transition-colors">
           View Details
         </button>
@@ -115,7 +127,7 @@ export default function SearchListings() {
     setLoading(true)
     let query = supabase
       .from('properties')
-      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted', { count: 'exact' })
+      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials', { count: 'exact' })
       .eq('status', 'active')
       .eq('is_test', false)
       .order('created_at', { ascending: false })

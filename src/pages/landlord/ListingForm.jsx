@@ -29,6 +29,16 @@ const ACCESSIBILITY_LIST = [
 ]
 const VOUCHER_SIZES = ['Studio','1BR','2BR','3BR','4BR+']
 const NEARBY_LIST   = ['Schools','Grocery Stores','Bus Stop','MARTA Station','Hospitals','Parks']
+const SPECIALS_LIST = [
+  { value: 'no_credit_check',     label: 'No credit check' },
+  { value: 'no_app_fee',          label: 'No application fee' },
+  { value: 'pet_friendly',        label: 'Pet friendly' },
+  { value: 'move_in_ready',       label: 'Move-in ready' },
+  { value: 'no_security_deposit', label: 'No security deposit' },
+  { value: 'utilities_included',  label: 'Utilities included' },
+  { value: 'furnished',           label: 'Furnished' },
+  { value: 'section8_welcome',    label: 'Section 8 welcome' },
+]
 
 const STEP_LABELS = [
   'Location','Unit Details','Monthly Costs',
@@ -124,6 +134,7 @@ export default function ListingForm() {
     agree_publish: false, agree_no_false_info: false,
     // Meta
     status: 'draft',
+    specials: [],
   }
 
   const [form, setForm] = useState(emptyForm)
@@ -147,6 +158,7 @@ export default function ListingForm() {
       amenities: data.amenities || [],
       pet_types: data.pet_types || [],
       voucher_sizes_accepted: data.voucher_sizes_accepted || [],
+      specials: data.specials || [],
       ha_accepted: data.ha_accepted || ['AHA','DCA','other'],
       contact_preferences: data.contact_preferences || ['email'],
       nearby_attractions: data.nearby_attractions || [],
@@ -255,8 +267,25 @@ export default function ListingForm() {
       return
     }
     const ok = await save('active')
-    if (ok) { toast.success('Listing published! 🎉'); navigate('/landlord') }
-    else      toast.error('Could not publish listing')
+    if (!ok) { toast.error('Could not publish listing'); return }
+
+    toast.success('Listing published! 🎉')
+
+    // Fire match alerts in the background — don't block navigation
+    const currentId = listingId
+    if (currentId) {
+      const { data: { session } } = await supabase.auth.getSession()
+      fetch('/api/send-match-alerts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ listing_id: currentId }),
+      }).catch(() => {}) // fire-and-forget
+    }
+
+    navigate('/landlord')
   }
 
   // ── Render helpers ──
@@ -683,6 +712,21 @@ export default function ListingForm() {
         {/* ────── STEP 7: DESCRIPTION & MEDIA ────── */}
         {step === 7 && (
           <>
+            <div className={sectionClass}>
+              <h2 className={sectionHead}>🏷 Landlord Specials</h2>
+              <p className="text-xs text-gray-400">These tags appear on your listing and in tenant match alert emails — they help you stand out and attract faster applications.</p>
+              <div className="flex gap-2 flex-wrap mt-1">
+                {SPECIALS_LIST.map(({ value, label }) => (
+                  <CheckPill
+                    key={value}
+                    label={label}
+                    checked={(form.specials || []).includes(value)}
+                    onToggle={() => toggleArr('specials', value)}
+                  />
+                ))}
+              </div>
+            </div>
+
             <div className={sectionClass}>
               <h2 className={sectionHead}>Property Description</h2>
               <textarea name="description" value={form.description} onChange={handleChange} rows={6}

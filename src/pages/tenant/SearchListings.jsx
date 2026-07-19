@@ -145,7 +145,12 @@ export default function SearchListings() {
     if (creditFriendly) query = query.eq('credit_friendly', true)
 
     const { data, count, error } = await query
-    if (!error) { setListings(data || []); setTotal(count || 0) }
+    if (error) {
+      console.error('[SearchListings] Supabase error:', error)
+    } else {
+      setListings(data || [])
+      setTotal(count || 0)
+    }
     setLoading(false)
   }, [search, ha, beds, minRent, maxRent, creditFriendly])
 

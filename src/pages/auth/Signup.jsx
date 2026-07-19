@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
 import { HOUSING_AUTHORITIES } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
 
@@ -10,6 +11,7 @@ export default function Signup() {
   const [step, setStep] = useState(1) // 1 = role picker, 2 = details
   const [role, setRole] = useState('')
   const [loading, setLoading] = useState(false)
+  const { user, role: userRole, loading: authLoading } = useAuth()
 
   const [form, setForm] = useState({
     firstName: '',
@@ -24,6 +26,13 @@ export default function Signup() {
     dateOfBirth: '',
     password: '',
   })
+
+  // If user is already logged in, send them to their dashboard
+  useEffect(() => {
+    if (!authLoading && user && userRole) {
+      navigate(userRole === 'landlord' ? '/landlord' : '/tenant', { replace: true })
+    }
+  }, [authLoading, user, userRole])
 
   // Pre-select role from URL param (?role=landlord or ?role=tenant)
   useEffect(() => {

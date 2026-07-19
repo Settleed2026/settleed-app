@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPaymentStandard } from '../../lib/paymentStandards'
+import { useAuth } from '../../hooks/useAuth'
 
 const BEDROOMS = [
   { value: 0, label: 'Studio / 0 BR', people: '1 person' },
@@ -19,12 +20,21 @@ function parseDollar(str) {
 }
 
 export default function VoucherEstimator() {
+  const { user, role: userRole } = useAuth()
   const [zip, setZip]         = useState('')
   const [bedrooms, setBedrooms] = useState(2)
   const [income, setIncome]   = useState('')
   const [result, setResult]   = useState(null)
   const [error, setError]     = useState('')
   const [checked, setChecked] = useState(false)
+
+  // Tenant CTA destination: already logged in → go to search; otherwise → signup
+  const tenantCTA = (user && userRole === 'tenant')
+    ? `/tenant/search?zip=${zip}&br=${bedrooms}`
+    : '/signup?role=tenant'
+  const ctaLabel = (user && userRole === 'tenant')
+    ? `Search Listings →`
+    : `Create Free Account →`
 
   function reset() { setChecked(false); setResult(null); setError('') }
 
@@ -85,8 +95,12 @@ export default function VoucherEstimator() {
           </svg>
           <span className="text-xl font-bold text-gray-900 tracking-tight">Settleed</span>
         </Link>
-        <Link to="/signup?role=tenant" className="text-sm font-semibold text-white px-4 py-2 rounded-full" style={{ backgroundColor: '#c96a2b' }}>
-          Browse Listings Free
+        <Link
+          to={user && userRole === 'tenant' ? '/tenant/search' : '/signup?role=tenant'}
+          className="text-sm font-semibold text-white px-4 py-2 rounded-full"
+          style={{ backgroundColor: '#c96a2b' }}
+        >
+          {user && userRole === 'tenant' ? 'Browse Listings' : 'Get Started Free'}
         </Link>
       </nav>
 
@@ -243,11 +257,13 @@ export default function VoucherEstimator() {
                   Every listing accepts Section 8 vouchers. Search by ZIP and bedroom size right now — free.
                 </p>
                 <Link
-                  to={`/signup?role=tenant&zip=${zip}&br=${bedrooms}`}
+                  to={tenantCTA}
                   className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full"
                   style={{ backgroundColor: '#1D9E75' }}
                 >
-                  Find Homes in {formatCurrency(result.yourMaxRent)} Range →
+                  {user && userRole === 'tenant'
+                    ? `Search Homes in ${formatCurrency(result.yourMaxRent)} Range →`
+                    : `Create Free Account — Search in ${formatCurrency(result.yourMaxRent)} Range →`}
                 </Link>
               </div>
             </div>

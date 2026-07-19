@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { checkRentEligibility } from '../../lib/paymentStandards'
+import { useAuth } from '../../hooks/useAuth'
 
 const BEDROOMS = [
   { value: 0, label: 'Studio / 0 BR' },
@@ -22,6 +23,7 @@ function formatCurrency(n) {
 }
 
 export default function RentAnalyzer() {
+  const { user, role: userRole } = useAuth()
   const [zip, setZip]         = useState('')
   const [bedrooms, setBedrooms] = useState(2)
   const [rent, setRent]       = useState('')
@@ -76,8 +78,12 @@ export default function RentAnalyzer() {
           </svg>
           <span className="text-xl font-bold text-gray-900 tracking-tight">Settleed</span>
         </Link>
-        <Link to="/signup?role=tenant" className="text-sm font-semibold text-white px-4 py-2 rounded-full" style={{ backgroundColor: '#c96a2b' }}>
-          Get Started Free
+        <Link
+          to={user ? (userRole === 'landlord' ? '/landlord' : '/tenant') : '/signup?role=landlord'}
+          className="text-sm font-semibold text-white px-4 py-2 rounded-full"
+          style={{ backgroundColor: '#c96a2b' }}
+        >
+          {user ? 'Dashboard' : 'Get Started Free'}
         </Link>
       </nav>
 
@@ -250,10 +256,10 @@ export default function RentAnalyzer() {
             Every listing on Settleed already accepts Housing Choice Vouchers — no guessing, no wasted calls.
           </p>
           <Link
-            to="/signup?role=tenant"
+            to={user && userRole === 'landlord' ? '/landlord' : user && userRole === 'tenant' ? '/tenant/search' : '/signup?role=landlord'}
             className="inline-block text-sm font-semibold bg-[#c96a2b] text-white px-5 py-2.5 rounded-full"
           >
-            Browse Listings Free →
+            {user ? 'Go to Dashboard →' : 'List Your Property →'}
           </Link>
         </div>
       </div>

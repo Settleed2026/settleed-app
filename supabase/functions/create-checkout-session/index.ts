@@ -3,24 +3,25 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' })
 
-const PRICES = {
-  landlord: Deno.env.get('STRIPE_PRICE_LANDLORD')!, // $49/mo
-  tenant: Deno.env.get('STRIPE_PRICE_TENANT')!,     // $4.99/mo
+const PLAN_CONFIG: Record<string, { amount: number; name: string }> = {
+  landlord: { amount: 4900, name: 'Settleed Landlord — $49/month' },
+  tenant:   { amount: 499,  name: 'Settleed Tenant — $4.99/month' },
+}
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, content-type',
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, content-type',
-      },
-    })
+    return new Response(null, { headers: CORS })
   }
 
   try {
-    // Get the user from the auth header
-    const authHeader = req.headers.get('Authorization')!
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Unauthorized')
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -31,7 +32,8 @@ Deno.serve(async (req) => {
     if (userError || !user) throw new Error('Unauthorized')
 
     const { role } = await req.json()
-    if (!role || !PRICES[role]) throw new Error('Invalid role')
+    const plan = PLAN_CONFIG[role]
+    if (!plan) throw new Error('Invalid role')
 
     // Get or create Stripe customer
     const { data: profile } = await supabase
@@ -44,13 +46,13 @@ Deno.serve(async (req) => {
 
     if (!customerId) {
       const customer = await stripe.customers.create({
-        email: user.email,
+        email: user.email!,
         name: profile?.full_name || '',
         metadata: { supabase_uid: user.id },
       })
       customerId = customer.id
 
-      // Save customer ID
+      // Save customer ID via service role
       const adminSupabase = createClient(
         Deno.env.get('SUPABASE_URL')!,
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -67,28 +69,35 @@ Deno.serve(async (req) => {
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{ price: PRICES[role], quantity: 1 }],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: plan.name,
+            description: role === 'landlord'
+              ? 'Unlimited listings · Verified tenants · HQS tracker'
+              : 'Search all listings · Apply instantly · Match alerts',
+          },
+          unit_amount: plan.amount,
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }],
       subscription_data: {
         trial_period_days: 7,
         metadata: { supabase_uid: user.id, role },
       },
-      success_url: `${origin}/${role}?subscribed=true`,
+      success_url: `${origin}/subscribe/success`,
       cancel_url: `${origin}/subscribe?cancelled=true`,
     })
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: { ...CORS, 'Content-Type': 'application/json' },
     })
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 400,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: { ...CORS, 'Content-Type': 'application/json' },
     })
   }
 })

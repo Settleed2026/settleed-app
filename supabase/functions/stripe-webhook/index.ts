@@ -31,13 +31,24 @@ Deno.serve(async (req) => {
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
       const sub = event.data.object as Stripe.Subscription
-      const status = sub.status === 'trialing' || sub.status === 'active' ? 'active' : sub.status
-      await updateSubscription(sub.customer as string, status)
+      // Map Stripe statuses → our DB statuses ('inactive','trialing','active','canceled','past_due')
+      const statusMap: Record<string, string> = {
+        trialing: 'trialing',
+        active: 'active',
+        past_due: 'past_due',
+        canceled: 'canceled',
+        unpaid: 'past_due',
+        incomplete: 'inactive',
+        incomplete_expired: 'inactive',
+        paused: 'inactive',
+      }
+      const mappedStatus = statusMap[sub.status] ?? 'inactive'
+      await updateSubscription(sub.customer as string, mappedStatus)
       break
     }
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription
-      await updateSubscription(sub.customer as string, 'cancelled')
+      await updateSubscription(sub.customer as string, 'canceled')
       break
     }
     case 'invoice.payment_failed': {

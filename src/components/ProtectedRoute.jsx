@@ -2,10 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import BottomNav from './BottomNav'
 
-<<<<<<< HEAD
 // Routes where the bottom nav should be hidden (full-screen wizards / forms)
-=======
->>>>>>> 801bca18e997356c22be94034324ffd2da850092
 const NO_NAV_PATHS = ['/tenant/profile/setup']
 
 export default function ProtectedRoute({ role }) {

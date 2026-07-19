@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Plus, AlertTriangle, CheckCircle, Clock, Inbox } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap } from 'lucide-react'
 import { differenceInDays, format } from 'date-fns'
+import toast from 'react-hot-toast'
 
 export default function LandlordDashboard() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [properties, setProperties] = useState([])
   const [inspections, setInspections] = useState([])
@@ -18,18 +20,29 @@ export default function LandlordDashboard() {
     if (user) fetchData()
   }, [user])
 
+  useEffect(() => {
+    if (searchParams.get('subscribed') === 'true') {
+      toast.success('Subscription started! Your 7-day free trial is active.')
+    }
+  }, [])
+
   async function fetchData() {
-    const [profileRes, propsRes, inspRes, appRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', user.id).single(),
-      supabase.from('properties').select('*').eq('landlord_id', user.id).neq('status', 'deleted'),
-      supabase.from('hqs_inspections').select('*, properties(neighborhood)').eq('landlord_id', user.id),
-      supabase.from('applications').select('id', { count: 'exact' }).eq('landlord_id', user.id).eq('status', 'pending'),
-    ])
-    setProfile(profileRes.data)
-    setProperties(propsRes.data || [])
-    setInspections(inspRes.data || [])
-    setAppCount(appRes.count || 0)
-    setLoading(false)
+    try {
+      const [profileRes, propsRes, inspRes, appRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('properties').select('*').eq('landlord_id', user.id).neq('status', 'deleted'),
+        supabase.from('hqs_inspections').select('*, properties(neighborhood)').eq('landlord_id', user.id),
+        supabase.from('applications').select('id', { count: 'exact' }).eq('landlord_id', user.id).eq('status', 'pending'),
+      ])
+      setProfile(profileRes.data)
+      setProperties(propsRes.data || [])
+      setInspections(inspRes.data || [])
+      setAppCount(appRes.count || 0)
+    } catch (err) {
+      console.error('Dashboard fetch error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   function inspectionStatus(nextDate) {
@@ -59,10 +72,12 @@ export default function LandlordDashboard() {
     )
   }
 
+  const isSubscribed = ['trialing', 'active'].includes(profile?.subscription_status)
   const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || 'there'
   const hour = new Date().getHours()
   const greeting = hour >= 5 && hour <= 11 ? 'Good morning'
-                 : hour >= 12 && hour <= 20 ? 'Good evening'
+                 : hour >= 12 && hour <= 16 ? 'Good afternoon'
+                 : hour >= 17 && hour <= 21 ? 'Good evening'
                  : 'Good night'
   const activeProperties = properties.filter(p => p.status === 'active')
   const draftProperties  = properties.filter(p => p.status === 'draft')
@@ -89,6 +104,21 @@ export default function LandlordDashboard() {
       </div>
 
       <div className="px-4 pt-5 space-y-5">
+
+        {/* Subscription prompt for inactive landlords */}
+        {!isSubscribed && (
+          <Link to="/subscribe" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-4 block">
+            <div>
+              <div className="font-semibold text-sm text-amber-900 flex items-center gap-1.5">
+                <Zap className="w-4 h-4" />
+                Start your free 7-day trial
+              </div>
+              <div className="text-amber-700 text-xs mt-0.5">Subscribe to publish listings and reach tenants</div>
+            </div>
+            <span className="text-xs font-bold text-amber-900 bg-amber-200 px-2.5 py-1 rounded-full">$49/mo →</span>
+          </Link>
+        )}
+
         <Link to="/landlord/listing/new" className="flex items-center justify-between bg-[#1D9E75] text-white rounded-xl px-4 py-4">
           <div>
             <div className="font-semibold text-sm">Add a new listing</div>

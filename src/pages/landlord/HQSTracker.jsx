@@ -308,29 +308,34 @@ export default function HQSTracker() {
   const [myProperties, setMyProperties] = useState([])
 
   useEffect(() => {
-    fetchAll()
-  }, [user.id])
+    if (user?.id) fetchAll()
+  }, [user?.id])
 
   async function fetchAll() {
     setLoading(true)
-    const [{ data: recs }, { data: props }] = await Promise.all([
-      supabase
-        .from('hqs_inspections')
-        .select('*')
-        .eq('landlord_id', user.id)
-        .order('next_inspection_date', { ascending: true }),
-      supabase
-        .from('properties')
-        .select('id, neighborhood, zip_code, status')
-        .eq('landlord_id', user.id),
-    ])
+    try {
+      const [{ data: recs }, { data: props }] = await Promise.all([
+        supabase
+          .from('hqs_inspections')
+          .select('*')
+          .eq('landlord_id', user.id)
+          .order('next_inspection_date', { ascending: true }),
+        supabase
+          .from('properties')
+          .select('id, neighborhood, zip_code, status')
+          .eq('landlord_id', user.id),
+      ])
 
-    const propMap = {}
-    for (const p of (props || [])) propMap[p.id] = p
-    setProperties(propMap)
-    setMyProperties(props || [])
-    setRecords(recs || [])
-    setLoading(false)
+      const propMap = {}
+      for (const p of (props || [])) propMap[p.id] = p
+      setProperties(propMap)
+      setMyProperties(props || [])
+      setRecords(recs || [])
+    } catch (err) {
+      console.error('HQS fetch error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function addRecord() {

@@ -117,6 +117,7 @@ export default function SearchListings() {
       .from('properties')
       .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted', { count: 'exact' })
       .eq('status', 'active')
+      .eq('is_test', false)
       .order('created_at', { ascending: false })
       .limit(50)
 

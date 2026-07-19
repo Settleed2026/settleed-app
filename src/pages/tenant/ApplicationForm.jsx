@@ -26,13 +26,19 @@ export default function ApplicationForm() {
 
   useEffect(() => {
     async function fetchListing() {
-      const { data } = await supabase
-        .from('properties')
-        .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos')
-        .eq('id', id)
-        .single()
-      setListing(data)
-      setLoading(false)
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos')
+          .eq('id', id)
+          .single()
+        if (error) console.error('ApplicationForm listing fetch error:', error.message)
+        setListing(data || null)
+      } catch (err) {
+        console.error('ApplicationForm listing fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchListing()
   }, [id])

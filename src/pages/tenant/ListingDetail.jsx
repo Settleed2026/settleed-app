@@ -22,13 +22,19 @@ export default function ListingDetail() {
 
   useEffect(() => {
     async function fetchListing() {
-      const { data } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('id', id)
-        .single()
-      setListing(data)
-      setLoading(false)
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', id)
+          .single()
+        if (error) console.error('Listing fetch error:', error.message)
+        setListing(data || null)
+      } catch (err) {
+        console.error('Listing fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchListing()
   }, [id])

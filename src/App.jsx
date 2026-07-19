@@ -27,6 +27,8 @@ import ApplicationsList from './pages/tenant/ApplicationsList'
 
 // Shared
 import Landing from './pages/Landing'
+import Subscribe from './pages/Subscribe'
+import SubscribeSuccess from './pages/SubscribeSuccess'
 import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -50,6 +52,8 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/subscribe" element={<Subscribe />} />
+      <Route path="/subscribe/success" element={<SubscribeSuccess />} />
 
       {/* Landlord routes */}
       <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

@@ -46,6 +46,7 @@ export default function Landing() {
     if (location) params.set('q', location)
     if (price) params.set('price', price)
     if (propertyType) params.set('type', propertyType)
+    params.set('role', 'tenant')
     navigate(`/signup?${params.toString()}`)
   }
 
@@ -127,7 +128,7 @@ export default function Landing() {
           {CATEGORIES.map(cat => (
             <Link
               key={cat.label}
-              to="/signup"
+              to="/signup?role=tenant"
               className="flex-shrink-0 flex flex-col items-start"
               style={{ width: 160 }}
             >
@@ -174,7 +175,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup"
+                to="/signup?role=tenant"
                 className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full"
                 style={{ backgroundColor: '#c96a2b' }}
               >

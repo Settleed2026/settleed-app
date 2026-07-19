@@ -31,14 +31,15 @@ export default function Login() {
       return
     }
 
-    // Fetch role and redirect
+    // Fetch role and redirect — fall back to user_metadata if profile query fails
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
       .single()
 
-    navigate(profile?.role === 'landlord' ? '/landlord' : '/tenant')
+    const role = profile?.role || data.user.user_metadata?.role || 'tenant'
+    navigate(role === 'landlord' ? '/landlord' : '/tenant')
   }
 
   return (

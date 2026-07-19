@@ -231,6 +231,7 @@ export default function ListingForm() {
       if (data) setListingId(data.id)
     }
 
+    if (error) console.error('Listing save error:', error.message, error.details, error.hint)
     setSaving(false)
     return !error
   }

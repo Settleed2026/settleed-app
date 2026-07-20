@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -13,67 +13,27 @@ export default function ResetPassword() {
   const [ready, setReady] = useState(false)
   const [done, setDone] = useState(false)
   const [tokenError, setTokenError] = useState(false)
-  const readyRef = useRef(false)
 
   useEffect(() => {
-    let subscription = null
-
     async function init() {
-      // ── PKCE flow ──────────────────────────────────────────────
-      // Supabase v2 with PKCE sends ?code=... in the query string
+      // PKCE flow: Supabase sends ?code= in the URL
       const params = new URLSearchParams(window.location.search)
       const code = params.get('code')
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          setTokenError(true)
-        } else {
-          readyRef.current = true
-          setReady(true)
-        }
-        return
-      }
 
-      // ── Implicit flow ──────────────────────────────────────────
-      // Supabase with implicit flow sends #access_token=...&type=recovery
-      // The client parses the hash automatically, sometimes before this
-      // component mounts — so we listen for the event AND check existing session.
-
-      // 1. Register listener first
-      const { data } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          readyRef.current = true
-          setReady(true)
-        }
-      })
-      subscription = data.subscription
-
-      // 2. Check if Supabase already processed the hash (race condition fix)
-      const { data: { session } } = await supabase.auth.getSession()
-      const hashHasRecovery = window.location.hash.includes('type=recovery')
-      if (session && hashHasRecovery && !readyRef.current) {
-        readyRef.current = true
-        setReady(true)
-        return
-      }
-
-      // 3. If no hash at all, show expired immediately
-      if (!window.location.hash && !code) {
+      if (!code) {
         setTokenError(true)
         return
       }
 
-      // 4. Fallback timeout — if still not ready after 6s, token is bad
-      setTimeout(() => {
-        if (!readyRef.current) setTokenError(true)
-      }, 6000)
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) {
+        setTokenError(true)
+      } else {
+        setReady(true)
+      }
     }
 
     init()
-
-    return () => {
-      subscription?.unsubscribe()
-    }
   }, [])
 
   async function handleSubmit(e) {
@@ -122,7 +82,7 @@ export default function ResetPassword() {
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Link expired</h1>
             <p className="text-gray-500 text-sm mb-6">
-              This reset link has expired or already been used. Request a new one below.
+              Reset links can only be used once and expire after 1 hour. Request a fresh one below.
             </p>
             <Link
               to="/forgot-password"
@@ -133,7 +93,7 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Validating */}
+        {/* Exchanging code */}
         {!done && !tokenError && !ready && (
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full animate-spin mx-auto mb-4" />

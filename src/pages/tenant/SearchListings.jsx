@@ -1,39 +1,3 @@
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
-import { getPaymentStandard } from '../../lib/paymentStandards'
-import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown } from 'lucide-react'
-
-const HA_OPTIONS = [
-  { value: '', label: 'All HAs' },
-  { value: 'AHA', label: 'AHA' },
-  { value: 'DCA', label: 'DCA' },
-  { value: 'COBB', label: 'Cobb HA' },
-  { value: 'DEKALB', label: 'DeKalb HA' },
-  { value: 'other', label: 'Other' },
-]
-
-const BED_OPTIONS = [
-  { value: '', label: 'Any Beds' },
-  { value: '0', label: 'Studio' },
-  { value: '1', label: '1 BR' },
-  { value: '2', label: '2 BR' },
-  { value: '3', label: '3 BR' },
-  { value: '4', label: '4+ BR' },
-]
-
-function PSBadge({ zip, bedrooms, rent }) {
-  if (!zip || bedrooms === '' || !rent) return null
-  const ps = getPaymentStandard(zip, parseInt(bedrooms))
-  if (!ps) return null
-  const ok = rent <= ps.maxRent
-  return (
-    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${ok ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-      {ok ? '✓ DCA OK' : '⚠ Above DCA'}
-    </span>
-  )
-}
-
-
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'

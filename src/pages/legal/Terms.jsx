@@ -10,7 +10,7 @@ export default function Terms() {
       </div>
       <div className="max-w-2xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Terms of Service</h1>
-        <p className="text-xs text-gray-400 mb-8">Last updated: June 2026</p>
+        <p className="text-xs text-gray-400 mb-8">Last updated: July 2026</p>
 
         <div className="prose prose-sm text-gray-700 space-y-6">
           <section>
@@ -40,7 +40,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">6. Subscriptions and Payments</h2>
-            <p>Landlord and tenant subscriptions are billed through Stripe. Subscriptions auto-renew unless canceled. Settleed does not process rental payments — all rent transactions occur directly between landlord and tenant.</p>
+            <p>Landlord subscriptions are billed monthly through Stripe and auto-renew unless canceled. Settleed also facilitates tenant rent payments through the Platform, charging a 2% platform fee on each transaction. Settleed collects the tenant's portion of rent and transfers the net amount to the landlord's connected Stripe account. You agree to Stripe's Terms of Service by using payment features.</p>
           </section>
 
           <section>

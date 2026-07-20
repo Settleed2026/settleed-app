@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, PlusSquare, Inbox, ClipboardCheck, User } from 'lucide-react'
+import { Home, PlusSquare, Inbox, ClipboardCheck, User, Wrench, DollarSign } from 'lucide-react'
 
 const landlordLinks = [
   { to: '/landlord', label: 'Home', icon: Home, end: true },
@@ -9,14 +9,18 @@ const landlordLinks = [
   { to: '/landlord/profile', label: 'Account', icon: User },
 ]
 
+const SearchIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="8" strokeWidth="2"/><path d="m21 21-4.35-4.35" strokeWidth="2"/>
+  </svg>
+)
+
 const tenantLinks = [
-  { to: '/tenant', label: 'Home', icon: Home, end: true },
-  { to: '/tenant/search', label: 'Search', icon: () => (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8" strokeWidth="2"/><path d="m21 21-4.35-4.35" strokeWidth="2"/>
-    </svg>
-  )},
+  { to: '/tenant',              label: 'Home',    icon: Home,       end: true },
+  { to: '/tenant/search',       label: 'Search',  icon: SearchIcon },
   { to: '/tenant/applications', label: 'Applied', icon: Inbox },
+  { to: '/tenant/maintenance',  label: 'Repairs', icon: Wrench },
+  { to: '/tenant/rent',         label: 'Rent',    icon: DollarSign },
 ]
 
 export default function BottomNav({ role }) {

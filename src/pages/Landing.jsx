@@ -214,8 +214,8 @@ export default function Landing() {
             {/* Image — top on mobile, right on desktop */}
             <div className="order-first md:order-last w-full h-60 sm:h-72 md:h-auto overflow-hidden">
               <img
-                src="https://images.pexels.com/photos/8730055/pexels-photo-8730055.jpeg?auto=compress&cs=tinysrgb&w=800"
-                alt="Family joyfully receiving keys to their new home"
+                src="https://images.pexels.com/photos/7579211/pexels-photo-7579211.jpeg?auto=compress&cs=tinysrgb&w=800"
+                alt="African American couple celebrating new home ownership with keys"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -355,8 +355,8 @@ export default function Landing() {
             {/* Image — left on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="https://images.pexels.com/photos/7642218/pexels-photo-7642218.jpeg?auto=compress&cs=tinysrgb&w=700"
-                alt="Family posing in front of their new brick home"
+                src="https://images.pexels.com/photos/7577378/pexels-photo-7577378.jpeg?auto=compress&cs=tinysrgb&w=700"
+                alt="African American family smiling together in front of their home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -445,8 +445,8 @@ export default function Landing() {
             {/* Image — right on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="https://images.pexels.com/photos/7579001/pexels-photo-7579001.jpeg?auto=compress&cs=tinysrgb&w=700"
-                alt="Couple with baby exploring a home with a real estate agent"
+                src="https://images.pexels.com/photos/7578987/pexels-photo-7578987.jpeg?auto=compress&cs=tinysrgb&w=700"
+                alt="Family exploring their new home with a realtor"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />

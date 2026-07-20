@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Home, Building2, ChevronRight, Menu, X,
-  DollarSign, Shield, Users, Search, Key,
-  ClipboardList, CheckCircle, Star, MapPin, MessageCircle,
+  DollarSign, Shield, User, Search, ClipboardCheck,
+  FileText, CheckCircle, Star, MapPin,
 } from 'lucide-react'
 
 const BRAND_NAVY  = '#0D1B4B'
@@ -19,19 +19,19 @@ const HOW_IT_WORKS = [
   },
   {
     step: 2,
-    icon: MessageCircle,
+    icon: FileText,
     title: 'Connect',
     desc: 'Message landlords directly through Settleed — no cold calls, no runaround.',
   },
   {
     step: 3,
-    icon: ClipboardList,
+    icon: ClipboardCheck,
     title: 'Apply',
     desc: 'Submit your application online. Upload documents once and reuse across listings.',
   },
   {
     step: 4,
-    icon: Key,
+    icon: Home,
     title: 'Move In',
     desc: 'Get approved, sign your lease, and move into your new home with confidence.',
   },
@@ -277,7 +277,7 @@ export default function Landing() {
             {[
               { icon: DollarSign, title: 'Free to Join',           sub: 'No hidden fees'          },
               { icon: Shield,     title: 'Verified Listings',      sub: 'Trusted & screened'      },
-              { icon: Users,      title: 'Built for HCV Families', sub: 'We understand your needs' },
+              { icon: User,       title: 'Built for HCV Families', sub: 'We understand your needs' },
             ].map(({ icon: Icon, title, sub }) => (
               <div key={title} className="flex flex-col items-center text-center gap-2">
                 <div

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import {
   Home, Building2, ChevronRight, Menu, X,
   DollarSign, Shield, User, Search, ClipboardCheck,
@@ -80,14 +81,23 @@ const FEATURED_LISTINGS = [
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80'
 
 export default function Landing() {
-  const [location, setLocation]       = useState('')
-  const [price, setPrice]             = useState('')
+  const [location, setLocation]         = useState('')
+  const [price, setPrice]               = useState('')
   const [propertyType, setPropertyType] = useState('')
-  const [menuOpen, setMenuOpen]       = useState(false)
-  const navigate = useNavigate()
+  const [menuOpen, setMenuOpen]         = useState(false)
+  const navigate  = useNavigate()
+  const { user, role: userRole } = useAuth()
+
+  // Routes for the two main CTAs — logged-in users skip signup entirely
+  const tenantHref  = user && userRole ? (userRole === 'tenant'   ? '/tenant/search' : '/landlord') : '/signup?role=tenant'
+  const landlordHref = user && userRole ? (userRole === 'landlord' ? '/landlord'      : '/tenant')  : '/signup?role=landlord'
 
   function handleSearch(e) {
     e.preventDefault()
+    if (user && userRole) {
+      navigate(userRole === 'tenant' ? '/tenant/search' : '/landlord')
+      return
+    }
     const params = new URLSearchParams()
     if (location)      params.set('q',    location)
     if (price)         params.set('price', price)
@@ -130,18 +140,27 @@ export default function Landing() {
             >
               For Landlords
             </a>
+            {user && userRole ? (
+              <Link
+                to={userRole === 'landlord' ? '/landlord' : '/tenant'}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                My Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
             <Link
-              to="/login"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/signup?role=tenant"
+              to={tenantHref}
               className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               style={{ backgroundColor: BRAND_BLUE }}
             >
-              Find Housing
+              {user && userRole ? 'Go to Dashboard' : 'Find Housing'}
             </Link>
           </nav>
 
@@ -173,14 +192,14 @@ export default function Landing() {
               For Landlords
             </a>
             <Link
-              to="/login"
+              to={user && userRole ? (userRole === 'landlord' ? '/landlord' : '/tenant') : '/login'}
               className="text-sm font-medium text-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-              Sign In
+              {user && userRole ? 'My Dashboard' : 'Sign In'}
             </Link>
             <Link
-              to="/signup?role=tenant"
+              to={tenantHref}
               className="text-sm font-semibold text-white text-center px-4 py-3 rounded-xl"
               style={{ backgroundColor: BRAND_BLUE }}
               onClick={() => setMenuOpen(false)}
@@ -254,7 +273,7 @@ export default function Landing() {
                 </form>
 
                 <Link
-                  to="/signup?role=landlord"
+                  to={landlordHref}
                   className="flex items-center justify-between w-full font-semibold text-base px-5 py-3.5 rounded-xl border-2 hover:bg-blue-50 transition-colors"
                   style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'white' }}
                 >
@@ -375,7 +394,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup?role=tenant"
+                to={tenantHref}
                 className="inline-flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: BRAND_BLUE }}
               >
@@ -419,7 +438,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup?role=landlord"
+                to={landlordHref}
                 className="inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-xl border-2 hover:bg-white transition-colors"
                 style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'transparent' }}
               >
@@ -454,7 +473,7 @@ export default function Landing() {
               </h2>
             </div>
             <Link
-              to="/signup?role=tenant"
+              to={tenantHref}
               className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold"
               style={{ color: BRAND_BLUE }}
             >
@@ -467,7 +486,7 @@ export default function Landing() {
             {FEATURED_LISTINGS.map(listing => (
               <Link
                 key={listing.neighborhood}
-                to="/signup?role=tenant"
+                to={tenantHref}
                 className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow block"
               >
                 <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
@@ -509,7 +528,7 @@ export default function Landing() {
 
           <div className="mt-6 text-center sm:hidden">
             <Link
-              to="/signup?role=tenant"
+              to={tenantHref}
               className="inline-flex items-center gap-1 text-sm font-semibold"
               style={{ color: BRAND_BLUE }}
             >
@@ -575,7 +594,7 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center w-full max-w-xs sm:max-w-none mx-auto">
             <Link
-              to="/signup?role=tenant"
+              to={tenantHref}
               className="inline-flex items-center justify-center gap-2 text-white font-semibold text-base px-8 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
               style={{ backgroundColor: BRAND_BLUE }}
             >
@@ -583,7 +602,7 @@ export default function Landing() {
               Find Housing
             </Link>
             <Link
-              to="/signup?role=landlord"
+              to={landlordHref}
               className="inline-flex items-center justify-center gap-2 font-semibold text-base px-8 py-3.5 rounded-xl border-2 border-white text-white hover:bg-white transition-colors"
               style={{ '--hover-color': BRAND_NAVY }}
             >
@@ -621,7 +640,7 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Tenants</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to="/signup?role=tenant"        className="hover:text-gray-700 transition-colors">Find Housing</Link>
+                  <Link to={tenantHref}        className="hover:text-gray-700 transition-colors">Find Housing</Link>
                   <a    href="#how-it-works"             className="hover:text-gray-700 transition-colors">How It Works</a>
                   <Link to="/tools/voucher-estimator"   className="hover:text-gray-700 transition-colors">Voucher Estimator</Link>
                 </div>
@@ -629,7 +648,7 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Landlords</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to="/signup?role=landlord"  className="hover:text-gray-700 transition-colors">List Property</Link>
+                  <Link to={landlordHref}  className="hover:text-gray-700 transition-colors">List Property</Link>
                   <Link to="/tools/rent-analyzer"   className="hover:text-gray-700 transition-colors">Rent Analyzer</Link>
                 </div>
               </div>

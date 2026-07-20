@@ -53,8 +53,8 @@ const TESTIMONIALS = [
 
 const FEATURED_LISTINGS = [
   {
-    // Single-family rental, East Atlanta
-    img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=500&q=80',
+    // Craftsman bungalow — East Atlanta Village style
+    img: 'https://images.pexels.com/photos/34625609/pexels-photo-34625609.jpeg?auto=compress&cs=tinysrgb&w=500',
     neighborhood: 'East Atlanta',
     bedrooms: 3,
     bathrooms: 2,
@@ -62,8 +62,8 @@ const FEATURED_LISTINGS = [
     tag: 'Move-In Ready',
   },
   {
-    // Townhome / duplex
-    img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=500&q=80',
+    // Brick ranch — College Park / South Fulton style
+    img: 'https://images.pexels.com/photos/4682116/pexels-photo-4682116.jpeg?auto=compress&cs=tinysrgb&w=500',
     neighborhood: 'College Park',
     bedrooms: 2,
     bathrooms: 1,
@@ -71,8 +71,8 @@ const FEATURED_LISTINGS = [
     tag: 'Newly Listed',
   },
   {
-    // Apartment / multi-family
-    img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&q=80',
+    // Classic brick home — Decatur / DeKalb style
+    img: 'https://images.pexels.com/photos/7587470/pexels-photo-7587470.jpeg?auto=compress&cs=tinysrgb&w=500',
     neighborhood: 'Decatur',
     bedrooms: 4,
     bathrooms: 2,
@@ -81,7 +81,7 @@ const FEATURED_LISTINGS = [
   },
 ]
 
-const FALLBACK_IMG = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80'
+const FALLBACK_IMG = 'https://images.pexels.com/photos/6835077/pexels-photo-6835077.jpeg?auto=compress&cs=tinysrgb&w=600'
 
 export default function Landing() {
   const [location, setLocation]         = useState('')
@@ -214,8 +214,8 @@ export default function Landing() {
             {/* Image — top on mobile, right on desktop */}
             <div className="order-first md:order-last w-full h-60 sm:h-72 md:h-auto overflow-hidden">
               <img
-                src="/images/hero.jpg"
-                alt="Family moving into their new home"
+                src="https://images.pexels.com/photos/8730055/pexels-photo-8730055.jpeg?auto=compress&cs=tinysrgb&w=800"
+                alt="Family joyfully receiving keys to their new home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -355,8 +355,8 @@ export default function Landing() {
             {/* Image — left on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="/images/voucher-family.jpg"
-                alt="Family in front of their new home"
+                src="https://images.pexels.com/photos/7642218/pexels-photo-7642218.jpeg?auto=compress&cs=tinysrgb&w=700"
+                alt="Family posing in front of their new brick home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -445,8 +445,8 @@ export default function Landing() {
             {/* Image — right on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="/images/landlord-showing.jpg"
-                alt="Landlord welcoming a family to their new home"
+                src="https://images.pexels.com/photos/7579001/pexels-photo-7579001.jpeg?auto=compress&cs=tinysrgb&w=700"
+                alt="Couple with baby exploring a home with a real estate agent"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />

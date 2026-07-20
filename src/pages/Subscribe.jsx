@@ -11,7 +11,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 const PLANS = {
   landlord: {
     name: 'Landlord',
-    price: '$49.99',
+    price: '$49',
     period: '/month',
     tagline: 'Find verified Section 8 tenants fast',
     color: '#1B3A6B',

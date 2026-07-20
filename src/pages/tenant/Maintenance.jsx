@@ -116,6 +116,37 @@ export default function TenantMaintenance() {
       if (error) throw error
 
       toast.success('Request submitted! Your landlord will be notified.')
+
+      // Notify landlord — fire-and-forget
+      ;(async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          const { data: tp } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+          let propertyAddress = ''
+          if (profile.property_id) {
+            const { data: prop } = await supabase
+              .from('properties').select('street_address, neighborhood')
+              .eq('id', profile.property_id).single()
+            propertyAddress = prop?.street_address || prop?.neighborhood || ''
+          }
+          await fetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+            body: JSON.stringify({
+              type: 'maintenance_request',
+              payload: {
+                landlord_id: profile.landlord_id,
+                tenant_name: tp?.full_name || user.email,
+                category: form.category,
+                urgency: form.urgency,
+                description: form.description.trim(),
+                property_address: propertyAddress,
+              },
+            }),
+          })
+        } catch (_) {}
+      })()
+
       setForm({ category: '', urgency: 'normal', description: '', photos: [] })
       setView('list')
       fetchRequests()

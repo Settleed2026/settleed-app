@@ -187,6 +187,26 @@ function ApplicationCard({ app, onStatusChange, onActivate }) {
     } else {
       toast.success(newStatus === 'approved' ? 'Application approved.' : 'Application declined.')
       onStatusChange(app.id, newStatus)
+
+      // Notify tenant — fire-and-forget
+      const tenantId = app.tenant?.id
+      if (tenantId && (newStatus === 'approved' || newStatus === 'rejected')) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          fetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+            body: JSON.stringify({
+              type: 'application_status',
+              payload: {
+                tenant_id: tenantId,
+                property_address: app.property_address,
+                new_status: newStatus,
+                landlord_note: null,
+              },
+            }),
+          }).catch(() => {})
+        }).catch(() => {})
+      }
     }
     setUpdating(false)
   }

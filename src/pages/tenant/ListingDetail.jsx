@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { checkRentEligibility } from '../../lib/paymentStandards'
 import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const HA_LABELS = {
   AHA: 'Atlanta Housing (AHA)',
@@ -18,7 +19,12 @@ export default function ListingDetail() {
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('settleed_saved') || '[]')
+      return s.includes(id)
+    } catch { return false }
+  })
 
   useEffect(() => {
     async function fetchListing() {
@@ -77,10 +83,40 @@ export default function ListingDetail() {
           <span className="text-sm">Search</span>
         </button>
         <div className="flex items-center gap-3">
-          <button onClick={() => setSaved(p => !p)} className={saved ? 'text-red-400' : 'text-white'}>
+          <button
+            onClick={() => {
+              setSaved(p => {
+                const next = !p
+                try {
+                  const list = JSON.parse(localStorage.getItem('settleed_saved') || '[]')
+                  const updated = next ? [...list, id] : list.filter(x => x !== id)
+                  localStorage.setItem('settleed_saved', JSON.stringify(updated))
+                } catch {}
+                return next
+              })
+            }}
+            className={saved ? 'text-red-400' : 'text-white'}
+            aria-label={saved ? 'Unsave listing' : 'Save listing'}
+          >
             <Heart className="w-5 h-5" fill={saved ? 'currentColor' : 'none'} />
           </button>
-          <button className="text-white"><Share2 className="w-5 h-5" /></button>
+          <button
+            onClick={async () => {
+              const url = window.location.href
+              if (navigator.share) {
+                try { await navigator.share({ title: listing?.neighborhood || 'Settleed Listing', url }) } catch {}
+              } else {
+                try {
+                  await navigator.clipboard.writeText(url)
+                  toast.success('Link copied!')
+                } catch { toast.error('Could not copy link.') }
+              }
+            }}
+            className="text-white"
+            aria-label="Share listing"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
         </div>
       </div>
 

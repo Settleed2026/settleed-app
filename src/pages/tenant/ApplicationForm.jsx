@@ -74,7 +74,26 @@ export default function ApplicationForm() {
     }
 
     toast.success('Application sent!')
-    navigate('/tenant')
+
+    // Notify landlord — fire-and-forget
+    if (listing) {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data: tenantProfile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+      fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          type: 'new_application',
+          payload: {
+            landlord_id: listing.landlord_id || null,
+            tenant_name: tenantProfile?.full_name || user.email,
+            property_address: `${listing.neighborhood}${listing.zip_code ? `, ${listing.zip_code}` : ''}`,
+          },
+        }),
+      }).catch(() => {})
+    }
+
+    navigate('/tenant/applications')
   }
 
   if (loading) {

@@ -31,6 +31,8 @@ import TenantProfileSetup from './pages/tenant/ProfileSetup'
 import ApplicationsList from './pages/tenant/ApplicationsList'
 import TenantMaintenance from './pages/tenant/Maintenance'
 import TenantRentPayment from './pages/tenant/RentPayment'
+import TenantProfile from './pages/tenant/Profile'
+import TenantLeaseDetails from './pages/tenant/LeaseDetails'
 
 // Tools (public)
 import RentAnalyzer from './pages/tools/RentAnalyzer'
@@ -93,6 +95,8 @@ export default function App() {
         <Route path="applications" element={<ApplicationsList />} />
         <Route path="maintenance" element={<TenantMaintenance />} />
         <Route path="rent" element={<TenantRentPayment />} />
+        <Route path="profile" element={<TenantProfile />} />
+        <Route path="lease" element={<TenantLeaseDetails />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

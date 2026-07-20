@@ -115,10 +115,10 @@ export default function LandlordRentDashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="font-bold text-gray-900 text-base">
-                      ${(pmt.landlord_payout_cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ${((pmt.landlord_payout_cents || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </div>
                     <div className="text-xs text-gray-400">
-                      (tenant paid ${(pmt.amount_cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })} · 2% fee)
+                      (tenant paid ${((pmt.amount_cents || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })} · 2% fee)
                     </div>
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>

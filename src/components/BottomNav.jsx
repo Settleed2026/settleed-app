@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Home, PlusSquare, Inbox, ClipboardCheck, User, Wrench, DollarSign } from 'lucide-react'
+import { Home, Inbox, User, Wrench, DollarSign } from 'lucide-react'
 
 const landlordLinks = [
-  { to: '/landlord', label: 'Home', icon: Home, end: true },
-  { to: '/landlord/listing/new', label: 'Add', icon: PlusSquare },
-  { to: '/landlord/applications', label: 'Inbox', icon: Inbox },
-  { to: '/landlord/hqs', label: 'HQS', icon: ClipboardCheck },
-  { to: '/landlord/profile', label: 'Account', icon: User },
+  { to: '/landlord',             label: 'Home',      icon: Home,       end: true },
+  { to: '/landlord/applications',label: 'Inbox',     icon: Inbox },
+  { to: '/landlord/maintenance', label: 'Repairs',   icon: Wrench },
+  { to: '/landlord/rent',        label: 'Rent',      icon: DollarSign },
+  { to: '/landlord/profile',     label: 'Account',   icon: User },
 ]
 
 const SearchIcon = () => (
@@ -18,9 +18,9 @@ const SearchIcon = () => (
 const tenantLinks = [
   { to: '/tenant',              label: 'Home',    icon: Home,       end: true },
   { to: '/tenant/search',       label: 'Search',  icon: SearchIcon },
-  { to: '/tenant/applications', label: 'Applied', icon: Inbox },
   { to: '/tenant/maintenance',  label: 'Repairs', icon: Wrench },
   { to: '/tenant/rent',         label: 'Rent',    icon: DollarSign },
+  { to: '/tenant/profile',      label: 'Account', icon: User },
 ]
 
 export default function BottomNav({ role }) {

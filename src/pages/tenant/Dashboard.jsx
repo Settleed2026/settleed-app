@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
-import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles } from 'lucide-react'
+import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart } from 'lucide-react'
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'text-amber-600 bg-amber-50',  icon: Clock },
@@ -196,12 +196,15 @@ export default function TenantDashboard() {
   const [onboardingDismissed, setOnboardingDismissed] = useState(
     () => localStorage.getItem('settleed_onboarding_done') === 'true'
   )
+  const [savedListings, setSavedListings] = useState([])
 
   useEffect(() => {
     if (!user?.id) return
     async function fetchData() {
       try {
-        const [{ data: apps }, { data: prof }] = await Promise.all([
+        const savedIds = JSON.parse(localStorage.getItem('settleed_saved') || '[]')
+
+        const queries = [
           supabase
             .from('applications')
             .select('id, status, created_at, properties:property_id(id, neighborhood, zip_code, bedrooms, rent_amount, photos)')
@@ -213,9 +216,21 @@ export default function TenantDashboard() {
             .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type')
             .eq('id', user.id)
             .single(),
-        ])
+        ]
+
+        const [{ data: apps }, { data: prof }] = await Promise.all(queries)
         setApplications(apps || [])
         setProfile(prof || null)
+
+        // Fetch saved listing details
+        if (savedIds.length > 0) {
+          const { data: saved } = await supabase
+            .from('properties')
+            .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos')
+            .in('id', savedIds)
+            .eq('status', 'active')
+          setSavedListings(saved || [])
+        }
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -284,6 +299,42 @@ export default function TenantDashboard() {
           <Search className="w-5 h-5" />
           Browse Available Listings
         </button>
+
+        {savedListings.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-gray-900 flex items-center gap-1.5">
+                <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Saved
+              </h2>
+              <span className="text-xs text-gray-400">{savedListings.length} listing{savedListings.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="space-y-3">
+              {savedListings.map(p => {
+                const beds = p.bedrooms === 0 ? 'Studio' : `${p.bedrooms} BR`
+                const photo = p.photos?.[0]
+                return (
+                  <div key={p.id}
+                    onClick={() => navigate(`/tenant/listing/${p.id}`)}
+                    className="bg-white rounded-xl p-3 flex items-center gap-3 cursor-pointer active:bg-gray-50 transition-colors border border-gray-100"
+                  >
+                    {photo
+                      ? <img src={photo} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                      : <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                          <Home className="w-5 h-5 text-gray-300" />
+                        </div>
+                    }
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{p.neighborhood}</p>
+                      <p className="text-xs text-gray-500">{beds} · {p.zip_code}</p>
+                      <p className="text-sm font-bold text-[#1B3A6B]">${p.rent_amount?.toLocaleString()}/mo</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div>
           <div className="flex items-center justify-between mb-3">

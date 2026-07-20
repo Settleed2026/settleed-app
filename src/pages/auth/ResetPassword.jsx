@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -13,46 +13,74 @@ export default function ResetPassword() {
   const [ready, setReady] = useState(false)
   const [done, setDone] = useState(false)
   const [tokenError, setTokenError] = useState(false)
+  const resolvedRef = useRef(false)
 
   useEffect(() => {
-    async function init() {
-      // PKCE flow: Supabase sends ?code= in the URL
-      const params = new URLSearchParams(window.location.search)
-      const code = params.get('code')
+    let authSub = null
 
-      if (!code) {
-        setTokenError(true)
+    function markReady() {
+      if (resolvedRef.current) return
+      resolvedRef.current = true
+      setReady(true)
+    }
+
+    function markError() {
+      if (resolvedRef.current) return
+      resolvedRef.current = true
+      setTokenError(true)
+    }
+
+    async function init() {
+      // ── Path A: PKCE flow ──────────────────────────────────────────────
+      // Supabase sends ?code= when flowType is 'pkce' (same-device only)
+      const searchParams = new URLSearchParams(window.location.search)
+      const code = searchParams.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) markError()
+        else markReady()
         return
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (error) {
-        setTokenError(true)
-      } else {
-        setReady(true)
+      // ── Path B: Implicit flow ─────────────────────────────────────────
+      // Supabase sends #access_token=...&type=recovery in the URL hash.
+      // The Supabase client auto-parses this hash on init and fires
+      // PASSWORD_RECOVERY via onAuthStateChange. The event may fire before
+      // this component mounts, so we (1) register the listener first,
+      // then (2) check if a session already exists.
+
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY' && session) markReady()
+      })
+      authSub = data.subscription
+
+      // Check if Supabase already processed the hash before we got here
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) { markReady(); return }
+
+      // If there's no hash and no code, the link has nothing — show expired
+      if (!window.location.hash && !window.location.search) {
+        markError()
+        return
       }
+
+      // Hash is present but session not established yet — wait up to 8 seconds
+      setTimeout(markError, 8000)
     }
 
     init()
+    return () => authSub?.unsubscribe()
   }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (password !== confirm) {
-      toast.error('Passwords do not match.')
-      return
-    }
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters.')
-      return
-    }
+    if (password !== confirm) { toast.error('Passwords do not match.'); return }
+    if (password.length < 8) { toast.error('Password must be at least 8 characters.'); return }
+
     setLoading(true)
     const { error } = await supabase.auth.updateUser({ password })
-    if (error) {
-      toast.error(error.message)
-      setLoading(false)
-      return
-    }
+    if (error) { toast.error(error.message); setLoading(false); return }
+
     setDone(true)
     setLoading(false)
     await supabase.auth.signOut()
@@ -68,7 +96,6 @@ export default function ResetPassword() {
 
       <div className="flex-1 flex flex-col justify-center px-4 py-10 max-w-sm mx-auto w-full">
 
-        {/* Success */}
         {done && (
           <div className="text-center">
             <CheckCircle2 className="w-12 h-12 text-[#1D9E75] mx-auto mb-4" />
@@ -77,23 +104,19 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Expired / invalid token */}
         {!done && tokenError && (
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Link expired</h1>
             <p className="text-gray-500 text-sm mb-6">
-              Reset links can only be used once and expire after 1 hour. Request a fresh one below.
+              Reset links expire after 1 hour and can only be used once. Request a fresh one.
             </p>
-            <Link
-              to="/forgot-password"
-              className="inline-block bg-[#1B3A6B] text-white rounded-lg px-6 py-3 text-sm font-semibold"
-            >
+            <Link to="/forgot-password"
+              className="inline-block bg-[#1B3A6B] text-white rounded-lg px-6 py-3 text-sm font-semibold">
               Send a new link
             </Link>
           </div>
         )}
 
-        {/* Exchanging code */}
         {!done && !tokenError && !ready && (
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -101,52 +124,33 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* New password form */}
         {!done && !tokenError && ready && (
           <>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Create new password</h1>
             <p className="text-gray-500 text-sm mb-8">Must be at least 8 characters.</p>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
                 <div className="relative">
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    required
-                    value={password}
+                  <input type={showPw ? 'text' : 'password'} required value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(p => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    tabIndex={-1}
-                  >
+                    placeholder="••••••••" />
+                  <button type="button" onClick={() => setShowPw(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" tabIndex={-1}>
                     {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  required
-                  value={confirm}
+                <input type={showPw ? 'text' : 'password'} required value={confirm}
                   onChange={e => setConfirm(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
-                  placeholder="••••••••"
-                />
+                  placeholder="••••••••" />
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#1B3A6B] text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 mt-2"
-              >
+              <button type="submit" disabled={loading}
+                className="w-full bg-[#1B3A6B] text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 mt-2">
                 {loading ? 'Updating…' : 'Update password'}
               </button>
             </form>

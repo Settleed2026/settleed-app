@@ -212,13 +212,15 @@ export default function Landing() {
           <div className="flex flex-col md:grid md:grid-cols-2 md:min-h-[560px]">
 
             {/* Image — top on mobile, right on desktop */}
-            <div className="order-first md:order-last w-full h-60 sm:h-72 md:h-auto overflow-hidden">
+            <div className="relative order-first md:order-last w-full h-60 sm:h-72 md:h-auto overflow-hidden">
               <img
-                src="https://images.pexels.com/photos/7579211/pexels-photo-7579211.jpeg?auto=compress&cs=tinysrgb&w=800"
-                alt="African American couple celebrating new home ownership with keys"
+                src="https://images.pexels.com/photos/6994168/pexels-photo-6994168.jpeg?auto=compress&cs=tinysrgb&w=800"
+                alt="African American family searching for their new home together on a laptop"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
+              {/* 25% dark overlay — keeps image warm while making headline pop */}
+              <div className="absolute inset-0 bg-black/25 pointer-events-none" />
             </div>
 
             {/* Content — below image on mobile, left on desktop */}

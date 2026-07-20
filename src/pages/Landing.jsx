@@ -135,6 +135,12 @@ export default function Landing() {
             >
               For Landlords
             </a>
+            <Link
+              to={user && userRole === 'tenant' ? '/tenant/rent' : '/signup?role=tenant'}
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Pay Rent
+            </Link>
             {user && userRole ? (
               <Link
                 to={userRole === 'landlord' ? '/landlord' : '/tenant'}
@@ -186,6 +192,13 @@ export default function Landing() {
             >
               For Landlords
             </a>
+            <Link
+              to={user && userRole === 'tenant' ? '/tenant/rent' : '/signup?role=tenant'}
+              className="text-sm font-medium text-gray-700"
+              onClick={() => setMenuOpen(false)}
+            >
+              Pay Rent
+            </Link>
             <Link
               to={user && userRole ? (userRole === 'landlord' ? '/landlord' : '/tenant') : '/login'}
               className="text-sm font-medium text-gray-700"
@@ -640,6 +653,7 @@ export default function Landing() {
                   <Link to="/signup?role=tenant"        className="hover:text-gray-700 transition-colors">Find Housing</Link>
                   <a    href="#how-it-works"             className="hover:text-gray-700 transition-colors">How It Works</a>
                   <Link to="/tools/voucher-estimator"   className="hover:text-gray-700 transition-colors">Voucher Estimator</Link>
+                  <Link to={user && userRole === 'tenant' ? '/tenant/rent' : '/signup?role=tenant'} className="hover:text-gray-700 transition-colors">Pay Rent</Link>
                 </div>
               </div>
               <div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -10,30 +10,69 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [ready, setReady] = useState(false)   // true once Supabase confirms the reset token
+  const [ready, setReady] = useState(false)
   const [done, setDone] = useState(false)
   const [tokenError, setTokenError] = useState(false)
+  const readyRef = useRef(false)
 
   useEffect(() => {
-    // Supabase fires PASSWORD_RECOVERY when it detects #access_token + type=recovery in the URL.
-    // We wait for that event before showing the form — it confirms the link is valid.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setReady(true)
-      }
-    })
+    let subscription = null
 
-    // Safety timeout: if nothing fires in 5s, the token is missing/expired
-    const timeout = setTimeout(() => {
-      setReady(prev => {
-        if (!prev) setTokenError(true)
-        return prev
+    async function init() {
+      // ── PKCE flow ──────────────────────────────────────────────
+      // Supabase v2 with PKCE sends ?code=... in the query string
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          setTokenError(true)
+        } else {
+          readyRef.current = true
+          setReady(true)
+        }
+        return
+      }
+
+      // ── Implicit flow ──────────────────────────────────────────
+      // Supabase with implicit flow sends #access_token=...&type=recovery
+      // The client parses the hash automatically, sometimes before this
+      // component mounts — so we listen for the event AND check existing session.
+
+      // 1. Register listener first
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          readyRef.current = true
+          setReady(true)
+        }
       })
-    }, 5000)
+      subscription = data.subscription
+
+      // 2. Check if Supabase already processed the hash (race condition fix)
+      const { data: { session } } = await supabase.auth.getSession()
+      const hashHasRecovery = window.location.hash.includes('type=recovery')
+      if (session && hashHasRecovery && !readyRef.current) {
+        readyRef.current = true
+        setReady(true)
+        return
+      }
+
+      // 3. If no hash at all, show expired immediately
+      if (!window.location.hash && !code) {
+        setTokenError(true)
+        return
+      }
+
+      // 4. Fallback timeout — if still not ready after 6s, token is bad
+      setTimeout(() => {
+        if (!readyRef.current) setTokenError(true)
+      }, 6000)
+    }
+
+    init()
 
     return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+      subscription?.unsubscribe()
     }
   }, [])
 
@@ -56,7 +95,6 @@ export default function ResetPassword() {
     }
     setDone(true)
     setLoading(false)
-    // Sign out so user logs in fresh with new password
     await supabase.auth.signOut()
     setTimeout(() => navigate('/login'), 2500)
   }
@@ -70,7 +108,7 @@ export default function ResetPassword() {
 
       <div className="flex-1 flex flex-col justify-center px-4 py-10 max-w-sm mx-auto w-full">
 
-        {/* Success state */}
+        {/* Success */}
         {done && (
           <div className="text-center">
             <CheckCircle2 className="w-12 h-12 text-[#1D9E75] mx-auto mb-4" />
@@ -79,12 +117,12 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Bad / expired token */}
+        {/* Expired / invalid token */}
         {!done && tokenError && (
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Link expired</h1>
             <p className="text-gray-500 text-sm mb-6">
-              This reset link has expired or already been used. Request a new one.
+              This reset link has expired or already been used. Request a new one below.
             </p>
             <Link
               to="/forgot-password"
@@ -95,7 +133,7 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Waiting for Supabase to validate token */}
+        {/* Validating */}
         {!done && !tokenError && !ready && (
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -103,7 +141,7 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Password form */}
+        {/* New password form */}
         {!done && !tokenError && ready && (
           <>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Create new password</h1>

@@ -53,7 +53,8 @@ const TESTIMONIALS = [
 
 const FEATURED_LISTINGS = [
   {
-    img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&q=80',
+    // Single-family rental, East Atlanta
+    img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=500&q=80',
     neighborhood: 'East Atlanta',
     bedrooms: 3,
     bathrooms: 2,
@@ -61,7 +62,8 @@ const FEATURED_LISTINGS = [
     tag: 'Move-In Ready',
   },
   {
-    img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&q=80',
+    // Townhome / duplex
+    img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=500&q=80',
     neighborhood: 'College Park',
     bedrooms: 2,
     bathrooms: 1,
@@ -69,7 +71,8 @@ const FEATURED_LISTINGS = [
     tag: 'Newly Listed',
   },
   {
-    img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=500&q=80',
+    // Apartment / multi-family
+    img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&q=80',
     neighborhood: 'Decatur',
     bedrooms: 4,
     bathrooms: 2,
@@ -78,26 +81,18 @@ const FEATURED_LISTINGS = [
   },
 ]
 
-const FALLBACK_IMG = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80'
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80'
 
 export default function Landing() {
   const [location, setLocation]         = useState('')
   const [price, setPrice]               = useState('')
   const [propertyType, setPropertyType] = useState('')
   const [menuOpen, setMenuOpen]         = useState(false)
-  const navigate  = useNavigate()
+  const navigate = useNavigate()
   const { user, role: userRole } = useAuth()
-
-  // Routes for the two main CTAs — logged-in users skip signup entirely
-  const tenantHref  = user && userRole ? (userRole === 'tenant'   ? '/tenant/search' : '/landlord') : '/signup?role=tenant'
-  const landlordHref = user && userRole ? (userRole === 'landlord' ? '/landlord'      : '/tenant')  : '/signup?role=landlord'
 
   function handleSearch(e) {
     e.preventDefault()
-    if (user && userRole) {
-      navigate(userRole === 'tenant' ? '/tenant/search' : '/landlord')
-      return
-    }
     const params = new URLSearchParams()
     if (location)      params.set('q',    location)
     if (price)         params.set('price', price)
@@ -156,7 +151,7 @@ export default function Landing() {
               </Link>
             )}
             <Link
-              to={tenantHref}
+              to="/signup?role=tenant"
               className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               style={{ backgroundColor: BRAND_BLUE }}
             >
@@ -199,7 +194,7 @@ export default function Landing() {
               {user && userRole ? 'My Dashboard' : 'Sign In'}
             </Link>
             <Link
-              to={tenantHref}
+              to="/signup?role=tenant"
               className="text-sm font-semibold text-white text-center px-4 py-3 rounded-xl"
               style={{ backgroundColor: BRAND_BLUE }}
               onClick={() => setMenuOpen(false)}
@@ -219,8 +214,8 @@ export default function Landing() {
             {/* Image — top on mobile, right on desktop */}
             <div className="order-first md:order-last w-full h-60 sm:h-72 md:h-auto overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800&q=80"
-                alt="Family at their new home"
+                src="/images/hero.jpg"
+                alt="Family moving into their new home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -273,7 +268,7 @@ export default function Landing() {
                 </form>
 
                 <Link
-                  to={landlordHref}
+                  to="/signup?role=landlord"
                   className="flex items-center justify-between w-full font-semibold text-base px-5 py-3.5 rounded-xl border-2 hover:bg-blue-50 transition-colors"
                   style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'white' }}
                 >
@@ -360,8 +355,8 @@ export default function Landing() {
             {/* Image — left on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80"
-                alt="Voucher holder family"
+                src="/images/voucher-family.jpg"
+                alt="Family in front of their new home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -394,7 +389,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to={tenantHref}
+                to="/signup?role=tenant"
                 className="inline-flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: BRAND_BLUE }}
               >
@@ -438,7 +433,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to={landlordHref}
+                to="/signup?role=landlord"
                 className="inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-xl border-2 hover:bg-white transition-colors"
                 style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'transparent' }}
               >
@@ -450,8 +445,8 @@ export default function Landing() {
             {/* Image — right on desktop */}
             <div className="w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=700&q=80"
-                alt="Landlord"
+                src="/images/landlord-showing.jpg"
+                alt="Landlord welcoming a family to their new home"
                 className="w-full h-full object-cover"
                 onError={e => { e.target.src = FALLBACK_IMG }}
               />
@@ -473,7 +468,7 @@ export default function Landing() {
               </h2>
             </div>
             <Link
-              to={tenantHref}
+              to="/signup?role=tenant"
               className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold"
               style={{ color: BRAND_BLUE }}
             >
@@ -486,7 +481,7 @@ export default function Landing() {
             {FEATURED_LISTINGS.map(listing => (
               <Link
                 key={listing.neighborhood}
-                to={tenantHref}
+                to="/signup?role=tenant"
                 className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow block"
               >
                 <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
@@ -528,7 +523,7 @@ export default function Landing() {
 
           <div className="mt-6 text-center sm:hidden">
             <Link
-              to={tenantHref}
+              to="/signup?role=tenant"
               className="inline-flex items-center gap-1 text-sm font-semibold"
               style={{ color: BRAND_BLUE }}
             >
@@ -594,7 +589,7 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center w-full max-w-xs sm:max-w-none mx-auto">
             <Link
-              to={tenantHref}
+              to="/signup?role=tenant"
               className="inline-flex items-center justify-center gap-2 text-white font-semibold text-base px-8 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
               style={{ backgroundColor: BRAND_BLUE }}
             >
@@ -602,7 +597,7 @@ export default function Landing() {
               Find Housing
             </Link>
             <Link
-              to={landlordHref}
+              to="/signup?role=landlord"
               className="inline-flex items-center justify-center gap-2 font-semibold text-base px-8 py-3.5 rounded-xl border-2 border-white text-white hover:bg-white transition-colors"
               style={{ '--hover-color': BRAND_NAVY }}
             >
@@ -640,7 +635,7 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Tenants</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to={tenantHref}        className="hover:text-gray-700 transition-colors">Find Housing</Link>
+                  <Link to="/signup?role=tenant"        className="hover:text-gray-700 transition-colors">Find Housing</Link>
                   <a    href="#how-it-works"             className="hover:text-gray-700 transition-colors">How It Works</a>
                   <Link to="/tools/voucher-estimator"   className="hover:text-gray-700 transition-colors">Voucher Estimator</Link>
                 </div>
@@ -648,7 +643,7 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Landlords</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to={landlordHref}  className="hover:text-gray-700 transition-colors">List Property</Link>
+                  <Link to="/signup?role=landlord"  className="hover:text-gray-700 transition-colors">List Property</Link>
                   <Link to="/tools/rent-analyzer"   className="hover:text-gray-700 transition-colors">Rent Analyzer</Link>
                 </div>
               </div>

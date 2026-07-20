@@ -27,12 +27,7 @@ export default function Signup() {
     password: '',
   })
 
-  // If user is already logged in, send them to their dashboard
-  useEffect(() => {
-    if (!authLoading && user && userRole) {
-      navigate(userRole === 'landlord' ? '/landlord' : '/tenant', { replace: true })
-    }
-  }, [authLoading, user, userRole])
+  // (logged-in users are handled by an early return below — no silent redirect)
 
   // Pre-select role from URL param (?role=landlord or ?role=tenant)
   useEffect(() => {
@@ -122,6 +117,43 @@ export default function Signup() {
 
   const inputClass = 'w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]'
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+
+  // Already logged in — show options instead of silently redirecting
+  if (!authLoading && user && userRole) {
+    const dashPath = userRole === 'landlord' ? '/landlord' : '/tenant'
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <div className="bg-[#1B3A6B] px-4 py-5">
+          <Link to="/" className="text-white text-2xl font-bold tracking-tight">Settleed</Link>
+        </div>
+        <div className="flex-1 flex flex-col justify-center items-center px-4 py-16 text-center max-w-sm mx-auto w-full">
+          <div className="w-16 h-16 rounded-full bg-[#EEF5FF] flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">You're already signed in</h2>
+          <p className="text-gray-500 text-sm mb-8">
+            You're logged in as <span className="font-medium text-gray-700">{user.email}</span>.
+            Go to your dashboard or sign out to create a new account.
+          </p>
+          <Link
+            to={dashPath}
+            className="w-full bg-[#1B3A6B] text-white rounded-lg py-3 text-sm font-semibold mb-3 block text-center"
+          >
+            Go to My Dashboard
+          </Link>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); navigate('/signup') }}
+            className="w-full border border-gray-300 text-gray-700 rounded-lg py-3 text-sm font-semibold hover:bg-gray-50"
+          >
+            Sign out &amp; create new account
+          </button>
+          <Link to="/" className="mt-6 text-xs text-gray-400 hover:text-gray-600">← Back to home</Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

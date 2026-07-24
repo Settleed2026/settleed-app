@@ -94,11 +94,8 @@ export default function Landing() {
   function handleSearch(e) {
     e.preventDefault()
     const params = new URLSearchParams()
-    if (location)      params.set('q',    location)
-    if (price)         params.set('price', price)
-    if (propertyType)  params.set('type',  propertyType)
-    params.set('role', 'tenant')
-    navigate(`/signup?${params.toString()}`)
+    if (location) params.set('q', location)
+    navigate(`/listings?${params.toString()}`)
   }
 
   return (

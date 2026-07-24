@@ -280,7 +280,7 @@ export default function Landing() {
                 </form>
 
                 <Link
-                  to="/signup?role=landlord"
+                  to="/for-landlords"
                   className="flex items-center justify-between w-full font-semibold text-base px-5 py-3.5 rounded-xl border-2 hover:bg-blue-50 transition-colors"
                   style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'white' }}
                 >
@@ -445,7 +445,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup?role=landlord"
+                to="/for-landlords"
                 className="inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-xl border-2 hover:bg-white transition-colors"
                 style={{ color: BRAND_BLUE, borderColor: BRAND_BLUE, backgroundColor: 'transparent' }}
               >
@@ -609,7 +609,7 @@ export default function Landing() {
               Find Housing
             </Link>
             <Link
-              to="/signup?role=landlord"
+              to="/for-landlords"
               className="inline-flex items-center justify-center gap-2 font-semibold text-base px-8 py-3.5 rounded-xl border-2 border-white text-white hover:bg-white transition-colors"
               style={{ '--hover-color': BRAND_NAVY }}
             >
@@ -656,7 +656,7 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Landlords</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to="/signup?role=landlord"  className="hover:text-gray-700 transition-colors">List Property</Link>
+                  <Link to="/for-landlords"  className="hover:text-gray-700 transition-colors">List Property</Link>
                   <Link to="/tools/rent-analyzer"   className="hover:text-gray-700 transition-colors">Rent Analyzer</Link>
                 </div>
               </div>

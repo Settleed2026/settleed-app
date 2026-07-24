@@ -41,6 +41,7 @@ import VoucherEstimator from './pages/tools/VoucherEstimator'
 // Shared
 import Landing from './pages/Landing'
 import PublicListings from './pages/PublicListings'
+import ForLandlords from './pages/ForLandlords'
 import Subscribe from './pages/Subscribe'
 import SubscribeSuccess from './pages/SubscribeSuccess'
 import NotFound from './pages/NotFound'
@@ -72,6 +73,7 @@ export default function App() {
       <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
       <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
       <Route path="/listings" element={<PublicListings />} />
+      <Route path="/for-landlords" element={<ForLandlords />} />
 
       {/* Landlord routes */}
       <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

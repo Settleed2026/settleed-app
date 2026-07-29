@@ -254,6 +254,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
+  -- NULL auth.uid() = trusted backend context (SQL editor, migrations, service role)
+  IF auth.uid() IS NULL THEN RETURN NEW; END IF;
   IF NOT public.is_admin() THEN
     IF NEW.verification_status IS DISTINCT FROM OLD.verification_status THEN
       RAISE EXCEPTION 'Cannot change verification_status directly. Contact Settleed support.';
@@ -283,6 +285,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
+  -- NULL auth.uid() = trusted backend context (SQL editor, migrations, service role)
+  IF auth.uid() IS NULL THEN RETURN NEW; END IF;
   IF NOT public.is_admin() THEN
     IF NEW.verification_status IS DISTINCT FROM OLD.verification_status THEN
       -- Allow landlord to submit their own property for review

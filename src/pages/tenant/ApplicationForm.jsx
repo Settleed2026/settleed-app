@@ -139,8 +139,8 @@ export default function ApplicationForm() {
           <h2 className="font-semibold text-sm text-gray-900">Your Voucher</h2>
 
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Housing authority that issued your voucher *</label>
-            <select name="housing_authority" required value={form.housing_authority} onChange={handleChange}
+            <label htmlFor="housing_authority" className="text-xs text-gray-500 mb-1 block">Housing authority that issued your voucher *</label>
+            <select id="housing_authority" name="housing_authority" required value={form.housing_authority} onChange={handleChange}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
               <option value="">Select housing authority...</option>
               {HOUSING_AUTHORITIES.map(ha => (
@@ -151,8 +151,8 @@ export default function ApplicationForm() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Voucher size (bedrooms) *</label>
-              <select name="voucher_size" required value={form.voucher_size} onChange={handleChange}
+              <label htmlFor="voucher_size" className="text-xs text-gray-500 mb-1 block">Voucher size (bedrooms) *</label>
+              <select id="voucher_size" name="voucher_size" required value={form.voucher_size} onChange={handleChange}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
                 <option value="">Select</option>
                 {[0,1,2,3,4,5].map(n => (
@@ -161,8 +161,8 @@ export default function ApplicationForm() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Voucher expires</label>
-              <input name="voucher_expiration" type="date" value={form.voucher_expiration} onChange={handleChange}
+              <label htmlFor="voucher_expiration" className="text-xs text-gray-500 mb-1 block">Voucher expires</label>
+              <input id="voucher_expiration" name="voucher_expiration" type="date" value={form.voucher_expiration} onChange={handleChange}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
             </div>
           </div>
@@ -180,16 +180,16 @@ export default function ApplicationForm() {
           <h2 className="font-semibold text-sm text-gray-900">Household</h2>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Household size</label>
-              <select name="household_size" value={form.household_size} onChange={handleChange}
+              <label htmlFor="household_size" className="text-xs text-gray-500 mb-1 block">Household size</label>
+              <select id="household_size" name="household_size" value={form.household_size} onChange={handleChange}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
                 <option value="">Select</option>
                 {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} person{n !== 1 ? 's' : ''}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Desired move-in</label>
-              <input name="desired_move_in" type="date" value={form.desired_move_in} onChange={handleChange}
+              <label htmlFor="desired_move_in" className="text-xs text-gray-500 mb-1 block">Desired move-in</label>
+              <input id="desired_move_in" name="desired_move_in" type="date" value={form.desired_move_in} onChange={handleChange}
                 min={new Date().toISOString().split('T')[0]}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
             </div>
@@ -197,10 +197,10 @@ export default function ApplicationForm() {
         </div>
 
         <div className="bg-white rounded-xl p-4">
-          <h2 className="font-semibold text-sm text-gray-900 mb-2">
+          <label htmlFor="message" className="font-semibold text-sm text-gray-900 mb-2 block">
             Message to landlord <span className="text-gray-400 font-normal">(optional)</span>
-          </h2>
-          <textarea name="message" value={form.message} onChange={handleChange} rows={4}
+          </label>
+          <textarea id="message" name="message" value={form.message} onChange={handleChange} rows={4}
             placeholder="Introduce yourself and explain why you're interested in this unit..."
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] resize-none" />
           <p className="text-xs text-gray-400 mt-1">Tip: landlords respond faster when you include a brief intro.</p>

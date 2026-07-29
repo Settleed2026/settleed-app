@@ -103,8 +103,9 @@ export default function RentAnalyzer() {
         <form onSubmit={handleCheck} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 max-w-lg mx-auto">
 
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Georgia ZIP Code</label>
+            <label htmlFor="zip-input" className="block text-xs font-semibold text-gray-600 mb-1.5">Georgia ZIP Code</label>
             <input
+              id="zip-input"
               type="text"
               inputMode="numeric"
               placeholder="e.g. 30310"
@@ -116,8 +117,9 @@ export default function RentAnalyzer() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Bedroom Size</label>
+            <label htmlFor="bedrooms-select" className="block text-xs font-semibold text-gray-600 mb-1.5">Bedroom Size</label>
             <select
+              id="bedrooms-select"
               value={bedrooms}
               onChange={e => { setBedrooms(e.target.value); if (checked) { setChecked(false); setResult(null); setError('') } }}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#1B3A6B] transition-colors bg-white"
@@ -129,10 +131,11 @@ export default function RentAnalyzer() {
           </div>
 
           <div className="mb-5">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Monthly Rent ($)</label>
+            <label htmlFor="rent-input" className="block text-xs font-semibold text-gray-600 mb-1.5">Monthly Rent ($)</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
               <input
+                id="rent-input"
                 type="text"
                 inputMode="numeric"
                 placeholder="1,200"

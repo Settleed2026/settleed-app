@@ -36,8 +36,8 @@ function PSBadge({ zip, bedrooms, rent }) {
 
 function ListingCard({ listing, onClick }) {
   const photo = listing.photos?.[0]
-  const beds = listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bd`
-  const baths = `${listing.bathrooms} ba`
+  const beds = listing.bedrooms === 0 ? 'Studio' : listing.bedrooms != null ? `${listing.bedrooms} bd` : '? bd'
+  const baths = listing.bathrooms != null ? `${listing.bathrooms} ba` : '? ba'
   const available = listing.available_date
     ? new Date(listing.available_date) <= new Date()
       ? 'Available Now'
@@ -72,8 +72,14 @@ function ListingCard({ listing, onClick }) {
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <span className="text-lg font-bold text-gray-900">${listing.rent_amount?.toLocaleString()}</span>
-            <span className="text-xs text-gray-500">/mo</span>
+            {listing.rent_amount != null ? (
+              <>
+                <span className="text-lg font-bold text-gray-900">${listing.rent_amount.toLocaleString()}</span>
+                <span className="text-xs text-gray-500">/mo</span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-400">Price TBD</span>
+            )}
           </div>
           <PSBadge zip={listing.zip_code} bedrooms={listing.bedrooms} rent={listing.rent_amount} />
         </div>
@@ -174,6 +180,7 @@ export default function SearchListings() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search neighborhood or ZIP code..."
+            aria-label="Search neighborhood or ZIP code"
             className="w-full pl-9 pr-10 py-2.5 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
           />
           {search && (

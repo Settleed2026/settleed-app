@@ -35,7 +35,7 @@ export default function BottomNav({ role }) {
           end={end}
           className={({ isActive }) =>
             `flex-1 flex flex-col items-center justify-center py-2 text-xs font-medium transition-colors ${
-              isActive ? 'text-[#1B3A6B]' : 'text-gray-400'
+              isActive ? 'text-[#1B3A6B]' : 'text-gray-500'
             }`
           }
         >

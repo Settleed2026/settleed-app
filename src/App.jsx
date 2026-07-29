@@ -59,51 +59,61 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/subscribe" element={<Subscribe />} />
-      <Route path="/subscribe/success" element={<SubscribeSuccess />} />
-      <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
-      <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
-      <Route path="/listings" element={<PublicListings />} />
-      <Route path="/for-landlords" element={<ForLandlords />} />
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-white focus:text-[#1B3A6B] focus:font-semibold focus:rounded-lg focus:shadow-lg focus:outline-none"
+      >
+        Skip to content
+      </a>
+      <main id="main-content">
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/subscribe" element={<Subscribe />} />
+          <Route path="/subscribe/success" element={<SubscribeSuccess />} />
+          <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
+          <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
+          <Route path="/listings" element={<PublicListings />} />
+          <Route path="/for-landlords" element={<ForLandlords />} />
 
-      {/* Landlord routes */}
-      <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>
-        <Route index element={<LandlordDashboard />} />
-        <Route path="listing/new" element={<ListingForm />} />
-        <Route path="listing/:id/edit" element={<ListingForm />} />
-        <Route path="applications" element={<ApplicationInbox />} />
-        <Route path="hqs" element={<HQSTracker />} />
-        <Route path="profile" element={<LandlordProfile />} />
-        <Route path="connect" element={<ConnectOnboarding />} />
-        <Route path="maintenance" element={<LandlordMaintenance />} />
-        <Route path="rent" element={<LandlordRentDashboard />} />
-        <Route path="background-checks" element={<LandlordBackgroundChecks />} />
-      </Route>
+          {/* Landlord routes */}
+          <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>
+            <Route index element={<LandlordDashboard />} />
+            <Route path="listing/new" element={<ListingForm />} />
+            <Route path="listing/:id/edit" element={<ListingForm />} />
+            <Route path="applications" element={<ApplicationInbox />} />
+            <Route path="hqs" element={<HQSTracker />} />
+            <Route path="profile" element={<LandlordProfile />} />
+            <Route path="connect" element={<ConnectOnboarding />} />
+            <Route path="maintenance" element={<LandlordMaintenance />} />
+            <Route path="rent" element={<LandlordRentDashboard />} />
+            <Route path="background-checks" element={<LandlordBackgroundChecks />} />
+          </Route>
 
-      {/* Tenant routes */}
-      <Route path="/tenant" element={<ProtectedRoute role="tenant" />}>
-        <Route index element={<TenantDashboard />} />
-        <Route path="profile/setup" element={<TenantProfileSetup />} />
-        <Route path="search" element={<SearchListings />} />
-        <Route path="listing/:id" element={<ListingDetail />} />
-        <Route path="apply/:id" element={<ApplicationForm />} />
-        <Route path="applications" element={<ApplicationsList />} />
-        <Route path="maintenance" element={<TenantMaintenance />} />
-        <Route path="rent" element={<TenantRentPayment />} />
-        <Route path="profile" element={<TenantProfile />} />
-        <Route path="lease" element={<TenantLeaseDetails />} />
-      </Route>
+          {/* Tenant routes */}
+          <Route path="/tenant" element={<ProtectedRoute role="tenant" />}>
+            <Route index element={<TenantDashboard />} />
+            <Route path="profile/setup" element={<TenantProfileSetup />} />
+            <Route path="search" element={<SearchListings />} />
+            <Route path="listing/:id" element={<ListingDetail />} />
+            <Route path="apply/:id" element={<ApplicationForm />} />
+            <Route path="applications" element={<ApplicationsList />} />
+            <Route path="maintenance" element={<TenantMaintenance />} />
+            <Route path="rent" element={<TenantRentPayment />} />
+            <Route path="profile" element={<TenantProfile />} />
+            <Route path="lease" element={<TenantLeaseDetails />} />
+          </Route>
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </>
   )
 }

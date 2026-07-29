@@ -246,7 +246,7 @@ export default function Landing() {
                 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4"
                 style={{ color: BRAND_NAVY }}
               >
-                Find Your Next<br />Section 8 Home
+                Find Your Next <br />Section 8 Home
               </h1>
 
               <p className="text-gray-500 text-base leading-relaxed mb-7 max-w-md">
@@ -671,9 +671,14 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-xs text-gray-400">© 2026 Settleed · Atlanta, GA. All rights reserved.</p>
-            <p className="text-xs text-gray-400">Built for Housing Choice Voucher families.</p>
+          <div className="mt-10 pt-6 border-t border-gray-100 space-y-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+              <p className="text-xs text-gray-400">© 2026 Settleed · Atlanta, GA. All rights reserved.</p>
+              <p className="text-xs text-gray-400">Built for Housing Choice Voucher families.</p>
+            </div>
+            <p className="text-xs text-gray-400 text-center sm:text-left">
+              <span className="font-semibold">Equal Housing Opportunity.</span> Settleed does not discriminate on the basis of race, color, religion, sex, national origin, disability, or familial status in connection with any listing or service on this platform.
+            </p>
           </div>
         </div>
       </footer>

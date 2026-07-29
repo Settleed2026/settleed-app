@@ -120,8 +120,9 @@ export default function VoucherEstimator() {
         <form onSubmit={handleCalculate} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 max-w-lg mx-auto">
 
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Georgia ZIP Code you're searching in</label>
+            <label htmlFor="zip-input" className="block text-xs font-semibold text-gray-600 mb-1.5">Georgia ZIP Code you're searching in</label>
             <input
+              id="zip-input"
               type="text"
               inputMode="numeric"
               placeholder="e.g. 30310"
@@ -154,12 +155,13 @@ export default function VoucherEstimator() {
           </div>
 
           <div className="mb-5">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="income-input" className="block text-xs font-semibold text-gray-600 mb-1.5">
               Annual gross income reported to your housing authority
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
               <input
+                id="income-input"
                 type="text"
                 inputMode="numeric"
                 placeholder="24,000"

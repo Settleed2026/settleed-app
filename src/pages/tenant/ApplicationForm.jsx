@@ -14,6 +14,8 @@ export default function ApplicationForm() {
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [alreadyApplied, setAlreadyApplied] = useState(false)
 
   const [form, setForm] = useState({
     housing_authority: '',
@@ -25,22 +27,31 @@ export default function ApplicationForm() {
   })
 
   useEffect(() => {
-    async function fetchListing() {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos')
-          .eq('id', id)
-          .single()
-        if (error) console.error('ApplicationForm listing fetch error:', error.message)
-        setListing(data || null)
+        const [listingRes, dupeRes] = await Promise.all([
+          supabase
+            .from('properties')
+            .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos')
+            .eq('id', id)
+            .single(),
+          supabase
+            .from('applications')
+            .select('id')
+            .eq('property_id', id)
+            .eq('tenant_id', user.id)
+            .maybeSingle(),
+        ])
+        if (listingRes.error) console.error('ApplicationForm listing fetch error:', listingRes.error.message)
+        setListing(listingRes.data || null)
+        if (dupeRes.data) setAlreadyApplied(true)
       } catch (err) {
-        console.error('ApplicationForm listing fetch error:', err)
+        console.error('ApplicationForm fetch error:', err)
       } finally {
         setLoading(false)
       }
     }
-    fetchListing()
+    fetchData()
   }, [id])
 
   function handleChange(e) {
@@ -67,13 +78,14 @@ export default function ApplicationForm() {
     })
 
     if (error) {
-      if (error.code === '23505') toast.error('You already applied to this listing')
-      else toast.error(error.message)
+      if (error.code === '23505') {
+        setAlreadyApplied(true)
+      } else {
+        toast.error(error.message)
+      }
       setSubmitting(false)
       return
     }
-
-    toast.success('Application sent!')
 
     // Notify landlord — fire-and-forget
     if (listing) {
@@ -93,13 +105,53 @@ export default function ApplicationForm() {
       }).catch(() => {})
     }
 
-    navigate('/tenant/applications')
+    setSubmitted(true)
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-[#1B3A6B] px-4 pt-10 pb-5 h-20 animate-pulse" />
+      </div>
+    )
+  }
+
+  // ── Confirmation screen ──────────────────────────────────────────────────
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-10">
+        <div className="bg-[#1B3A6B] px-4 pt-10 pb-5 flex items-center gap-3">
+          <h1 className="text-white text-lg font-bold">Application Sent</h1>
+        </div>
+        <div className="mx-4 mt-8 bg-white rounded-2xl p-6 flex flex-col items-center text-center shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-[#EBF9F4] flex items-center justify-center mb-4">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">You're in the running!</h2>
+          <p className="text-sm text-gray-500 mb-1">
+            Your application for{' '}
+            <span className="font-semibold text-gray-700">{listing?.neighborhood}</span>{' '}
+            has been sent to the landlord.
+          </p>
+          <p className="text-xs text-gray-400 mb-6">Most landlords respond within 1–3 business days.</p>
+          <button
+            onClick={() => navigate('/tenant/applications')}
+            className="w-full bg-[#1D9E75] text-white rounded-xl py-3 font-semibold text-sm mb-3"
+          >
+            View My Applications
+          </button>
+          <button
+            onClick={() => navigate('/tenant/search')}
+            className="w-full border border-gray-200 text-gray-600 rounded-xl py-3 font-semibold text-sm"
+          >
+            Keep Searching
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 text-center mt-6 px-4">
+          We'll notify you by email when the landlord responds.
+        </p>
       </div>
     )
   }
@@ -130,6 +182,22 @@ export default function ApplicationForm() {
             <p className="text-sm font-semibold text-gray-900 truncate">{listing.neighborhood}</p>
             <p className="text-xs text-gray-500">{beds} · {listing.zip_code}</p>
             <p className="text-sm font-bold text-[#1B3A6B] mt-0.5">${listing.rent_amount?.toLocaleString()}/mo</p>
+          </div>
+        </div>
+      )}
+
+      {alreadyApplied && (
+        <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-amber-500 text-lg leading-none mt-0.5">⚠</span>
+          <div>
+            <p className="text-sm font-semibold text-amber-900">You already applied to this listing</p>
+            <p className="text-xs text-amber-700 mt-0.5">You can't submit another application for the same unit. Check your applications for the status.</p>
+            <button
+              onClick={() => navigate('/tenant/applications')}
+              className="mt-2 text-xs font-semibold text-amber-800 underline"
+            >
+              View my applications →
+            </button>
           </div>
         </div>
       )}
@@ -201,14 +269,20 @@ export default function ApplicationForm() {
             Message to landlord <span className="text-gray-400 font-normal">(optional)</span>
           </label>
           <textarea id="message" name="message" value={form.message} onChange={handleChange} rows={4}
+            maxLength={500}
             placeholder="Introduce yourself and explain why you're interested in this unit..."
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] resize-none" />
-          <p className="text-xs text-gray-400 mt-1">Tip: landlords respond faster when you include a brief intro.</p>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-xs text-gray-400">Tip: landlords respond faster when you include a brief intro.</p>
+            <p className={`text-xs ${form.message.length >= 480 ? 'text-amber-500 font-medium' : 'text-gray-400'}`}>
+              {form.message.length}/500
+            </p>
+          </div>
         </div>
 
-        <button type="submit" disabled={submitting}
+        <button type="submit" disabled={submitting || alreadyApplied}
           className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm disabled:opacity-50 shadow-lg shadow-[#1D9E75]/20">
-          {submitting ? 'Submitting...' : 'Submit Application'}
+          {submitting ? 'Submitting...' : alreadyApplied ? 'Already Applied' : 'Submit Application'}
         </button>
       </form>
     </div>

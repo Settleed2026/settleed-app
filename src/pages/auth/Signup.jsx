@@ -12,6 +12,7 @@ export default function Signup() {
   const [role, setRole] = useState('')
   const [loading, setLoading] = useState(false)
   const { user, role: userRole, loading: authLoading } = useAuth()
+  const [errors, setErrors] = useState({})
 
   const [form, setForm] = useState({
     firstName: '',
@@ -25,6 +26,7 @@ export default function Signup() {
     ha: '',
     dateOfBirth: '',
     password: '',
+    confirmPassword: '',
   })
 
   // (logged-in users are handled by an early return below — no silent redirect)
@@ -39,13 +41,42 @@ export default function Signup() {
   }, [])
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+    // Clear error on change
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
+  }
+
+  function validateForm() {
+    const newErrors = {}
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = 'Enter a valid email address'
+    }
+    if (!form.mobilePhone || form.mobilePhone.replace(/\D/g, '').length < 10) {
+      newErrors.mobilePhone = 'Enter a valid 10-digit phone number'
+    }
+    if (form.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    }
+    if (form.confirmPassword && form.confirmPassword !== form.password) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password'
+    }
+    return newErrors
   }
 
   async function handleSignup(e) {
     e.preventDefault()
-    setLoading(true)
 
+    const formErrors = validateForm()
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
+
+    setLoading(true)
     const fullName = `${form.firstName} ${form.lastName}`.trim()
 
     // 18+ age check for tenants
@@ -53,7 +84,7 @@ export default function Signup() {
       const dob = new Date(form.dateOfBirth)
       const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 60 * 60 * 1000))
       if (age < 18) {
-        toast.error('You must be 18 or older to create an account.')
+        setErrors({ dateOfBirth: 'You must be 18 or older to create an account.' })
         setLoading(false)
         return
       }
@@ -115,8 +146,10 @@ export default function Signup() {
     navigate(role === 'landlord' ? '/landlord/listing/new' : '/tenant/profile/setup')
   }
 
-  const inputClass = 'w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]'
+  const inputClass = (name) =>
+    `w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] ${errors[name] ? 'border-red-400' : 'border-gray-300'}`
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+  const errClass = 'text-xs text-red-500 mt-1'
 
   // Already logged in — show options instead of silently redirecting
   if (!authLoading && user && userRole) {
@@ -210,12 +243,12 @@ export default function Signup() {
                 <div>
                   <label className={labelClass}>First name *</label>
                   <input name="firstName" type="text" required value={form.firstName} onChange={handleChange}
-                    className={inputClass} placeholder="John" />
+                    className={inputClass('firstName')} placeholder="John" />
                 </div>
                 <div>
                   <label className={labelClass}>Last name *</label>
                   <input name="lastName" type="text" required value={form.lastName} onChange={handleChange}
-                    className={inputClass} placeholder="Smith" />
+                    className={inputClass('lastName')} placeholder="Smith" />
                 </div>
               </div>
 
@@ -224,7 +257,7 @@ export default function Signup() {
                 <div>
                   <label className={labelClass}>Company name <span className="text-gray-400 font-normal">(optional)</span></label>
                   <input name="companyName" type="text" value={form.companyName} onChange={handleChange}
-                    className={inputClass} placeholder="Smith Properties LLC" />
+                    className={inputClass('companyName')} placeholder="Smith Properties LLC" />
                 </div>
               )}
 
@@ -232,14 +265,16 @@ export default function Signup() {
               <div>
                 <label className={labelClass}>Email address *</label>
                 <input name="email" type="email" required value={form.email} onChange={handleChange}
-                  className={inputClass} placeholder="you@example.com" autoComplete="username" />
+                  className={inputClass('email')} placeholder="you@example.com" autoComplete="username" />
+                {errors.email && <p className={errClass}>{errors.email}</p>}
               </div>
 
               {/* Mobile Phone */}
               <div>
                 <label className={labelClass}>Mobile phone *</label>
                 <input name="mobilePhone" type="tel" required value={form.mobilePhone} onChange={handleChange}
-                  className={inputClass} placeholder="(404) 555-0100" />
+                  className={inputClass('mobilePhone')} placeholder="(404) 555-0100" />
+                {errors.mobilePhone && <p className={errClass}>{errors.mobilePhone}</p>}
               </div>
 
               {/* Office Phone (landlords only) */}
@@ -247,7 +282,7 @@ export default function Signup() {
                 <div>
                   <label className={labelClass}>Office phone <span className="text-gray-400 font-normal">(optional)</span></label>
                   <input name="officePhone" type="tel" value={form.officePhone} onChange={handleChange}
-                    className={inputClass} placeholder="(404) 555-0200" />
+                    className={inputClass('officePhone')} placeholder="(404) 555-0200" />
                 </div>
               )}
 
@@ -295,12 +330,13 @@ export default function Signup() {
                   <div>
                     <label className={labelClass}>Date of birth * <span className="text-gray-400 font-normal">(must be 18+)</span></label>
                     <input name="dateOfBirth" type="date" required value={form.dateOfBirth} onChange={handleChange}
-                      className={inputClass} max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} />
+                      className={inputClass('dateOfBirth')} max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} />
+                    {errors.dateOfBirth && <p className={errClass}>{errors.dateOfBirth}</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Housing Authority <span className="text-gray-400 font-normal">(optional)</span></label>
                     <select name="ha" value={form.ha} onChange={handleChange}
-                      className={`${inputClass} bg-white`}>
+                      className={`${inputClass('ha')} bg-white`}>
                       <option value="">Select your housing authority</option>
                       {HOUSING_AUTHORITIES.map(ha => (
                         <option key={ha.value} value={ha.value}>{ha.label}</option>
@@ -314,7 +350,16 @@ export default function Signup() {
               <div>
                 <label className={labelClass}>Password *</label>
                 <input name="password" type="password" required minLength={8} value={form.password}
-                  onChange={handleChange} className={inputClass} placeholder="At least 8 characters" autoComplete="new-password" />
+                  onChange={handleChange} className={inputClass('password')} placeholder="At least 8 characters" autoComplete="new-password" />
+                {errors.password && <p className={errClass}>{errors.password}</p>}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className={labelClass}>Confirm password *</label>
+                <input name="confirmPassword" type="password" required value={form.confirmPassword}
+                  onChange={handleChange} className={inputClass('confirmPassword')} placeholder="Re-enter your password" autoComplete="new-password" />
+                {errors.confirmPassword && <p className={errClass}>{errors.confirmPassword}</p>}
               </div>
 
               <button

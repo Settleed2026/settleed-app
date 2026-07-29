@@ -1,12 +1,15 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Inbox, User, Wrench, DollarSign } from 'lucide-react'
+import { Home, Inbox, User, Wrench, DollarSign, ShieldCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 
 const landlordLinks = [
-  { to: '/landlord',             label: 'Home',      icon: Home,       end: true },
-  { to: '/landlord/applications',label: 'Inbox',     icon: Inbox },
-  { to: '/landlord/maintenance', label: 'Repairs',   icon: Wrench },
-  { to: '/landlord/rent',        label: 'Rent',      icon: DollarSign },
-  { to: '/landlord/profile',     label: 'Account',   icon: User },
+  { to: '/landlord',              label: 'Home',    icon: Home,       end: true },
+  { to: '/landlord/applications', label: 'Inbox',   icon: Inbox },
+  { to: '/landlord/maintenance',  label: 'Repairs', icon: Wrench },
+  { to: '/landlord/rent',         label: 'Rent',    icon: DollarSign },
+  { to: '/landlord/profile',      label: 'Account', icon: User },
 ]
 
 const SearchIcon = () => (
@@ -16,14 +19,27 @@ const SearchIcon = () => (
 )
 
 const tenantLinks = [
-  { to: '/tenant',              label: 'Home',    icon: Home,       end: true },
-  { to: '/tenant/search',       label: 'Search',  icon: SearchIcon },
-  { to: '/tenant/maintenance',  label: 'Repairs', icon: Wrench },
-  { to: '/tenant/rent',         label: 'Rent',    icon: DollarSign },
-  { to: '/tenant/profile',      label: 'Account', icon: User },
+  { to: '/tenant',             label: 'Home',    icon: Home,       end: true },
+  { to: '/tenant/search',      label: 'Search',  icon: SearchIcon },
+  { to: '/tenant/maintenance', label: 'Repairs', icon: Wrench },
+  { to: '/tenant/rent',        label: 'Rent',    icon: DollarSign },
+  { to: '/tenant/profile',     label: 'Account', icon: User },
 ]
 
 export default function BottomNav({ role }) {
+  const { user } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => setIsAdmin(!!data?.is_admin))
+  }, [user])
+
   const links = role === 'landlord' ? landlordLinks : tenantLinks
 
   return (
@@ -43,6 +59,19 @@ export default function BottomNav({ role }) {
           {label}
         </NavLink>
       ))}
+      {isAdmin && (
+        <NavLink
+          to="/admin/queue"
+          className={({ isActive }) =>
+            `flex-1 flex flex-col items-center justify-center py-2 text-xs font-medium transition-colors ${
+              isActive ? 'text-[#1D9E75]' : 'text-[#1D9E75] opacity-70'
+            }`
+          }
+        >
+          <ShieldCheck className="w-5 h-5 mb-0.5" />
+          Admin
+        </NavLink>
+      )}
     </nav>
   )
 }

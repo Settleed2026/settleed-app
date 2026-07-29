@@ -38,6 +38,9 @@ import TenantLeaseDetails from './pages/tenant/LeaseDetails'
 import RentAnalyzer from './pages/tools/RentAnalyzer'
 import VoucherEstimator from './pages/tools/VoucherEstimator'
 
+// Admin pages
+import AdminQueue from './pages/admin/AdminQueue'
+
 // Shared
 import Landing from './pages/Landing'
 import PublicListings from './pages/PublicListings'
@@ -82,6 +85,9 @@ export default function App() {
           <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
           <Route path="/listings" element={<PublicListings />} />
           <Route path="/for-landlords" element={<ForLandlords />} />
+
+          {/* Admin routes — AdminQueue does its own is_admin check */}
+          <Route path="/admin/queue" element={<AdminQueue />} />
 
           {/* Landlord routes */}
           <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

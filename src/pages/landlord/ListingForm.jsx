@@ -261,30 +261,35 @@ export default function ListingForm() {
     window.scrollTo(0, 0)
   }
 
-  async function handlePublish() {
+  async function handleSubmitForReview() {
     if (!form.agree_accurate || !form.agree_terms || !form.agree_publish || !form.agree_no_false_info) {
-      toast.error('Please check all agreement boxes before publishing.')
+      toast.error('Please check all agreement boxes before submitting.')
       return
     }
+    // Step 1: save listing content with status='active' (landlord intent)
     const ok = await save('active')
-    if (!ok) { toast.error('Could not publish listing'); return }
+    if (!ok) { toast.error('Could not save listing'); return }
 
-    toast.success('Listing published! 🎉')
-
-    // Fire match alerts in the background — don't block navigation
     const currentId = listingId
-    if (currentId) {
-      const { data: { session } } = await supabase.auth.getSession()
-      fetch('/api/send-match-alerts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ listing_id: currentId }),
-      }).catch(() => {}) // fire-and-forget
-    }
+    if (!currentId) { toast.error('Listing ID missing — please try again.'); return }
 
+    // Step 2: set verification_status → verification_pending
+    // Allowed by trigger carve-out: draft → verification_pending by property owner
+    const { error: vsErr } = await supabase
+      .from('properties')
+      .update({ verification_status: 'verification_pending' })
+      .eq('id', currentId)
+    if (vsErr) { toast.error('Could not submit for review'); return }
+
+    // Step 3: create a review queue entry
+    await supabase.from('landlord_reviews').insert({
+      landlord_id: user.id,
+      property_id: currentId,
+      review_type: 'property',
+      status: 'pending',
+    })
+
+    // Navigate to dashboard — Dashboard will show the pending state
     navigate('/landlord')
   }
 
@@ -874,12 +879,12 @@ export default function ListingForm() {
             <div className={sectionClass}>
               <h2 className={sectionHead}>Agreement</h2>
               <p className="text-xs text-gray-500 mb-3">
-                Please review and check all boxes to publish your listing.
+                Please review and check all boxes to submit your listing for review.
               </p>
               {[
                 ['agree_accurate',      'I certify that all information in this listing is accurate and true.'],
                 ['agree_terms',         'I agree to the Settleed Terms of Service and Listing Policy.'],
-                ['agree_publish',       'I authorize Settleed to publish this listing to prospective tenants.'],
+                ['agree_publish',       'I authorize Settleed to publish this listing to prospective tenants upon approval.'],
                 ['agree_no_false_info', 'I understand that false or misleading information may result in removal of my listing and account suspension.'],
               ].map(([field, text]) => (
                 <label key={field} className="flex items-start gap-3 cursor-pointer py-2 border-b border-gray-100 last:border-0">
@@ -891,14 +896,26 @@ export default function ListingForm() {
               ))}
             </div>
 
+            {/* Verification notice */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3">
+              <span className="text-blue-500 text-lg leading-none mt-0.5">🔍</span>
+              <div>
+                <p className="text-sm font-semibold text-blue-900">Listing review required</p>
+                <p className="text-xs text-blue-700 mt-0.5">
+                  Settleed manually reviews all listings before they go live to protect tenants from fraud.
+                  Most listings are reviewed within 1–2 business days.
+                </p>
+              </div>
+            </div>
+
             {['trialing', 'active'].includes(subscriptionStatus) ? (
               <button
                 type="button"
-                onClick={handlePublish}
+                onClick={handleSubmitForReview}
                 disabled={saving || !form.agree_accurate || !form.agree_terms || !form.agree_publish || !form.agree_no_false_info}
                 className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm disabled:opacity-40"
               >
-                {saving ? 'Publishing…' : '🎉 Publish Listing'}
+                {saving ? 'Submitting…' : 'Submit for Review'}
               </button>
             ) : (
               <Link

@@ -79,8 +79,11 @@ export default function LandlordDashboard() {
                  : hour >= 12 && hour <= 16 ? 'Good afternoon'
                  : hour >= 17 && hour <= 21 ? 'Good evening'
                  : 'Good night'
-  const activeProperties = properties.filter(p => p.status === 'active')
-  const draftProperties  = properties.filter(p => p.status === 'draft')
+  const activeProperties   = properties.filter(p => p.status === 'active' && p.verification_status === 'approved')
+  const pendingProperties  = properties.filter(p => p.verification_status === 'verification_pending')
+  const rejectedProperties = properties.filter(p => p.verification_status === 'rejected')
+  const draftProperties    = properties.filter(p => p.status === 'draft' && p.verification_status === 'draft')
+  const verificationStatus = profile?.verification_status ?? 'unverified'
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -90,7 +93,9 @@ export default function LandlordDashboard() {
         <div className="flex gap-3 mt-4">
           <div className="bg-white/10 rounded-xl p-3 flex-1 text-center">
             <div className="text-white text-2xl font-bold">{activeProperties.length}</div>
-            <div className="text-blue-200 text-xs mt-0.5">Active listings</div>
+            <div className="text-blue-200 text-xs mt-0.5">
+              {pendingProperties.length > 0 ? `${pendingProperties.length} pending review` : 'Active listings'}
+            </div>
           </div>
           <div className="bg-white/10 rounded-xl p-3 flex-1 text-center">
             <div className="text-white text-2xl font-bold">{appCount}</div>
@@ -117,6 +122,90 @@ export default function LandlordDashboard() {
             </div>
             <span className="text-xs font-bold text-amber-900 bg-amber-200 px-2.5 py-1 rounded-full">$49/mo →</span>
           </Link>
+        )}
+
+        {/* ── Verification status banners ── */}
+        {verificationStatus === 'unverified' && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <span className="text-amber-500 text-lg leading-none mt-0.5">⚠</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-900">Account not yet verified</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Your identity and property ownership must be verified before listings go live.
+                Once you submit a listing, Settleed will review and verify your account.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {(verificationStatus === 'identity_pending' || verificationStatus === 'property_pending') && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <Clock className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-blue-900">Verification in progress</p>
+              <p className="text-xs text-blue-700 mt-0.5">
+                We're reviewing your account. Most verifications complete within 1–2 business days.
+                We'll email you when it's done.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {verificationStatus === 'verified' && pendingProperties.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <Clock className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-blue-900">
+                {pendingProperties.length} listing{pendingProperties.length > 1 ? 's' : ''} under review
+              </p>
+              <p className="text-xs text-blue-700 mt-0.5">
+                We're verifying your property details. Listings go live once approved — usually within 1–2 business days.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {verificationStatus === 'rejected' && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <span className="text-red-500 text-lg leading-none mt-0.5">✕</span>
+            <div>
+              <p className="text-sm font-semibold text-red-900">Verification unsuccessful</p>
+              <p className="text-xs text-red-700 mt-0.5">
+                We were unable to verify your account. Please contact{' '}
+                <a href="mailto:support@settleed.com" className="underline">support@settleed.com</a>{' '}
+                for details.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {verificationStatus === 'suspended' && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-red-900">Account suspended</p>
+              <p className="text-xs text-red-700 mt-0.5">
+                Your account has been suspended. Contact{' '}
+                <a href="mailto:support@settleed.com" className="underline">support@settleed.com</a>{' '}
+                to appeal.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Rejected listings */}
+        {rejectedProperties.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <span className="text-red-500 text-lg leading-none mt-0.5">✕</span>
+            <div>
+              <p className="text-sm font-semibold text-red-900">
+                {rejectedProperties.length} listing{rejectedProperties.length > 1 ? 's' : ''} not approved
+              </p>
+              <p className="text-xs text-red-700 mt-0.5">
+                One or more listings could not be verified. Contact support for details.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Connect bank account prompt for subscribed landlords who haven't connected */}

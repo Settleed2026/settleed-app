@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
 import { checkRentEligibility } from '../../lib/paymentStandards'
-import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight } from 'lucide-react'
+import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const HA_LABELS = {
@@ -16,9 +17,14 @@ const HA_LABELS = {
 export default function ListingDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportType, setReportType] = useState('scam')
+  const [reportDesc, setReportDesc] = useState('')
+  const [reporting, setReporting] = useState(false)
   const [saved, setSaved] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem('settleed_saved') || '[]')
@@ -69,11 +75,29 @@ export default function ListingDetail() {
     )
   }
 
+  async function submitReport() {
+    if (!user) { toast.error('Sign in to report a listing'); return }
+    setReporting(true)
+    const { error } = await supabase.from('listing_reports').insert({
+      reporter_id: user.id,
+      property_id: id,
+      landlord_id: listing.landlord_id,
+      report_type: reportType,
+      description: reportDesc || null,
+    })
+    setReporting(false)
+    if (error) { toast.error('Could not submit report'); return }
+    toast.success('Report submitted — thank you.')
+    setReportOpen(false)
+    setReportDesc('')
+  }
+
   const photos = listing.photos || []
   const beds = listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`
   const ps = checkRentEligibility(listing.zip_code, listing.bedrooms, listing.rent_amount)
   const availableDate = listing.available_date ? new Date(listing.available_date) : null
   const availableNow = !availableDate || availableDate <= new Date()
+  const isVerified = listing.verification_status === 'approved'
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
@@ -243,6 +267,83 @@ export default function ListingDetail() {
           <div className="bg-white rounded-xl p-4">
             <h2 className="font-semibold text-sm text-gray-900 mb-2">About this unit</h2>
             <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{listing.description}</p>
+          </div>
+        )}
+
+        {/* Verification badge */}
+        {isVerified && (
+          <div className="bg-[#EBF9F4] border border-[#1D9E75]/30 rounded-xl px-4 py-3 flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-[#1D9E75] shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-[#155C44]">Verified listing</p>
+              <p className="text-xs text-[#1D9E75] mt-0.5">
+                Settleed verified the landlord's identity and their connection to this property.
+                Verification does not guarantee lease approval or property condition.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Safety warning */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <p className="text-xs font-semibold text-amber-900 mb-1">🔒 Protect yourself from rental scams</p>
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Never pay through Cash App, Zelle, Venmo, gift cards, cryptocurrency, or wire transfer.
+            Do not pay any fee before touring the property in person.
+            Report anyone who pressures you to pay immediately.
+          </p>
+        </div>
+
+        {/* Report listing */}
+        <button
+          onClick={() => setReportOpen(true)}
+          className="flex items-center gap-2 text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Flag className="w-3.5 h-3.5" />
+          Report this listing
+        </button>
+
+        {/* Report modal */}
+        {reportOpen && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+            <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-8 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Report listing</h3>
+                <button onClick={() => setReportOpen(false)} className="text-gray-400 text-lg leading-none">✕</button>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">What's the issue?</label>
+                <select
+                  value={reportType}
+                  onChange={e => setReportType(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
+                >
+                  <option value="scam">Suspected scam</option>
+                  <option value="fake_listing">Fake or copied listing</option>
+                  <option value="wrong_info">Inaccurate information</option>
+                  <option value="payment_request">Suspicious payment request</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Additional details (optional)</label>
+                <textarea
+                  value={reportDesc}
+                  onChange={e => setReportDesc(e.target.value)}
+                  rows={3}
+                  placeholder="Describe what happened…"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] resize-none"
+                />
+              </div>
+              <button
+                onClick={submitReport}
+                disabled={reporting}
+                className="w-full bg-red-600 text-white rounded-xl py-3.5 font-semibold text-sm disabled:opacity-50"
+              >
+                {reporting ? 'Submitting…' : 'Submit Report'}
+              </button>
+            </div>
           </div>
         )}
       </div>

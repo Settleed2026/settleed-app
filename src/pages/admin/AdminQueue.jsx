@@ -20,13 +20,9 @@ export default function AdminQueue() {
   }, [user])
 
   async function checkAdminAndLoad() {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.is_admin) {
+    // Use the SECURITY DEFINER RPC function — bypasses RLS on profiles table
+    const { data, error } = await supabase.rpc('is_admin')
+    if (error || !data) {
       setIsAdmin(false)
       return
     }

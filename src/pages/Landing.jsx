@@ -679,6 +679,11 @@ export default function Landing() {
             <p className="text-xs text-gray-400 text-center sm:text-left">
               <span className="font-semibold">Equal Housing Opportunity.</span> Settleed does not discriminate on the basis of race, color, religion, sex, national origin, disability, or familial status in connection with any listing or service on this platform.
             </p>
+            <div className="flex justify-center pt-2">
+              <a href="/admin/queue" className="text-[10px] text-gray-300 hover:text-gray-400 transition-colors">
+                Admin
+              </a>
+            </div>
           </div>
         </div>
       </footer>

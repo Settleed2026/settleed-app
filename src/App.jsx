@@ -94,7 +94,7 @@ export default function App() {
   return (
     <>
       <PageViewLogger userId={user?.id} />
-      <
+      <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-white focus:text-[#1B3A6B] focus:font-semibold focus:rounded-lg focus:shadow-lg focus:outline-none"
       >

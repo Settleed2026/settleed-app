@@ -1,5 +1,35 @@
-import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { supabase } from './lib/supabase'
+
+function PageViewLogger({ userId }) {
+  const location = useLocation()
+  useEffect(() => {
+    let sid = sessionStorage.getItem('_settleed_sid')
+    if (!sid) {
+      sid = crypto.randomUUID()
+      sessionStorage.setItem('_settleed_sid', sid)
+    }
+    const ua = navigator.userAgent
+    const device = /Mobi|Android/i.test(ua) ? 'mobile' : /Tablet|iPad/i.test(ua) ? 'tablet' : 'desktop'
+    const browser = /Edg/i.test(ua) ? 'edge'
+      : /Chrome/i.test(ua) ? 'chrome'
+      : /Firefox/i.test(ua) ? 'firefox'
+      : /Safari/i.test(ua) ? 'safari'
+      : 'other'
+    supabase.from('page_views').insert({
+      session_id: sid,
+      page:       location.pathname,
+      referrer:   document.referrer || null,
+      user_agent: ua,
+      device,
+      browser,
+      user_id:    userId || null,
+    }).then(() => {})
+  }, [location.pathname])
+  return null
+}
 
 // Auth pages
 import Login from './pages/auth/Login'
@@ -51,7 +81,7 @@ import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
-  const { loading } = useAuth()
+  const { loading, user } = useAuth()
 
   if (loading) {
     return (
@@ -63,7 +93,8 @@ export default function App() {
 
   return (
     <>
-      <a
+      <PageViewLogger userId={user?.id} />
+      <
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-white focus:text-[#1B3A6B] focus:font-semibold focus:rounded-lg focus:shadow-lg focus:outline-none"
       >

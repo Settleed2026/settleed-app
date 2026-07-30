@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   CheckCircle, XCircle, Clock, User, Home, AlertTriangle,
   Users, BarChart2, FileText, CreditCard, Activity,
-  ShieldCheck, RefreshCw, TrendingUp, Key, Wrench,
+  ShieldCheck, RefreshCw, TrendingUp, Key, Wrench, Eye,
 } from 'lucide-react'
 
 const fmt = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -158,6 +158,7 @@ export default function AdminQueue() {
   const [apps, setApps]             = useState([])
   const [leases, setLeases]         = useState([])
   const [insights, setInsights]     = useState(null)
+  const [visitors, setVisitors]     = useState([])
 
   const [loading, setLoading]       = useState(false)
 
@@ -271,6 +272,13 @@ export default function AdminQueue() {
           openMaintenance: maintRes.count ?? (maintRes.data?.length ?? 0),
         })
       }
+      if (t === 'visitors') {
+        const { data } = await supabase.from('page_views')
+          .select('id,session_id,page,referrer,device,browser,user_id,created_at')
+          .order('created_at', { ascending: false })
+          .limit(500)
+        setVisitors(data || [])
+      }
     } catch(e) {
       console.error(e)
     } finally {
@@ -345,6 +353,7 @@ export default function AdminQueue() {
     { key: 'applications',  label: 'Applications',  icon: FileText },
     { key: 'leases',        label: 'Leases',        icon: Key },
     { key: 'insights',      label: 'Insights',      icon: BarChart2 },
+    { key: 'visitors',      label: 'Visitors',      icon: Eye },
   ]
 
   return (
@@ -700,7 +709,115 @@ export default function AdminQueue() {
           )
         )}
 
+        {/* ── VISITORS ── */}
+        {tab === 'visitors' && (
+          loading && !loadedTabs.has('visitors')
+            ? <Spinner />
+            : <VisitorsTab visitors={visitors} />
+        )}
+
       </div>
+    </div>
+  )
+}
+
+function VisitorsTab({ visitors }) {
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const weekAgo  = new Date(Date.now() - 7 * 86400000).toISOString()
+
+  const todayViews   = visitors.filter(v => v.created_at?.slice(0, 10) === todayStr)
+  const weekViews    = visitors.filter(v => v.created_at >= weekAgo)
+  const uniqueToday  = new Set(todayViews.map(v => v.session_id)).size
+  const uniqueWeek   = new Set(weekViews.map(v => v.session_id)).size
+
+  const pageCounts = {}
+  visitors.forEach(v => { pageCounts[v.page] = (pageCounts[v.page] || 0) + 1 })
+  const topPages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+
+  const devices = {}
+  visitors.forEach(v => { if (v.device) devices[v.device] = (devices[v.device] || 0) + 1 })
+
+  const fmtTime = d => new Date(d).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  })
+
+  return (
+    <div className="space-y-4">
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-2">
+        <StatCard label="Today's Visits"  value={todayViews.length} color="blue" />
+        <StatCard label="Sessions Today"  value={uniqueToday}       color="blue" />
+        <StatCard label="This Week"       value={weekViews.length}  color="green" sub="page views" />
+        <StatCard label="Sessions (7d)"   value={uniqueWeek}        color="green" />
+      </div>
+
+      {/* Top Pages */}
+      <div className="bg-white rounded-xl p-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top Pages</p>
+        {topPages.length === 0
+          ? <p className="text-xs text-gray-400">No data yet</p>
+          : topPages.map(([page, count]) => {
+              const pct = Math.round(count / visitors.length * 100)
+              return (
+                <div key={page} className="mb-2">
+                  <div className="flex justify-between text-xs mb-0.5">
+                    <span className="font-mono text-gray-700 truncate max-w-[180px]">{page}</span>
+                    <span className="text-gray-500 shrink-0 ml-2">{count} ({pct}%)</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full">
+                    <div className="h-1.5 bg-[#1B3A6B] rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              )
+            })
+        }
+      </div>
+
+      {/* Device Breakdown */}
+      <div className="bg-white rounded-xl p-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Devices</p>
+        <div className="grid grid-cols-3 gap-2">
+          {['mobile', 'tablet', 'desktop'].map(d => (
+            <div key={d} className="bg-gray-50 rounded-lg p-2.5 text-center">
+              <p className="text-xl font-bold text-gray-900">{devices[d] || 0}</p>
+              <p className="text-xs text-gray-500 capitalize">{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Visits Log */}
+      <div className="bg-white rounded-xl p-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+          Recent Visits · {visitors.length} logged
+        </p>
+        {visitors.length === 0
+          ? <p className="text-xs text-gray-400">No visits recorded yet. Run the migration in Supabase first.</p>
+          : visitors.slice(0, 50).map(v => (
+              <div key={v.id} className="py-2 border-b border-gray-50 last:border-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-mono text-gray-800 truncate">{v.page}</p>
+                    {v.referrer && (
+                      <p className="text-[10px] text-gray-400 truncate">
+                        ↩ {v.referrer.replace(/^https?:\/\//, '').slice(0, 50)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] text-gray-400">{fmtTime(v.created_at)}</p>
+                    <p className="text-[10px] text-gray-300 capitalize">
+                      {[v.device, v.browser].filter(Boolean).join(' · ')}
+                    </p>
+                    {v.user_id && <span className="text-[10px] text-green-600 font-medium">✓ user</span>}
+                  </div>
+                </div>
+              </div>
+            ))
+        }
+      </div>
+
     </div>
   )
 }

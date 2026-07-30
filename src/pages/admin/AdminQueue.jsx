@@ -7,6 +7,7 @@ import {
   CheckCircle, XCircle, Clock, User, Home, AlertTriangle,
   Users, BarChart2, FileText, CreditCard, Activity,
   ShieldCheck, RefreshCw, TrendingUp, Key, Wrench, Eye,
+  Search, MapPin, Image, Save, AlertCircle,
 } from 'lucide-react'
 
 const fmt = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -41,8 +42,40 @@ function StatCard({ label, value, sub, color = 'blue' }) {
 
 function ReviewCard({ review, onApprove, onReject }) {
   const isProperty = review.review_type === 'property'
+  const [notes, setNotes]           = useState(review.admin_notes || '')
+  const [savingNotes, setSavingNotes] = useState(false)
+  const [notesSaved, setNotesSaved]   = useState(false)
+
+  // Account age
+  const accountAgeDays = review.landlord?.created_at
+    ? Math.floor((Date.now() - new Date(review.landlord.created_at).getTime()) / 86400000)
+    : null
+  const isNewAccount = accountAgeDays !== null && accountAgeDays < 30
+
+  // Verification links
+  const address    = review.property?.street_address || ''
+  const fullAddr   = [address, 'Atlanta', 'GA'].filter(Boolean).join(', ')
+  const countyUrl  = `https://www.google.com/search?q=${encodeURIComponent(fullAddr + ' property owner county records')}`
+  const mapsUrl    = `https://www.google.com/maps/search/${encodeURIComponent(fullAddr)}`
+  const rentometerUrl = review.property?.zip_code
+    ? `https://www.rentometer.com/analysis/new?address=${encodeURIComponent(fullAddr)}&bedrooms=${review.property.bedrooms || 1}`
+    : null
+
+  // Photos
+  const photos = (review.property?.photos || []).filter(Boolean)
+
+  async function saveNotes() {
+    setSavingNotes(true)
+    await supabase.from('landlord_reviews').update({ admin_notes: notes }).eq('id', review.id)
+    setSavingNotes(false)
+    setNotesSaved(true)
+    setTimeout(() => setNotesSaved(false), 2000)
+  }
+
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+
+      {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-2">
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -52,31 +85,113 @@ function ReviewCard({ review, onApprove, onReject }) {
           </span>
           <span className="text-xs text-gray-400">{fmt(review.created_at)}</span>
         </div>
+
+        {/* Landlord info */}
         <div className="flex items-start gap-2">
           <User className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900">{review.landlord?.full_name || 'Unknown'}</p>
             <p className="text-xs text-gray-500">{review.landlord?.email}</p>
             {review.landlord?.phone && <p className="text-xs text-gray-500">{review.landlord.phone}</p>}
-            <p className={`text-xs font-medium mt-0.5 ${
-              review.landlord?.verification_status === 'verified' ? 'text-green-600' : 'text-amber-600'
-            }`}>Account: {review.landlord?.verification_status || 'unverified'}</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <p className={`text-xs font-medium ${
+                review.landlord?.verification_status === 'verified' ? 'text-green-600' : 'text-amber-600'
+              }`}>
+                {review.landlord?.verification_status || 'unverified'}
+              </p>
+              {accountAgeDays !== null && (
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                  isNewAccount ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {isNewAccount ? `⚠ New account · ${accountAgeDays}d old` : `Account ${accountAgeDays}d old`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Property info + verification links */}
       {isProperty && review.property && (
-        <div className="px-4 py-3 bg-gray-50 flex items-start gap-2 border-b border-gray-100">
-          <Home className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-gray-900">{review.property.street_address || review.property.neighborhood}</p>
-            <p className="text-xs text-gray-500">
-              {review.property.bedrooms === 0 ? 'Studio' : `${review.property.bedrooms} BR`}
-              {review.property.zip_code ? ` · ${review.property.zip_code}` : ''}
-              {review.property.rent_amount ? ` · $${Number(review.property.rent_amount).toLocaleString()}/mo` : ''}
-            </p>
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 space-y-2">
+          <div className="flex items-start gap-2">
+            <Home className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">{review.property.street_address || review.property.neighborhood}</p>
+              <p className="text-xs text-gray-500">
+                {review.property.bedrooms === 0 ? 'Studio' : `${review.property.bedrooms} BR`}
+                {review.property.zip_code ? ` · ${review.property.zip_code}` : ''}
+                {review.property.rent_amount ? ` · $${Number(review.property.rent_amount).toLocaleString()}/mo` : ''}
+              </p>
+            </div>
+          </div>
+
+          {/* Verification action links */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {address && (
+              <>
+                <a href={countyUrl} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-1 text-[11px] font-medium bg-[#1B3A6B] text-white px-2.5 py-1.5 rounded-lg">
+                  <Search className="w-3 h-3" /> County Records
+                </a>
+                <a href={mapsUrl} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-1 text-[11px] font-medium bg-white border border-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg">
+                  <MapPin className="w-3 h-3" /> Street View
+                </a>
+              </>
+            )}
+            {rentometerUrl && (
+              <a href={rentometerUrl} target="_blank" rel="noreferrer"
+                className="flex items-center gap-1 text-[11px] font-medium bg-white border border-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg">
+                <BarChart2 className="w-3 h-3" /> Market Rent
+              </a>
+            )}
           </div>
         </div>
       )}
+
+      {/* Photo reverse image search */}
+      {photos.length > 0 && (
+        <div className="px-4 py-3 border-b border-gray-100">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Photos · tap to reverse-image-search
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {photos.slice(0, 6).map((url, i) => (
+              <a key={i}
+                href={`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(url)}`}
+                target="_blank" rel="noreferrer"
+                className="relative shrink-0 group"
+              >
+                <img src={url} alt={`Photo ${i + 1}`}
+                  className="w-20 h-16 object-cover rounded-lg border border-gray-200" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center transition-opacity">
+                  <Image className="w-4 h-4 text-white" />
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Admin notes */}
+      <div className="px-4 py-3 border-b border-gray-100">
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Your Notes</p>
+        <textarea
+          value={notes}
+          onChange={e => { setNotes(e.target.value); setNotesSaved(false) }}
+          placeholder="e.g. County records match. Owner: Marcus Johnson. Photos verified."
+          rows={2}
+          className="w-full text-xs text-gray-800 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#1B3A6B] placeholder-gray-300"
+        />
+        <button onClick={saveNotes} disabled={savingNotes}
+          className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-[#1B3A6B] border border-[#1B3A6B]/30 px-3 py-1.5 rounded-lg disabled:opacity-50">
+          <Save className="w-3 h-3" />
+          {notesSaved ? 'Saved ✓' : savingNotes ? 'Saving…' : 'Save Notes'}
+        </button>
+      </div>
+
+      {/* Approve / Reject */}
       <div className="px-4 py-3 flex gap-2">
         <button onClick={onApprove}
           className="flex-1 flex items-center justify-center gap-1.5 bg-[#1D9E75] text-white rounded-lg py-2.5 text-sm font-semibold">
@@ -196,7 +311,7 @@ export default function AdminQueue() {
 
   async function loadQueue() {
     const [r1, r2, r3] = await Promise.all([
-      supabase.from('landlord_reviews').select(`*, landlord:profiles!landlord_reviews_landlord_id_fkey(full_name,email,phone,verification_status), property:properties(neighborhood,zip_code,rent_amount,bedrooms,verification_status,street_address)`).eq('status','pending').order('created_at',{ascending:true}),
+      supabase.from('landlord_reviews').select(`*, landlord:profiles!landlord_reviews_landlord_id_fkey(full_name,email,phone,verification_status,created_at), property:properties(neighborhood,zip_code,rent_amount,bedrooms,verification_status,street_address,photos)`).eq('status','pending').order('created_at',{ascending:true}),
       supabase.from('listing_reports').select(`*, reporter:profiles!listing_reports_reporter_id_fkey(full_name,email), property:properties(neighborhood,zip_code,street_address,verification_status), subject:profiles!listing_reports_landlord_id_fkey(full_name,email)`).eq('status','pending').order('created_at',{ascending:true}),
       supabase.from('fraud_alerts').select(`*, landlord:profiles!fraud_alerts_landlord_id_fkey(full_name,email), property:properties(neighborhood,zip_code)`).eq('status','open').order('created_at',{ascending:false}),
     ])

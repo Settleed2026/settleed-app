@@ -273,11 +273,19 @@ export default function AdminQueue() {
         })
       }
       if (t === 'visitors') {
-        const { data } = await supabase.from('page_views')
+        const { data: views } = await supabase.from('page_views')
           .select('id,session_id,page,referrer,device,browser,user_id,created_at')
           .order('created_at', { ascending: false })
           .limit(500)
-        setVisitors(data || [])
+        const userIds = [...new Set((views || []).filter(v => v.user_id).map(v => v.user_id))]
+        let profileMap = {}
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase.from('profiles')
+            .select('id,full_name,email')
+            .in('id', userIds)
+          ;(profs || []).forEach(p => { profileMap[p.id] = p })
+        }
+        setVisitors((views || []).map(v => ({ ...v, profile: v.user_id ? profileMap[v.user_id] : null })))
       }
     } catch(e) {
       console.error(e)
@@ -799,18 +807,24 @@ function VisitorsTab({ visitors }) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-mono text-gray-800 truncate">{v.page}</p>
-                    {v.referrer && (
+                    {v.profile ? (
+                      <p className="text-[10px] text-[#1B3A6B] font-medium truncate">
+                        {v.profile.full_name || v.profile.email || '✓ logged in'}
+                        {v.profile.full_name && v.profile.email && (
+                          <span className="text-gray-400 font-normal"> · {v.profile.email}</span>
+                        )}
+                      </p>
+                    ) : v.referrer ? (
                       <p className="text-[10px] text-gray-400 truncate">
                         ↩ {v.referrer.replace(/^https?:\/\//, '').slice(0, 50)}
                       </p>
-                    )}
+                    ) : null}
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[10px] text-gray-400">{fmtTime(v.created_at)}</p>
                     <p className="text-[10px] text-gray-300 capitalize">
                       {[v.device, v.browser].filter(Boolean).join(' · ')}
                     </p>
-                    {v.user_id && <span className="text-[10px] text-green-600 font-medium">✓ user</span>}
                   </div>
                 </div>
               </div>

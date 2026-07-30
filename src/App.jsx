@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase'
 function PageViewLogger({ userId }) {
   const location = useLocation()
   useEffect(() => {
+    if (location.pathname.startsWith('/admin')) return
     let sid = sessionStorage.getItem('_settleed_sid')
     if (!sid) {
       sid = crypto.randomUUID()

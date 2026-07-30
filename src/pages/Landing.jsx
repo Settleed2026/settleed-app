@@ -153,6 +153,12 @@ export default function Landing() {
                 Sign In
               </Link>
             )}
+            <a
+              href="/admin/queue"
+              className="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors border border-gray-200 px-2.5 py-1 rounded-md"
+            >
+              Admin
+            </a>
             <Link
               to="/signup?role=tenant"
               className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
@@ -211,6 +217,13 @@ export default function Landing() {
             >
               Find Housing
             </Link>
+            <a
+              href="/admin/queue"
+              className="text-xs font-medium text-gray-400 text-center border border-gray-200 px-4 py-2.5 rounded-xl"
+              onClick={() => setMenuOpen(false)}
+            >
+              Admin Sign In
+            </a>
           </div>
         )}
       </header>

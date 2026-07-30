@@ -663,9 +663,10 @@ export default function Landing() {
               <div>
                 <p className="font-semibold text-gray-900 mb-3">Company</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
-                  <Link to="/login"    className="hover:text-gray-700 transition-colors">Sign In</Link>
-                  <Link to="/privacy"  className="hover:text-gray-700 transition-colors">Privacy Policy</Link>
-                  <Link to="/terms"    className="hover:text-gray-700 transition-colors">Terms of Service</Link>
+                  <Link to="/login"       className="hover:text-gray-700 transition-colors">Sign In</Link>
+                  <Link to="/privacy"     className="hover:text-gray-700 transition-colors">Privacy Policy</Link>
+                  <Link to="/terms"       className="hover:text-gray-700 transition-colors">Terms of Service</Link>
+                  <a    href="/admin/queue" className="hover:text-gray-700 transition-colors">Admin</a>
                 </div>
               </div>
             </div>
@@ -679,11 +680,7 @@ export default function Landing() {
             <p className="text-xs text-gray-400 text-center sm:text-left">
               <span className="font-semibold">Equal Housing Opportunity.</span> Settleed does not discriminate on the basis of race, color, religion, sex, national origin, disability, or familial status in connection with any listing or service on this platform.
             </p>
-            <div className="flex justify-center pt-2">
-              <a href="/admin/queue" className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2">
-                Admin Sign In
-              </a>
-            </div>
+
           </div>
         </div>
       </footer>

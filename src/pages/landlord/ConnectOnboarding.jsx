@@ -44,7 +44,7 @@ export default function ConnectOnboarding() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(
-        '/api/create-connect-account',
+        '/api/connect',
         {
           method: 'POST',
           headers: {
@@ -52,6 +52,7 @@ export default function ConnectOnboarding() {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
+            action: 'create_account',
             return_url: `${window.location.origin}/landlord/connect?returned=1`,
             refresh_url: `${window.location.origin}/landlord/connect?refresh=1`,
           }),
@@ -75,7 +76,7 @@ export default function ConnectOnboarding() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(
-        '/api/create-connect-account',
+        '/api/connect',
         {
           method: 'POST',
           headers: {
@@ -83,6 +84,7 @@ export default function ConnectOnboarding() {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
+            action: 'create_account',
             return_url: `${window.location.origin}/landlord/connect?returned=1`,
             refresh_url: `${window.location.origin}/landlord/connect?refresh=1`,
           }),

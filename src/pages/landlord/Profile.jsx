@@ -58,12 +58,13 @@ export default function LandlordProfile() {
     setConnectLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/create-connect-login', {
+      const res = await fetch('/api/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({ action: 'login_link' }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)

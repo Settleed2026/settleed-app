@@ -1,13 +1,17 @@
 $ErrorActionPreference = "Continue"
 Set-Location "C:\Users\Demetrius\Documents\Claude\Projects\Settleed"
 
-# Build list of candidate git paths
+# Remove ALL stale git lock/temp files from .git
+Get-ChildItem ".git" -File | Where-Object { $_.Name -match "\.(lock|bak|gone)$" } | ForEach-Object {
+  Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
+  Write-Host "Removed: $($_.Name)"
+}
+
+# Find git.exe
 $candidates = [System.Collections.Generic.List[string]]@(
     "C:\Program Files\Git\cmd\git.exe",
     "C:\Program Files (x86)\Git\cmd\git.exe"
 )
-
-# Search GitHub Desktop bundled git
 $ghBase = "$env:LOCALAPPDATA\GitHubDesktop"
 if (Test-Path $ghBase) {
     Get-ChildItem $ghBase -Directory -Filter "app-*" | ForEach-Object {
@@ -15,8 +19,6 @@ if (Test-Path $ghBase) {
         if (Test-Path $p) { $candidates.Add($p) }
     }
 }
-
-# Try system git last (might be in PATH under a different name)
 $sysGit = (Get-Command git -ErrorAction SilentlyContinue)?.Source
 if ($sysGit) { $candidates.Insert(0, $sysGit) }
 
@@ -24,11 +26,7 @@ $git = $null
 foreach ($p in $candidates) {
     try {
         $ver = & "$p" --version 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            $git = $p
-            Write-Host "Found git: $p ($ver)"
-            break
-        }
+        if ($LASTEXITCODE -eq 0) { $git = $p; break }
     } catch { }
 }
 
@@ -37,7 +35,15 @@ if (-not $git) {
     Read-Host "Press Enter to exit"
     exit 1
 }
+Write-Host "Found git: $git ($ver)"
 
+# Show what's pending
+Write-Host ""
+Write-Host "Local commits not yet on GitHub:"
+& "$git" log --oneline origin/main..HEAD
+Write-Host ""
+
+# Push
 Write-Host "Pushing to GitHub..."
 & "$git" push origin main
 Write-Host ""

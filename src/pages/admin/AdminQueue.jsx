@@ -419,6 +419,15 @@ export default function AdminQueue() {
     if (review.review_type === 'property') {
       const { error } = await supabase.from('properties').update({ verification_status: 'approved' }).eq('id', review.property_id)
       if (error) { toast.error(error.message); return }
+      // Fire-and-forget match alerts to tenants whose voucher size matches
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) return
+        fetch('/api/send-match-alerts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ listing_id: review.property_id }),
+        }).catch(e => console.warn('[match-alerts]', e.message))
+      })
     } else {
       const { error } = await supabase.from('profiles').update({ verification_status: 'verified' }).eq('id', review.landlord_id)
       if (error) { toast.error(error.message); return }

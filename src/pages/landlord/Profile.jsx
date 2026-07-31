@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
 import toast from 'react-hot-toast'
-import { LogOut, ChevronRight, Building2, CreditCard, AlertTriangle, X } from 'lucide-react'
+import { LogOut, ChevronRight, Building2, CreditCard, AlertTriangle, X, Upload, ShieldCheck, ShieldAlert, Clock } from 'lucide-react'
 
 export default function LandlordProfile() {
   const { user } = useAuth()
@@ -16,6 +16,9 @@ export default function LandlordProfile() {
   const [connectLoading, setConnectLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [verificationStatus, setVerificationStatus] = useState('unverified')
+  const [uploadedDocs, setUploadedDocs] = useState([])
+  const [uploading, setUploading] = useState({})
 
   const [form, setForm] = useState({
     firstName: '',
@@ -50,7 +53,16 @@ export default function LandlordProfile() {
       })
       setConnectStatus(data.connect_onboarding_status ?? null)
       setSubscriptionStatus(data.subscription_status ?? null)
+      setVerificationStatus(data.verification_status || 'unverified')
     }
+
+    const { data: docs } = await supabase
+      .from('verification_documents')
+      .select('document_type, file_name, status, uploaded_at')
+      .eq('landlord_id', user.id)
+      .order('uploaded_at', { ascending: false })
+    setUploadedDocs(docs || [])
+
     setLoading(false)
   }
 
@@ -125,6 +137,55 @@ export default function LandlordProfile() {
       toast.error('Failed to save changes.')
     } else {
       toast.success('Profile updated!')
+    }
+  }
+
+  const DOC_TYPES = [
+    { key: 'government_id',  label: 'Government ID',       desc: "Driver's license, passport, or state ID" },
+    { key: 'selfie',         label: 'Selfie with ID',      desc: 'Photo of you holding your government ID' },
+    { key: 'property_deed',  label: 'Proof of Ownership',  desc: 'Property deed, tax bill, or mortgage statement' },
+  ]
+
+  async function handleDocUpload(docType, file) {
+    if (!file) return
+    const MAX_MB = 10
+    if (file.size > MAX_MB * 1024 * 1024) { toast.error(`File must be under ${MAX_MB} MB.`); return }
+
+    setUploading(prev => ({ ...prev, [docType]: true }))
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `${user.id}/${docType}_${Date.now()}.${ext}`
+
+      const { error: uploadErr } = await supabase.storage
+        .from('verification-documents')
+        .upload(path, file, { cacheControl: '3600', upsert: false })
+      if (uploadErr) throw uploadErr
+
+      const { error: dbErr } = await supabase.from('verification_documents').insert({
+        landlord_id: user.id,
+        document_type: docType,
+        storage_path: path,
+        file_name: file.name,
+        mime_type: file.type,
+      })
+      if (dbErr) throw dbErr
+
+      if (verificationStatus === 'unverified' || verificationStatus === 'rejected') {
+        await supabase.from('profiles').update({ verification_status: 'pending' }).eq('id', user.id)
+        setVerificationStatus('pending')
+      }
+
+      const { data: docs } = await supabase
+        .from('verification_documents')
+        .select('document_type, file_name, status, uploaded_at')
+        .eq('landlord_id', user.id)
+        .order('uploaded_at', { ascending: false })
+      setUploadedDocs(docs || [])
+      toast.success('Document uploaded — we\'ll review it shortly.')
+    } catch (err) {
+      toast.error(err.message || 'Upload failed.')
+    } finally {
+      setUploading(prev => ({ ...prev, [docType]: false }))
     }
   }
 
@@ -287,6 +348,80 @@ export default function LandlordProfile() {
             Your subscription is canceled and will end at the close of your current billing period.
           </div>
         )}
+
+        {/* ── Verification ────────────────────────────────────────────── */}
+        <div className="mt-3 bg-white rounded-xl p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Identity Verification</p>
+            {verificationStatus === 'verified' && (
+              <span className="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                <ShieldCheck className="w-3 h-3" /> Verified
+              </span>
+            )}
+            {verificationStatus === 'pending' && (
+              <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                <Clock className="w-3 h-3" /> Under Review
+              </span>
+            )}
+            {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
+              <span className="flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                <ShieldAlert className="w-3 h-3" /> {verificationStatus === 'rejected' ? 'Rejected' : 'Not Verified'}
+              </span>
+            )}
+          </div>
+
+          {verificationStatus === 'verified' ? (
+            <p className="text-sm text-gray-500">Your identity has been verified. Your listings will be shown with a verified badge.</p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500">
+                {verificationStatus === 'pending'
+                  ? 'Your documents are under review. We\'ll notify you once approved.'
+                  : verificationStatus === 'rejected'
+                  ? 'Your previous submission was rejected. Please re-upload clear, readable documents.'
+                  : 'Upload the documents below to get your account verified. Verified landlords get more applications.'}
+              </p>
+
+              <div className="space-y-3">
+                {DOC_TYPES.map(({ key, label, desc }) => {
+                  const existing = uploadedDocs.find(d => d.document_type === key)
+                  return (
+                    <div key={key} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800">{label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                          {existing && (
+                            <p className="text-xs mt-1 font-medium truncate" style={{ color: existing.status === 'accepted' ? '#16a34a' : existing.status === 'rejected' ? '#dc2626' : '#d97706' }}>
+                              {existing.status === 'accepted' ? '✓ Accepted' : existing.status === 'rejected' ? '✗ Rejected — re-upload' : '⏳ ' + existing.file_name}
+                            </p>
+                          )}
+                        </div>
+                        <label className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                          uploading[key] ? 'bg-gray-100 text-gray-400' : 'bg-[#EEF5FF] text-[#1B3A6B] hover:bg-[#dbeafe]'
+                        }`}>
+                          {uploading[key] ? (
+                            <span className="w-3 h-3 border-2 border-[#1B3A6B] border-t-transparent rounded-full animate-spin inline-block" />
+                          ) : (
+                            <Upload className="w-3 h-3" />
+                          )}
+                          {uploading[key] ? 'Uploading…' : existing ? 'Replace' : 'Upload'}
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*,.pdf"
+                            disabled={uploading[key]}
+                            onChange={e => handleDocUpload(key, e.target.files?.[0])}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Sign out */}
         <button

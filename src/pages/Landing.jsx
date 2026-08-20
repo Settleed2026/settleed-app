@@ -303,6 +303,33 @@ export default function Landing() {
                   </span>
                   <ChevronRight size={18} />
                 </Link>
+
+                {/* Directional quick links */}
+                <div className="flex items-center gap-4 pt-1">
+                  <Link
+                    to="/signup?role=tenant"
+                    className="text-sm font-medium flex items-center gap-1 hover:underline"
+                    style={{ color: BRAND_BLUE }}
+                  >
+                    I'm a Tenant ↗
+                  </Link>
+                  <span className="text-gray-300">|</span>
+                  <Link
+                    to="/signup?role=landlord"
+                    className="text-sm font-medium flex items-center gap-1 hover:underline"
+                    style={{ color: BRAND_BLUE }}
+                  >
+                    I'm a Landlord ↗
+                  </Link>
+                  <span className="text-gray-300">|</span>
+                  <a
+                    href="mailto:ha@settleed.com"
+                    className="text-sm font-medium flex items-center gap-1 hover:underline"
+                    style={{ color: BRAND_BLUE }}
+                  >
+                    I'm an Agency ↗
+                  </a>
+                </div>
               </div>
             </div>
           </div>

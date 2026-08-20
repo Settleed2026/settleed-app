@@ -13,6 +13,15 @@ const HA_OPTIONS = [
   { value: 'other', label: 'Other' },
 ]
 
+const TYPE_OPTIONS = [
+  { value: '', label: 'Any Type' },
+  { value: 'Single Family Home', label: 'House' },
+  { value: 'Apartment', label: 'Apartment' },
+  { value: 'Duplex', label: 'Duplex' },
+  { value: 'Townhome', label: 'Townhome' },
+  { value: 'Condo', label: 'Condo' },
+]
+
 const BED_OPTIONS = [
   { value: '', label: 'Any Beds' },
   { value: '0', label: 'Studio' },
@@ -199,9 +208,12 @@ export default function SearchListings() {
   const [search, setSearch] = useState('')
   const [ha, setHa] = useState('')
   const [beds, setBeds] = useState('')
+  const [propertyType, setPropertyType] = useState('')
   const [minRent, setMinRent] = useState('')
   const [maxRent, setMaxRent] = useState('')
   const [creditFriendly, setCreditFriendly] = useState(false)
+  const [petsAllowed, setPetsAllowed] = useState(false)
+  const [accessibleOnly, setAccessibleOnly] = useState(false)
 
   // Load Leaflet on first map toggle
   useEffect(() => {
@@ -236,9 +248,12 @@ export default function SearchListings() {
       if (n >= 4) query = query.gte('bedrooms', 4)
       else query = query.eq('bedrooms', n)
     }
+    if (propertyType) query = query.eq('property_type', propertyType)
     if (minRent) query = query.gte('rent_amount', parseFloat(minRent))
     if (maxRent) query = query.lte('rent_amount', parseFloat(maxRent))
     if (creditFriendly) query = query.eq('credit_friendly', true)
+    if (petsAllowed) query = query.eq('pets_allowed', true)
+    if (accessibleOnly) query = query.neq('accessibility', '[]').not('accessibility', 'is', null)
 
     const { data, count, error } = await query
     if (error) {
@@ -250,15 +265,15 @@ export default function SearchListings() {
       setTotal(count || 0)
     }
     setLoading(false)
-  }, [search, ha, beds, minRent, maxRent, creditFriendly])
+  }, [search, ha, beds, propertyType, minRent, maxRent, creditFriendly, petsAllowed, accessibleOnly])
 
   useEffect(() => {
     const t = setTimeout(fetchListings, search ? 400 : 0)
     return () => clearTimeout(t)
   }, [fetchListings, search])
 
-  const hasActiveFilters = ha || beds || minRent || maxRent || creditFriendly
-  function clearFilters() { setHa(''); setBeds(''); setMinRent(''); setMaxRent(''); setCreditFriendly(false) }
+  const hasActiveFilters = ha || beds || propertyType || minRent || maxRent || creditFriendly || petsAllowed || accessibleOnly
+  function clearFilters() { setHa(''); setBeds(''); setPropertyType(''); setMinRent(''); setMaxRent(''); setCreditFriendly(false); setPetsAllowed(false); setAccessibleOnly(false) }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -298,9 +313,25 @@ export default function SearchListings() {
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
         </div>
+        <div className="relative shrink-0">
+          <select value={propertyType} onChange={e => setPropertyType(e.target.value)}
+            className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-medium border border-gray-200 bg-white focus:outline-none cursor-pointer"
+            style={{ color: propertyType ? '#1B3A6B' : undefined }}>
+            {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+        </div>
         <button onClick={() => setCreditFriendly(p => !p)}
           className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${creditFriendly ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200'}`}>
-          Credit Friendly
+          Credit OK
+        </button>
+        <button onClick={() => setPetsAllowed(p => !p)}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${petsAllowed ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200'}`}>
+          Pets OK
+        </button>
+        <button onClick={() => setAccessibleOnly(p => !p)}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${accessibleOnly ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200'}`}>
+          Accessible
         </button>
         <button onClick={() => setShowFilters(p => !p)}
           className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${(minRent || maxRent) ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'bg-white text-gray-600 border-gray-200'}`}>

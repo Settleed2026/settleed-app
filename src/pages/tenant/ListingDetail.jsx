@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { checkRentEligibility } from '../../lib/paymentStandards'
-import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck, MessageSquare, Star } from 'lucide-react'
+import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck, MessageSquare, Star, Zap, MapPin, Accessibility } from 'lucide-react'
 import { ReviewsDisplay, LeaveReviewForm } from '../../components/ReviewsSection'
 import toast from 'react-hot-toast'
 
@@ -22,6 +22,7 @@ export default function ListingDetail() {
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [similarListings, setSimilarListings] = useState([])
   const [reportOpen, setReportOpen] = useState(false)
   const [reportType, setReportType] = useState('scam')
   const [reportDesc, setReportDesc] = useState('')
@@ -43,6 +44,18 @@ export default function ListingDetail() {
           .single()
         if (error) console.error('Listing fetch error:', error.message)
         setListing(data || null)
+        // Fetch similar listings
+        if (data) {
+          const { data: similar } = await supabase
+            .from('properties')
+            .select('id, neighborhood, zip_code, bedrooms, bathrooms, rent_amount, photos')
+            .eq('status', 'active')
+            .neq('id', id)
+            .or(`neighborhood.eq.${data.neighborhood},zip_code.eq.${data.zip_code}`)
+            .eq('bedrooms', data.bedrooms)
+            .limit(3)
+          setSimilarListings(similar || [])
+        }
       } catch (err) {
         console.error('Listing fetch error:', err)
       } finally {
@@ -271,6 +284,69 @@ export default function ListingDetail() {
           </div>
         )}
 
+        {/* Utilities */}
+        {listing.utilities && Object.keys(listing.utilities).length > 0 && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-500" /> Utilities
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(listing.utilities).map(([util, payer]) => (
+                <div key={util} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-gray-700">{util}</span>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    payer === 'landlord'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    {payer === 'landlord' ? 'Included' : 'Tenant pays'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Amenities */}
+        {(listing.amenities || []).length > 0 && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3">Amenities</h2>
+            <div className="flex flex-wrap gap-2">
+              {listing.amenities.map(a => (
+                <span key={a} className="text-xs bg-blue-50 text-[#1B3A6B] font-medium px-2.5 py-1 rounded-full">{a}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Accessibility */}
+        {(listing.accessibility || []).length > 0 && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+              <Accessibility className="w-4 h-4 text-purple-600" /> Accessibility Features
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {listing.accessibility.map(a => (
+                <span key={a} className="text-xs bg-purple-50 text-purple-700 font-medium px-2.5 py-1 rounded-full">{a}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Nearby */}
+        {(listing.nearby_attractions || []).length > 0 && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#1D9E75]" /> Nearby
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {listing.nearby_attractions.map(a => (
+                <span key={a} className="text-xs bg-gray-100 text-gray-600 font-medium px-2.5 py-1 rounded-full">{a}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Verification badge */}
         {isVerified && (
           <div className="bg-[#EBF9F4] border border-[#1D9E75]/30 rounded-xl px-4 py-3 flex items-center gap-3">
@@ -309,6 +385,35 @@ export default function ListingDetail() {
             />
           </div>
         </div>
+
+        {/* Similar Listings */}
+        {similarListings.length > 0 && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3">Similar Listings Nearby</h2>
+            <div className="space-y-3">
+              {similarListings.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => navigate(`/tenant/listing/${s.id}`)}
+                  className="w-full flex items-center gap-3 bg-gray-50 rounded-xl p-3 text-left hover:bg-blue-50 transition-colors"
+                >
+                  <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-200">
+                    {s.photos?.[0]
+                      ? <img src={s.photos[0]} alt="" className="w-full h-full object-cover" />
+                      : <BedDouble className="w-6 h-6 text-gray-300 m-auto mt-4" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">${s.rent_amount?.toLocaleString()}/mo</p>
+                    <p className="text-xs text-gray-500">{s.bedrooms === 0 ? 'Studio' : `${s.bedrooms} BR`} · {s.bathrooms} BA</p>
+                    <p className="text-xs text-[#1B3A6B] truncate">{s.neighborhood} · {s.zip_code}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Report listing */}
         <button

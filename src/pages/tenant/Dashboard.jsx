@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
-import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart } from 'lucide-react'
+import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart, Bot, LifeBuoy } from 'lucide-react'
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'text-amber-600 bg-amber-50',  icon: Clock },
@@ -299,6 +299,34 @@ export default function TenantDashboard() {
           <Search className="w-5 h-5" />
           Browse Available Listings
         </button>
+
+        {/* Quick tools row */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => navigate('/ai')}
+            className="bg-white border border-gray-100 rounded-xl p-4 flex flex-col gap-2 text-left active:bg-gray-50 transition-colors shadow-sm"
+          >
+            <div className="w-9 h-9 bg-[#1B3A6B]/10 rounded-xl flex items-center justify-center">
+              <Bot className="w-5 h-5 text-[#1B3A6B]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Section 8 AI</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Ask any voucher question</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/tenant/services')}
+            className="bg-white border border-gray-100 rounded-xl p-4 flex flex-col gap-2 text-left active:bg-gray-50 transition-colors shadow-sm"
+          >
+            <div className="w-9 h-9 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center">
+              <LifeBuoy className="w-5 h-5 text-[#1D9E75]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Resources</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Atlanta support services</p>
+            </div>
+          </button>
+        </div>
 
         {savedListings.length > 0 && (
           <div>

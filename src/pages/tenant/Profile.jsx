@@ -6,7 +6,7 @@ import { HOUSING_AUTHORITIES } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
 import {
   LogOut, ChevronRight, User, Bell, Shield,
-  Home, X, AlertTriangle,
+  Home, X, AlertTriangle, CalendarClock, CheckCircle2, Clock,
 } from 'lucide-react'
 
 const VOUCHER_STATUS_LABELS = { yes: 'Active', no: 'No voucher', pending: 'Pending' }
@@ -21,6 +21,11 @@ export default function TenantProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
+
+  const [recertDate, setRecertDate] = useState('')
+  const [haName, setHaName] = useState('')
+  const [recertOptIn, setRecertOptIn] = useState(true)
+  const [savingRecert, setSavingRecert] = useState(false)
 
   const [form, setForm] = useState({
     firstName: '',
@@ -50,6 +55,9 @@ export default function TenantProfile() {
 
     if (data) {
       setProfile(data)
+      setRecertDate(data.recertification_date || '')
+      setHaName(data.ha_name || '')
+      setRecertOptIn(data.recert_alert_opt_in !== false)
       setForm({
         firstName: data.first_name || data.full_name?.split(' ')[0] || '',
         lastName: data.last_name || data.full_name?.split(' ').slice(1).join(' ') || '',
@@ -103,6 +111,18 @@ export default function TenantProfile() {
     setSaving(false)
     if (error) toast.error('Failed to save changes.')
     else toast.success('Profile updated!')
+  }
+
+  async function saveRecert() {
+    setSavingRecert(true)
+    const { error } = await supabase.from('profiles').update({
+      recertification_date: recertDate || null,
+      ha_name: haName || null,
+      recert_alert_opt_in: recertOptIn,
+    }).eq('id', user.id)
+    setSavingRecert(false)
+    if (error) toast.error('Failed to save recertification date.')
+    else toast.success('Recertification date saved!')
   }
 
   async function handleSignOut() {
@@ -262,6 +282,125 @@ export default function TenantProfile() {
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </form>
+
+        {/* Recertification Tracker */}
+        {(() => {
+          const today = new Date()
+          const recert = recertDate ? new Date(recertDate) : null
+          const daysUntil = recert ? Math.ceil((recert - today) / (1000 * 60 * 60 * 24)) : null
+          const isOverdue = daysUntil !== null && daysUntil < 0
+          const isUrgent = daysUntil !== null && daysUntil <= 30 && daysUntil >= 0
+          const statusColor = isOverdue ? 'red' : isUrgent ? 'amber' : 'green'
+          const CHECKLIST = [
+            'Current photo ID (driver\'s license or passport)',
+            'Social Security cards for all household members',
+            'Birth certificates for all household members',
+            'Proof of income for all adults (pay stubs, award letters)',
+            'Current lease agreement',
+            'Utility bills in your name',
+            'Any childcare or medical expense receipts',
+          ]
+          return (
+            <div className="bg-white rounded-xl p-4 space-y-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                <CalendarClock className="w-3.5 h-3.5" /> Recertification tracker
+              </p>
+
+              {/* Status banner */}
+              {recert && (
+                <div className={`rounded-lg px-4 py-3 flex items-center gap-3 ${
+                  isOverdue ? 'bg-red-50 border border-red-200' :
+                  isUrgent  ? 'bg-amber-50 border border-amber-200' :
+                              'bg-green-50 border border-green-200'
+                }`}>
+                  {isOverdue
+                    ? <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                    : isUrgent
+                    ? <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+                    : <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                  }
+                  <div>
+                    <p className={`text-sm font-semibold ${
+                      isOverdue ? 'text-red-700' : isUrgent ? 'text-amber-700' : 'text-green-700'
+                    }`}>
+                      {isOverdue
+                        ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''}`
+                        : daysUntil === 0
+                        ? 'Recertification is today!'
+                        : `${daysUntil} day${daysUntil !== 1 ? 's' : ''} until recertification`
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {recert.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>Recertification date</label>
+                  <input
+                    type="date"
+                    value={recertDate}
+                    onChange={e => setRecertDate(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Housing authority</label>
+                  <select
+                    value={haName}
+                    onChange={e => setHaName(e.target.value)}
+                    className={`${inputClass} bg-white`}
+                  >
+                    <option value="">Select</option>
+                    <option value="AHA">Atlanta Housing (AHA)</option>
+                    <option value="DCA">Georgia DCA</option>
+                    <option value="COBB">Cobb County HA</option>
+                    <option value="DEKALB">DeKalb County HA</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Email alerts opt-in */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={recertOptIn}
+                  onChange={e => setRecertOptIn(e.target.checked)}
+                  className="w-4 h-4 accent-[#1B3A6B]"
+                />
+                <span className="text-sm text-gray-600">
+                  Email me reminders at 90, 60, 30, 14, and 7 days before my recertification
+                </span>
+              </label>
+
+              {/* Checklist */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-2">Documents to prepare:</p>
+                <ul className="space-y-1.5">
+                  {CHECKLIST.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1D9E75] shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <button
+                type="button"
+                onClick={saveRecert}
+                disabled={savingRecert}
+                className="w-full bg-[#1D9E75] text-white rounded-xl py-3 text-sm font-semibold disabled:opacity-50"
+              >
+                {savingRecert ? 'Saving…' : 'Save recertification date'}
+              </button>
+            </div>
+          )
+        })()}
 
         {/* Security */}
         <div className="bg-white rounded-xl divide-y divide-gray-100">

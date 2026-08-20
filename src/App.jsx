@@ -69,6 +69,11 @@ import TenantLeaseDetails from './pages/tenant/LeaseDetails'
 import RentAnalyzer from './pages/tools/RentAnalyzer'
 import VoucherEstimator from './pages/tools/VoucherEstimator'
 
+// Layer 2-5 pages
+import Services from './pages/Services'
+import AITools from './pages/AITools'
+import TenantServices from './pages/tenant/TenantServices'
+
 // Admin pages
 import AdminQueue from './pages/admin/AdminQueue'
 
@@ -117,6 +122,9 @@ export default function App() {
           <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
           <Route path="/listings" element={<PublicListings />} />
           <Route path="/for-landlords" element={<ForLandlords />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/ai" element={<AITools />} />
+          <Route path="/tenant/services" element={<TenantServices />} />
 
           {/* Admin routes — AdminQueue does its own is_admin check */}
           <Route path="/admin/queue" element={<AdminQueue />} />

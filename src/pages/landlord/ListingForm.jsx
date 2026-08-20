@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { checkRentEligibility } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
-import { ChevronLeft, Upload, X, Check, Home, Zap } from 'lucide-react'
+import { ChevronLeft, Upload, X, Check, Home, Zap, Sparkles, Loader2 } from 'lucide-react'
 
 const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 const TOTAL_STEPS = 9
@@ -96,6 +96,7 @@ export default function ListingForm() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [listingId, setListingId] = useState(id || null)
+  const [aiLoading, setAiLoading] = useState(false)
 
   const emptyForm = {
     // Step 1 — Location
@@ -183,6 +184,41 @@ export default function ListingForm() {
 
   function setUtility(util, who) {
     setForm(prev => ({ ...prev, utilities: { ...prev.utilities, [util]: who } }))
+  }
+
+  // ── AI listing writer ──
+  async function generateDescription() {
+    if (aiLoading) return
+    setAiLoading(true)
+    try {
+      const res = await fetch('/api/ai-listing-writer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: [form.street_address, form.unit_number, form.city, form.state].filter(Boolean).join(' '),
+          bedrooms: form.bedrooms,
+          bathrooms: form.bathrooms,
+          rent: form.rent_amount,
+          squareFeet: form.square_feet,
+          amenities: form.amenities,
+          utilities: Object.entries(form.utilities || {}).filter(([, v]) => v === 'landlord').map(([k]) => k),
+          petPolicy: form.pets_allowed ? `Pets allowed (${form.pet_types?.join(', ') || 'ask'})` : 'No pets',
+          parkingType: form.amenities?.includes('Garage') ? 'Garage' : form.amenities?.includes('Driveway Parking') ? 'Driveway' : 'Street',
+          highlights: form.specials?.join(', ') || '',
+        }),
+      })
+      const data = await res.json()
+      if (data.description) {
+        setForm(prev => ({ ...prev, description: data.description }))
+        toast.success('Description generated!')
+      } else {
+        toast.error(data.error || 'AI generation failed')
+      }
+    } catch (err) {
+      toast.error('AI generation failed. Check your OpenAI key.')
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   // ── Photo upload ──
@@ -733,10 +769,24 @@ export default function ListingForm() {
             </div>
 
             <div className={sectionClass}>
-              <h2 className={sectionHead}>Property Description</h2>
+              <div className="flex items-center justify-between">
+                <h2 className={sectionHead}>Property Description</h2>
+                <button
+                  type="button"
+                  onClick={generateDescription}
+                  disabled={aiLoading || !form.street_address || !form.bedrooms || !form.rent_amount}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#1D9E75] border border-[#1D9E75] px-3 py-1.5 rounded-lg disabled:opacity-40 transition-opacity"
+                >
+                  {aiLoading
+                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Writing…</>
+                    : <><Sparkles className="w-3.5 h-3.5" /> Write with AI</>
+                  }
+                </button>
+              </div>
               <textarea name="description" value={form.description} onChange={handleChange} rows={6}
                 placeholder="Tell prospective tenants about your property — highlights, neighborhood, what makes it a great home…"
                 className={`${inputClass} resize-none`} />
+              <p className="text-[10px] text-gray-400">AI generates a HUD Fair Housing compliant description. Complete Steps 1–3 first for best results.</p>
             </div>
 
             <div className={sectionClass}>

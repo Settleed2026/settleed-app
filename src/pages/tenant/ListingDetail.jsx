@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { checkRentEligibility } from '../../lib/paymentStandards'
-import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck } from 'lucide-react'
+import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck, MessageSquare, Star } from 'lucide-react'
+import { ReviewsDisplay, LeaveReviewForm } from '../../components/ReviewsSection'
 import toast from 'react-hot-toast'
 
 const HA_LABELS = {
@@ -294,6 +295,21 @@ export default function ListingDetail() {
           </p>
         </div>
 
+        {/* Reviews */}
+        <div className="bg-white rounded-xl p-4 border border-gray-100">
+          <h2 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" /> Reviews
+          </h2>
+          <ReviewsDisplay propertyId={id} revieweeId={listing?.landlord_id} />
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <LeaveReviewForm
+              revieweeId={listing?.landlord_id}
+              propertyId={id}
+              reviewerRole="tenant"
+            />
+          </div>
+        </div>
+
         {/* Report listing */}
         <button
           onClick={() => setReportOpen(true)}
@@ -349,11 +365,25 @@ export default function ListingDetail() {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4">
-        <button
-          onClick={() => navigate(`/tenant/apply/${id}`)}
-          className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm shadow-lg shadow-[#1D9E75]/20">
-          Apply Now
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              const params = new URLSearchParams({
+                prop: id,
+                landlord: listing?.landlord_id || '',
+              })
+              navigate(`/messages?${params}`)
+            }}
+            className="flex items-center justify-center gap-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl py-3.5 px-4 font-semibold text-sm"
+          >
+            <MessageSquare className="w-4 h-4" /> Message
+          </button>
+          <button
+            onClick={() => navigate(`/tenant/apply/${id}`)}
+            className="flex-1 bg-[#1D9E75] text-white rounded-xl py-3.5 font-semibold text-sm shadow-lg shadow-[#1D9E75]/20">
+            Apply Now
+          </button>
+        </div>
       </div>
     </div>
   )

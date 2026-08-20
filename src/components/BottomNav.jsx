@@ -1,15 +1,15 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Inbox, User, Wrench, DollarSign, ShieldCheck } from 'lucide-react'
+import { Home, Inbox, User, Wrench, DollarSign, ShieldCheck, MessageSquare } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 
 const landlordLinks = [
-  { to: '/landlord',              label: 'Home',    icon: Home,       end: true },
-  { to: '/landlord/applications', label: 'Inbox',   icon: Inbox },
-  { to: '/landlord/maintenance',  label: 'Repairs', icon: Wrench },
-  { to: '/landlord/rent',         label: 'Rent',    icon: DollarSign },
-  { to: '/landlord/profile',      label: 'Account', icon: User },
+  { to: '/landlord',              label: 'Home',     icon: Home,          end: true },
+  { to: '/landlord/applications', label: 'Inbox',    icon: Inbox },
+  { to: '/messages',              label: 'Messages', icon: MessageSquare },
+  { to: '/landlord/rent',         label: 'Rent',     icon: DollarSign },
+  { to: '/landlord/profile',      label: 'Account',  icon: User },
 ]
 
 const SearchIcon = () => (
@@ -19,11 +19,11 @@ const SearchIcon = () => (
 )
 
 const tenantLinks = [
-  { to: '/tenant',             label: 'Home',    icon: Home,       end: true },
-  { to: '/tenant/search',      label: 'Search',  icon: SearchIcon },
-  { to: '/tenant/maintenance', label: 'Repairs', icon: Wrench },
-  { to: '/tenant/rent',        label: 'Rent',    icon: DollarSign },
-  { to: '/tenant/profile',     label: 'Account', icon: User },
+  { to: '/tenant',             label: 'Home',     icon: Home,          end: true },
+  { to: '/tenant/search',      label: 'Search',   icon: SearchIcon },
+  { to: '/messages',           label: 'Messages', icon: MessageSquare },
+  { to: '/tenant/rent',        label: 'Rent',     icon: DollarSign },
+  { to: '/tenant/profile',     label: 'Account',  icon: User },
 ]
 
 export default function BottomNav({ role }) {

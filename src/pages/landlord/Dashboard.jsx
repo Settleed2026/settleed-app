@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap, FileText, MessageSquare } from 'lucide-react'
 import { differenceInDays, format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -228,6 +228,28 @@ export default function LandlordDashboard() {
           </div>
           <Plus className="w-5 h-5" />
         </Link>
+
+        {/* Quick tools row */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link to="/landlord/rfta" className="bg-white border border-gray-100 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+            <div className="w-9 h-9 bg-[#1B3A6B]/10 rounded-xl flex items-center justify-center">
+              <FileText className="w-5 h-5 text-[#1B3A6B]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">RFTA Tracker</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Track approvals pipeline</p>
+            </div>
+          </Link>
+          <Link to="/messages" className="bg-white border border-gray-100 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+            <div className="w-9 h-9 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center">
+              <MessageSquare className="w-5 h-5 text-[#1D9E75]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Messages</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Chat with applicants</p>
+            </div>
+          </Link>
+        </div>
 
         {/* Draft listing banner */}
         {draftProperties.length > 0 && (

@@ -94,7 +94,7 @@ export default function LandlordBackgroundChecks() {
       <div className="bg-[#1B3A6B] px-4 pt-10 pb-5">
         <button onClick={() => navigate('/landlord')} className="text-blue-200 text-sm mb-3">← Dashboard</button>
         <h1 className="text-white text-2xl font-bold">Background Checks</h1>
-        <p className="text-blue-200 text-sm mt-0.5">Powered by Checkr</p>
+        <p className="text-blue-200 text-sm mt-0.5">Powered by Checkr · TransUnion SmartMove</p>
       </div>
 
       {/* Info banner */}
@@ -103,9 +103,25 @@ export default function LandlordBackgroundChecks() {
         <div>
           <p className="text-sm font-semibold text-blue-900">How it works</p>
           <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">
-            Request a check on a pending application. The tenant receives a consent email and submits their info to Checkr. Results are returned within 1–3 business days.
+            Request a check on any applicant. The tenant receives a consent link and completes verification via Checkr or SmartMove. Results include credit, criminal, and eviction history. Returned within 1–3 business days.
           </p>
         </div>
+      </div>
+
+      {/* SmartMove direct option */}
+      <div className="mx-4 mt-3 bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">TransUnion SmartMove</p>
+          <p className="text-xs text-gray-500 mt-0.5">Tenant pays directly · Results in minutes</p>
+        </div>
+        <a
+          href="https://www.mysmartmove.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#1B3A6B] text-white text-xs font-semibold px-3 py-2 rounded-lg"
+        >
+          Open SmartMove
+        </a>
       </div>
 
       {/* Tabs */}

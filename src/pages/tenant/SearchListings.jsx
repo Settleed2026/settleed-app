@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { getPaymentStandard } from '../../lib/paymentStandards'
-import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown } from 'lucide-react'
+import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown, List, Map } from 'lucide-react'
 
 const HA_OPTIONS = [
   { value: '', label: 'All HAs' },
@@ -115,6 +115,77 @@ function ListingCard({ listing, onClick }) {
   )
 }
 
+// ── Leaflet map component (lazy-loaded) ──
+function MapView({ listings, onSelect }) {
+  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null)
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return
+
+    const L = window.L
+    if (!L) return
+
+    const map = L.map(mapRef.current, { center: [33.749, -84.388], zoom: 11, zoomControl: true })
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map)
+    mapInstanceRef.current = map
+
+    return () => { map.remove(); mapInstanceRef.current = null }
+  }, [])
+
+  useEffect(() => {
+    const L = window.L
+    const map = mapInstanceRef.current
+    if (!L || !map) return
+
+    // Remove old markers
+    map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l) })
+
+    listings.forEach(listing => {
+      const lat = listing.latitude
+      const lng = listing.longitude
+      if (!lat || !lng) return
+
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:#1B3A6B;color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.25)">$${Math.round(listing.rent_amount / 100) * 100 === listing.rent_amount ? listing.rent_amount.toLocaleString() : listing.rent_amount?.toLocaleString()}/mo</div>`,
+        iconAnchor: [30, 14],
+      })
+
+      const beds = listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`
+      const photo = listing.photos?.[0]
+      const popup = L.popup({ maxWidth: 220, className: 'settleed-popup' }).setContent(`
+        <div style="font-family:sans-serif;cursor:pointer" onclick="window._settleedSelect('${listing.id}')">
+          ${photo ? `<img src="${photo}" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px" />` : ''}
+          <div style="font-weight:600;font-size:13px;color:#111">${listing.neighborhood || listing.zip_code}</div>
+          <div style="font-size:12px;color:#555;margin:2px 0">${beds} · ${listing.zip_code}</div>
+          <div style="font-size:14px;font-weight:700;color:#1B3A6B">$${listing.rent_amount?.toLocaleString()}/mo</div>
+          <button style="margin-top:8px;width:100%;background:#1D9E75;color:#fff;border:none;padding:6px;border-radius:6px;font-size:12px;cursor:pointer" onclick="window._settleedSelect('${listing.id}')">View listing</button>
+        </div>
+      `)
+
+      L.marker([lat, lng], { icon }).addTo(map).bindPopup(popup)
+    })
+
+    // Fit bounds if we have markers
+    const withCoords = listings.filter(l => l.latitude && l.longitude)
+    if (withCoords.length > 0) {
+      const bounds = L.latLngBounds(withCoords.map(l => [l.latitude, l.longitude]))
+      map.fitBounds(bounds.pad(0.15))
+    }
+  }, [listings])
+
+  useEffect(() => {
+    window._settleedSelect = onSelect
+    return () => { delete window._settleedSelect }
+  }, [onSelect])
+
+  return <div ref={mapRef} style={{ height: 'calc(100vh - 220px)', width: '100%' }} />
+}
+
 export default function SearchListings() {
   const navigate = useNavigate()
   const [listings, setListings] = useState([])
@@ -122,6 +193,8 @@ export default function SearchListings() {
   const [total, setTotal] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [queryError, setQueryError] = useState(null)
+  const [viewMode, setViewMode] = useState('list') // 'list' | 'map'
+  const [leafletLoaded, setLeafletLoaded] = useState(!!window.L)
 
   const [search, setSearch] = useState('')
   const [ha, setHa] = useState('')
@@ -130,11 +203,28 @@ export default function SearchListings() {
   const [maxRent, setMaxRent] = useState('')
   const [creditFriendly, setCreditFriendly] = useState(false)
 
+  // Load Leaflet on first map toggle
+  useEffect(() => {
+    if (viewMode !== 'map' || leafletLoaded) return
+    const cssId = 'leaflet-css'
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement('link')
+      link.id = cssId
+      link.rel = 'stylesheet'
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+      document.head.appendChild(link)
+    }
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    script.onload = () => setLeafletLoaded(true)
+    document.head.appendChild(script)
+  }, [viewMode, leafletLoaded])
+
   const fetchListings = useCallback(async () => {
     setLoading(true)
     let query = supabase
       .from('properties')
-      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials', { count: 'exact' })
+      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials, latitude, longitude', { count: 'exact' })
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(50)
@@ -237,18 +327,38 @@ export default function SearchListings() {
         </div>
       )}
 
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 flex items-center justify-between">
         <p className="text-xs text-gray-500">
           {loading ? 'Searching...' : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} found`}
         </p>
-        {queryError && (
-          <p className="text-xs text-red-600 mt-1 font-mono bg-red-50 px-2 py-1 rounded break-all">
-            DB error: {queryError}
-          </p>
-        )}
+        <div className="flex bg-gray-100 rounded-lg p-0.5">
+          <button onClick={() => setViewMode('list')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+            <List className="w-3.5 h-3.5" /> List
+          </button>
+          <button onClick={() => setViewMode('map')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === 'map' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+            <Map className="w-3.5 h-3.5" /> Map
+          </button>
+        </div>
       </div>
+      {queryError && (
+        <p className="text-xs text-red-600 mx-4 mb-2 font-mono bg-red-50 px-2 py-1 rounded break-all">
+          DB error: {queryError}
+        </p>
+      )}
 
-      <div className="px-4">
+      {/* Map view */}
+      {viewMode === 'map' && (
+        <div className="px-0">
+          {leafletLoaded
+            ? <MapView listings={listings} onSelect={id => navigate(`/tenant/listing/${id}`)} />
+            : <div className="flex items-center justify-center h-64 text-gray-400 text-sm">Loading map…</div>
+          }
+        </div>
+      )}
+
+      <div className={viewMode === 'map' ? 'hidden' : 'px-4'}>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2, 3, 4].map(i => (
@@ -287,3 +397,4 @@ export default function SearchListings() {
     </div>
   )
 }
+

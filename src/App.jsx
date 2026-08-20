@@ -52,6 +52,7 @@ import ConnectOnboarding from './pages/landlord/ConnectOnboarding'
 import LandlordMaintenance from './pages/landlord/Maintenance'
 import LandlordRentDashboard from './pages/landlord/RentDashboard'
 import LandlordBackgroundChecks from './pages/landlord/BackgroundChecks'
+import RFTATracker from './pages/landlord/RFTATracker'
 
 // Tenant pages
 import TenantDashboard from './pages/tenant/Dashboard'
@@ -73,6 +74,7 @@ import VoucherEstimator from './pages/tools/VoucherEstimator'
 import Services from './pages/Services'
 import AITools from './pages/AITools'
 import TenantServices from './pages/tenant/TenantServices'
+import Messages from './pages/Messages'
 
 // Admin pages
 import AdminQueue from './pages/admin/AdminQueue'
@@ -125,6 +127,7 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/ai" element={<AITools />} />
           <Route path="/tenant/services" element={<TenantServices />} />
+          <Route path="/messages" element={<Messages />} />
 
           {/* Admin routes — AdminQueue does its own is_admin check */}
           <Route path="/admin/queue" element={<AdminQueue />} />
@@ -141,6 +144,7 @@ export default function App() {
             <Route path="maintenance" element={<LandlordMaintenance />} />
             <Route path="rent" element={<LandlordRentDashboard />} />
             <Route path="background-checks" element={<LandlordBackgroundChecks />} />
+            <Route path="rfta" element={<RFTATracker />} />
           </Route>
 
           {/* Tenant routes */}

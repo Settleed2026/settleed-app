@@ -143,6 +143,22 @@ export default function Signup() {
       .then(({ error }) => { if (error) console.warn('Profile update:', error.message) })
 
     toast.success('Account created! Welcome to Settleed.')
+
+    // Notify admin of new landlord signup
+    if (role === 'landlord') {
+      fetch('/api/admin-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'landlord_signup',
+          payload: {
+            name: `${form.firstName} ${form.lastName}`.trim(),
+            email: form.email,
+          },
+        }),
+      }).catch(() => {})
+    }
+
     navigate(role === 'landlord' ? '/landlord/listing/new' : '/tenant/profile/setup')
   }
 

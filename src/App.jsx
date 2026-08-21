@@ -84,6 +84,7 @@ import Landing from './pages/Landing'
 import PublicListings from './pages/PublicListings'
 import ForLandlords from './pages/ForLandlords'
 import ForAgencies from './pages/ForAgencies'
+import PublicListingDetail from './pages/PublicListingDetail'
 import Subscribe from './pages/Subscribe'
 import SubscribeSuccess from './pages/SubscribeSuccess'
 import NotFound from './pages/NotFound'
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/listings" element={<PublicListings />} />
           <Route path="/for-landlords" element={<ForLandlords />} />
           <Route path="/for-agencies" element={<ForAgencies />} />
+          <Route path="/listing/:id" element={<PublicListingDetail />} />
           <Route path="/services" element={<Services />} />
           <Route path="/ai" element={<AITools />} />
           <Route path="/tenant/services" element={<TenantServices />} />

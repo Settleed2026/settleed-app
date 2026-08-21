@@ -297,6 +297,20 @@ export default function ListingForm() {
     window.scrollTo(0, 0)
   }
 
+  async function geocodeAddress() {
+    const q = [form.street_address, form.city || 'Atlanta', form.state || 'GA', form.zip_code]
+      .filter(Boolean).join(', ')
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+        { headers: { 'Accept-Language': 'en', 'User-Agent': 'Settleed/1.0 (contact@settleed.com)' } }
+      )
+      const data = await res.json()
+      if (data?.[0]) return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) }
+    } catch { /* silent — geocoding is best-effort */ }
+    return null
+  }
+
   async function handleSubmitForReview() {
     if (!form.agree_accurate || !form.agree_terms || !form.agree_publish || !form.agree_no_false_info) {
       toast.error('Please check all agreement boxes before submitting.')
@@ -308,6 +322,12 @@ export default function ListingForm() {
 
     const currentId = listingId
     if (!currentId) { toast.error('Listing ID missing — please try again.'); return }
+
+    // Step 1b: geocode address and store lat/lng (best-effort)
+    const coords = await geocodeAddress()
+    if (coords) {
+      await supabase.from('properties').update(coords).eq('id', currentId)
+    }
 
     // Step 2: set verification_status → verification_pending
     // Allowed by trigger carve-out: draft → verification_pending by property owner
@@ -324,6 +344,20 @@ export default function ListingForm() {
       review_type: 'property',
       status: 'pending',
     })
+
+    // Notify admin
+    fetch('/api/admin-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'listing_review',
+        payload: {
+          address: `${form.street_address}${form.unit_number ? ` #${form.unit_number}` : ''}`,
+          neighborhood: form.neighborhood,
+          landlord_id: user.id,
+        },
+      }),
+    }).catch(() => {})
 
     // Navigate to dashboard — Dashboard will show the pending state
     navigate('/landlord')

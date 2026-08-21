@@ -82,6 +82,16 @@ export default function ForAgencies() {
       // If table doesn't exist yet, just show success anyway
       console.error('Agency inquiry error:', error.message)
     }
+    // Notify admin
+    fetch('/api/admin-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'agency_inquiry',
+        payload: { contact_name: form.name, contact_title: form.title, agency: form.agency, email: form.email, phone: form.phone, message: form.message },
+      }),
+    }).catch(() => {})
+
     setSent(true)
     toast.success('Message sent! We\'ll be in touch within 24 hours.')
   }

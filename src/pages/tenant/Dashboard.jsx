@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
-import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart, Bot, LifeBuoy } from 'lucide-react'
+import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart, Bot, LifeBuoy, CalendarClock, CreditCard, Bookmark } from 'lucide-react'
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'text-amber-600 bg-amber-50',  icon: Clock },
@@ -197,6 +197,9 @@ export default function TenantDashboard() {
     () => localStorage.getItem('settleed_onboarding_done') === 'true'
   )
   const [savedListings, setSavedListings] = useState([])
+  const [lease, setLease] = useState(null)
+  const [nextRent, setNextRent] = useState(null)
+  const [savedSearchCount, setSavedSearchCount] = useState(0)
 
   useEffect(() => {
     if (!user?.id) return
@@ -213,7 +216,7 @@ export default function TenantDashboard() {
             .limit(20),
           supabase
             .from('profiles')
-            .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type')
+            .select('full_name, first_name, housing_authority, voucher_size, household_size, has_pet, pet_type, active_lease_id, recertification_date')
             .eq('id', user.id)
             .single(),
         ]
@@ -231,6 +234,33 @@ export default function TenantDashboard() {
             .eq('status', 'active')
           setSavedListings(saved || [])
         }
+
+        // Fetch active lease info
+        if (prof?.active_lease_id) {
+          const { data: leaseData } = await supabase
+            .from('leases')
+            .select('id, lease_start, lease_end, monthly_rent, properties(neighborhood, zip_code)')
+            .eq('id', prof.active_lease_id)
+            .single()
+          setLease(leaseData || null)
+
+          // Fetch next unpaid rent
+          const { data: rentData } = await supabase
+            .from('rent_payments')
+            .select('due_date, amount_cents, status')
+            .eq('tenant_id', user.id)
+            .in('status', ['pending', 'overdue'])
+            .order('due_date', { ascending: true })
+            .limit(1)
+          setNextRent(rentData?.[0] || null)
+        }
+
+        // Saved search count
+        const { count: ssCount } = await supabase
+          .from('saved_searches')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', user.id)
+        setSavedSearchCount(ssCount || 0)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -361,6 +391,100 @@ export default function TenantDashboard() {
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* Active lease card */}
+        {lease && (
+          <div
+            onClick={() => navigate('/tenant/lease')}
+            className="bg-[#1B3A6B] rounded-2xl p-4 cursor-pointer active:opacity-90 transition-opacity"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Home className="w-4 h-4 text-blue-200" />
+                <span className="text-blue-200 text-xs font-medium">Your current home</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-blue-300" />
+            </div>
+            <p className="text-white font-semibold">{lease.properties?.neighborhood}</p>
+            <p className="text-blue-200 text-xs mt-0.5">{lease.properties?.zip_code}</p>
+            {lease.lease_end && (
+              <p className="text-blue-300 text-xs mt-2">
+                Lease ends {new Date(lease.lease_end).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Next rent due */}
+        {nextRent && (
+          <div
+            onClick={() => navigate('/tenant/rent')}
+            className={`rounded-xl p-4 flex items-center justify-between cursor-pointer ${
+              nextRent.status === 'overdue' ? 'bg-red-50 border border-red-200' : 'bg-white border border-gray-100'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${nextRent.status === 'overdue' ? 'bg-red-100' : 'bg-[#1B3A6B]/10'}`}>
+                <CreditCard className={`w-5 h-5 ${nextRent.status === 'overdue' ? 'text-red-600' : 'text-[#1B3A6B]'}`} />
+              </div>
+              <div>
+                <p className={`text-sm font-semibold ${nextRent.status === 'overdue' ? 'text-red-700' : 'text-gray-900'}`}>
+                  {nextRent.status === 'overdue' ? 'Rent overdue' : 'Rent due soon'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  ${(nextRent.amount_cents / 100).toLocaleString()} · due {new Date(nextRent.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+            </div>
+            <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${nextRent.status === 'overdue' ? 'bg-red-600 text-white' : 'bg-[#1B3A6B] text-white'}`}>
+              Pay now
+            </span>
+          </div>
+        )}
+
+        {/* Recertification countdown */}
+        {profile?.recertification_date && (() => {
+          const days = Math.ceil((new Date(profile.recertification_date) - new Date()) / (1000 * 60 * 60 * 24))
+          if (days > 120) return null
+          const urgent = days <= 30
+          return (
+            <div
+              onClick={() => navigate('/tenant/profile')}
+              className={`rounded-xl p-4 flex items-center justify-between cursor-pointer border ${urgent ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${urgent ? 'bg-amber-100' : 'bg-gray-50'}`}>
+                  <CalendarClock className={`w-5 h-5 ${urgent ? 'text-amber-600' : 'text-gray-500'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm font-semibold ${urgent ? 'text-amber-800' : 'text-gray-900'}`}>
+                    {days <= 0 ? 'Recertification due today' : `Recertification in ${days} day${days !== 1 ? 's' : ''}`}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(profile.recertification_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </div>
+          )
+        })()}
+
+        {/* Saved searches shortcut */}
+        {savedSearchCount > 0 && (
+          <div
+            onClick={() => navigate('/tenant/profile')}
+            className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Bookmark className="w-4 h-4 text-[#1B3A6B]" />
+              <span className="text-sm font-medium text-gray-700">
+                {savedSearchCount} saved search{savedSearchCount !== 1 ? 'es' : ''} · email alerts on
+              </span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
           </div>
         )}
 

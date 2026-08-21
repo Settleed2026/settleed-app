@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
 import { getPaymentStandard } from '../../lib/paymentStandards'
-import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown, List, Map } from 'lucide-react'
+import { Search, SlidersHorizontal, X, BedDouble, MapPin, ChevronDown, List, Map, Bookmark, BookmarkCheck, Crown } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const HA_OPTIONS = [
   { value: '', label: 'All HAs' },
@@ -63,6 +65,11 @@ function ListingCard({ listing, onClick }) {
             </div>
         }
         <div className="absolute top-2 left-2 flex gap-1.5 flex-wrap">
+          {listing.is_featured && (
+            <span className="bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+              <Crown className="w-2.5 h-2.5" /> Featured
+            </span>
+          )}
           <span className="bg-[#1D9E75] text-white text-[10px] font-semibold px-2 py-1 rounded-full">
             Vouchers OK
           </span>
@@ -197,6 +204,7 @@ function MapView({ listings, onSelect }) {
 
 export default function SearchListings() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -204,6 +212,10 @@ export default function SearchListings() {
   const [queryError, setQueryError] = useState(null)
   const [viewMode, setViewMode] = useState('list') // 'list' | 'map'
   const [leafletLoaded, setLeafletLoaded] = useState(!!window.L)
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false)
+  const [saveSearchName, setSaveSearchName] = useState('')
+  const [savingSearch, setSavingSearch] = useState(false)
+  const [voucherAmount, setVoucherAmount] = useState('')
 
   const [search, setSearch] = useState('')
   const [ha, setHa] = useState('')
@@ -236,7 +248,8 @@ export default function SearchListings() {
     setLoading(true)
     let query = supabase
       .from('properties')
-      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials, latitude, longitude', { count: 'exact' })
+      .select('id, neighborhood, zip_code, bedrooms, bathrooms, square_feet, rent_amount, available_date, photos, credit_friendly, move_in_special, ha_accepted, specials, latitude, longitude, is_featured', { count: 'exact' })
+      .order('is_featured', { ascending: false })
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(50)
@@ -249,6 +262,7 @@ export default function SearchListings() {
       else query = query.eq('bedrooms', n)
     }
     if (propertyType) query = query.eq('property_type', propertyType)
+    if (voucherAmount) query = query.lte('rent_amount', parseFloat(voucherAmount))
     if (minRent) query = query.gte('rent_amount', parseFloat(minRent))
     if (maxRent) query = query.lte('rent_amount', parseFloat(maxRent))
     if (creditFriendly) query = query.eq('credit_friendly', true)
@@ -265,15 +279,32 @@ export default function SearchListings() {
       setTotal(count || 0)
     }
     setLoading(false)
-  }, [search, ha, beds, propertyType, minRent, maxRent, creditFriendly, petsAllowed, accessibleOnly])
+  }, [search, ha, beds, propertyType, voucherAmount, minRent, maxRent, creditFriendly, petsAllowed, accessibleOnly])
 
   useEffect(() => {
     const t = setTimeout(fetchListings, search ? 400 : 0)
     return () => clearTimeout(t)
   }, [fetchListings, search])
 
-  const hasActiveFilters = ha || beds || propertyType || minRent || maxRent || creditFriendly || petsAllowed || accessibleOnly
-  function clearFilters() { setHa(''); setBeds(''); setPropertyType(''); setMinRent(''); setMaxRent(''); setCreditFriendly(false); setPetsAllowed(false); setAccessibleOnly(false) }
+  const hasActiveFilters = ha || beds || propertyType || voucherAmount || minRent || maxRent || creditFriendly || petsAllowed || accessibleOnly
+  function clearFilters() { setHa(''); setBeds(''); setPropertyType(''); setVoucherAmount(''); setMinRent(''); setMaxRent(''); setCreditFriendly(false); setPetsAllowed(false); setAccessibleOnly(false) }
+
+  async function saveSearch() {
+    if (!user) { toast.error('Sign in to save searches'); return }
+    setSavingSearch(true)
+    const filters = { search, ha, beds, propertyType, voucherAmount, minRent, maxRent, creditFriendly, petsAllowed, accessibleOnly }
+    const { error } = await supabase.from('saved_searches').insert({
+      tenant_id: user.id,
+      name: saveSearchName.trim() || 'My Search',
+      filters,
+      email_alerts: true,
+    })
+    setSavingSearch(false)
+    if (error) { toast.error('Could not save search'); return }
+    toast.success('Search saved! You\'ll get email alerts for new matches.')
+    setSaveSearchOpen(false)
+    setSaveSearchName('')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -346,22 +377,43 @@ export default function SearchListings() {
       </div>
 
       {showFilters && (
-        <div className="bg-white border-b border-gray-100 px-4 py-3">
-          <p className="text-xs text-gray-500 mb-2 font-medium">Monthly rent range</p>
-          <div className="flex items-center gap-2">
-            <input type="number" value={minRent} onChange={e => setMinRent(e.target.value)}
-              placeholder="No min" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
-            <span className="text-gray-400 text-sm">-</span>
-            <input type="number" value={maxRent} onChange={e => setMaxRent(e.target.value)}
-              placeholder="No max" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+        <div className="bg-white border-b border-gray-100 px-4 py-3 space-y-3">
+          <div>
+            <p className="text-xs text-gray-500 mb-2 font-medium">My voucher amount (max rent)</p>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <input type="number" value={voucherAmount} onChange={e => setVoucherAmount(e.target.value)}
+                placeholder="e.g. 1400" className="w-full pl-7 border border-[#1B3A6B] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] bg-blue-50" />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">Only shows listings at or below your voucher payment standard</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-2 font-medium">Custom rent range</p>
+            <div className="flex items-center gap-2">
+              <input type="number" value={minRent} onChange={e => setMinRent(e.target.value)}
+                placeholder="No min" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+              <span className="text-gray-400 text-sm">–</span>
+              <input type="number" value={maxRent} onChange={e => setMaxRent(e.target.value)}
+                placeholder="No max" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+            </div>
           </div>
         </div>
       )}
 
       <div className="px-4 py-3 flex items-center justify-between">
-        <p className="text-xs text-gray-500">
-          {loading ? 'Searching...' : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} found`}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-gray-500">
+            {loading ? 'Searching...' : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} found`}
+          </p>
+          {user && (
+            <button
+              onClick={() => setSaveSearchOpen(true)}
+              className="flex items-center gap-1 text-[10px] font-semibold text-[#1B3A6B] border border-[#1B3A6B]/30 px-2 py-1 rounded-full hover:bg-blue-50 transition-colors"
+            >
+              <Bookmark className="w-3 h-3" /> Save
+            </button>
+          )}
+        </div>
         <div className="flex bg-gray-100 rounded-lg p-0.5">
           <button onClick={() => setViewMode('list')}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
@@ -425,6 +477,43 @@ export default function SearchListings() {
           </div>
         )}
       </div>
+
+      {/* Save Search Modal */}
+      {saveSearchOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setSaveSearchOpen(false)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative w-full max-w-lg bg-white rounded-t-2xl p-6 pb-10 shadow-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-gray-900">Save this search</h3>
+              <button onClick={() => setSaveSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              We'll email you when new listings match your current filters.
+            </p>
+            <label className="text-xs text-gray-500 mb-1 block">Search name (optional)</label>
+            <input
+              value={saveSearchName}
+              onChange={e => setSaveSearchName(e.target.value)}
+              placeholder="e.g. 2BR in East Atlanta under $1,400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] mb-4"
+              autoFocus
+            />
+            <button
+              onClick={saveSearch}
+              disabled={savingSearch}
+              className="w-full bg-[#1B3A6B] text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <BookmarkCheck className="w-4 h-4" />
+              {savingSearch ? 'Saving…' : 'Save Search & Get Alerts'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

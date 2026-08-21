@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import {
   LogOut, ChevronRight, User, Bell, Shield,
   Home, X, AlertTriangle, CalendarClock, CheckCircle2, Clock,
+  Bookmark, Trash2,
 } from 'lucide-react'
 
 const VOUCHER_STATUS_LABELS = { yes: 'Active', no: 'No voucher', pending: 'Pending' }
@@ -41,6 +42,7 @@ export default function TenantProfile() {
   })
 
   const [profile, setProfile] = useState(null)
+  const [savedSearches, setSavedSearches] = useState([])
 
   useEffect(() => {
     if (user) fetchProfile()
@@ -72,6 +74,22 @@ export default function TenantProfile() {
       })
     }
     setLoading(false)
+
+    // Fetch saved searches
+    const { data: searches } = await supabase
+      .from('saved_searches')
+      .select('*')
+      .eq('tenant_id', user.id)
+      .order('created_at', { ascending: false })
+    setSavedSearches(searches || [])
+  }
+
+  async function deleteSearch(id) {
+    const { error } = await supabase.from('saved_searches').delete().eq('id', id)
+    if (!error) {
+      setSavedSearches(prev => prev.filter(s => s.id !== id))
+      toast.success('Search deleted')
+    }
   }
 
   function handleChange(e) {
@@ -401,6 +419,36 @@ export default function TenantProfile() {
             </div>
           )
         })()}
+
+        {/* Saved Searches */}
+        {savedSearches.length > 0 && (
+          <div className="bg-white rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+              <Bookmark className="w-3.5 h-3.5" /> Saved searches
+            </p>
+            <div className="space-y-2">
+              {savedSearches.map(s => (
+                <div key={s.id} className="flex items-center justify-between gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{s.name}</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      {s.email_alerts ? '📧 Email alerts on' : 'No alerts'}
+                      {s.filters?.beds ? ` · ${s.filters.beds}BR` : ''}
+                      {s.filters?.voucherAmount ? ` · up to $${s.filters.voucherAmount}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteSearch(s.id)}
+                    className="text-gray-300 hover:text-red-400 transition-colors shrink-0"
+                    aria-label="Delete saved search"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Security */}
         <div className="bg-white rounded-xl divide-y divide-gray-100">

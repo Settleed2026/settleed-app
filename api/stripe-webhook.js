@@ -114,6 +114,21 @@ export default async function handler(req, res) {
     console.log('[stripe-webhook] Payment failed for PI:', pi.id)
   }
 
+  // ── checkout.session.completed (featured listing purchase) ─────────────
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object
+    if (session.metadata?.type === 'feature_listing' && session.payment_status === 'paid') {
+      const { listing_id } = session.metadata
+      const featuredUntil = new Date()
+      featuredUntil.setDate(featuredUntil.getDate() + 30)
+      await supabase
+        .from('properties')
+        .update({ is_featured: true, featured_until: featuredUntil.toISOString().split('T')[0] })
+        .eq('id', listing_id)
+      console.log(`[stripe-webhook] Featured listing ${listing_id} until ${featuredUntil.toDateString()}`)
+    }
+  }
+
   // ── account.updated (Stripe Connect onboarding) ─────────────────────────
   if (event.type === 'account.updated') {
     const account = event.data.object

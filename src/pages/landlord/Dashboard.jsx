@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap, FileText, MessageSquare } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap, FileText, MessageSquare, Crown } from 'lucide-react'
 import { differenceInDays, format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -42,6 +42,30 @@ export default function LandlordDashboard() {
       console.error('Dashboard fetch error:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function boostListing(e, listingId) {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/feature-listing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ listing_id: listingId }),
+      })
+      const json = await res.json()
+      if (json.url) {
+        window.location.href = json.url
+      } else {
+        toast.error(json.error || 'Could not start checkout')
+      }
+    } catch (err) {
+      toast.error('Something went wrong')
     }
   }
 
@@ -314,18 +338,31 @@ export default function LandlordDashboard() {
           ) : (
             <div className="space-y-2">
               {properties.map(p => (
-                <Link key={p.id} to={`/landlord/listing/${p.id}/edit`} className="bg-white rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm text-gray-900">{p.neighborhood}</div>
+                <div key={p.id} className="bg-white rounded-xl p-4 flex items-center justify-between gap-3">
+                  <Link to={`/landlord/listing/${p.id}/edit`} className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <div className="font-medium text-sm text-gray-900 truncate">{p.neighborhood}</div>
+                      {p.is_featured && <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                    </div>
                     <div className="text-gray-400 text-xs mt-0.5">{p.bedrooms}BR · ${p.rent_amount?.toLocaleString()}/mo</div>
+                  </Link>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {p.status === 'active' && !p.is_featured && (
+                      <button
+                        onClick={e => boostListing(e, p.id)}
+                        className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full hover:bg-amber-100 transition-colors"
+                      >
+                        <Crown className="w-3 h-3" /> Boost
+                      </button>
+                    )}
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      p.status === 'active' ? 'bg-green-50 text-green-600' :
+                      p.status === 'rented' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                    </span>
                   </div>
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    p.status === 'active' ? 'bg-green-50 text-green-600' :
-                    p.status === 'rented' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                  </span>
-                </Link>
+                </div>
               ))}
             </div>
           )}

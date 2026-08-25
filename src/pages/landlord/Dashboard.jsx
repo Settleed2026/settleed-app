@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, Zap, FileText, MessageSquare, Crown } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, FileText, MessageSquare } from 'lucide-react'
 import { differenceInDays, format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -21,8 +21,8 @@ export default function LandlordDashboard() {
   }, [user])
 
   useEffect(() => {
-    if (searchParams.get('subscribed') === 'true') {
-      toast.success('Subscription started! Your 7-day free trial is active.')
+    if (searchParams.get('welcome') === 'true') {
+      toast.success('Welcome to Settleed! List your first property — it\'s free during Early Access.')
     }
   }, [])
 
@@ -42,30 +42,6 @@ export default function LandlordDashboard() {
       console.error('Dashboard fetch error:', err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function boostListing(e, listingId) {
-    e.preventDefault()
-    e.stopPropagation()
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/feature-listing', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ listing_id: listingId }),
-      })
-      const json = await res.json()
-      if (json.url) {
-        window.location.href = json.url
-      } else {
-        toast.error(json.error || 'Could not start checkout')
-      }
-    } catch (err) {
-      toast.error('Something went wrong')
     }
   }
 
@@ -96,7 +72,6 @@ export default function LandlordDashboard() {
     )
   }
 
-  const isSubscribed = ['trialing', 'active'].includes(profile?.subscription_status)
   const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || 'there'
   const hour = new Date().getHours()
   const greeting = hour >= 5 && hour <= 11 ? 'Good morning'
@@ -133,20 +108,6 @@ export default function LandlordDashboard() {
       </div>
 
       <div className="px-4 pt-5 space-y-5">
-
-        {/* Subscription prompt for inactive landlords */}
-        {!isSubscribed && (
-          <Link to="/subscribe" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-4 block">
-            <div>
-              <div className="font-semibold text-sm text-amber-900 flex items-center gap-1.5">
-                <Zap className="w-4 h-4" />
-                Start your free 7-day trial
-              </div>
-              <div className="text-amber-700 text-xs mt-0.5">Subscribe to publish listings and reach tenants</div>
-            </div>
-            <span className="text-xs font-bold text-amber-900 bg-amber-200 px-2.5 py-1 rounded-full">$49/mo →</span>
-          </Link>
-        )}
 
         {/* ── Verification status banners ── */}
         {verificationStatus === 'unverified' && (
@@ -230,19 +191,6 @@ export default function LandlordDashboard() {
               </p>
             </div>
           </div>
-        )}
-
-        {/* Connect bank account prompt for subscribed landlords who haven't connected */}
-        {isSubscribed && profile?.connect_onboarding_status !== 'complete' && (
-          <Link to="/landlord/connect" className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-4 block">
-            <div>
-              <div className="font-semibold text-sm text-blue-900 flex items-center gap-1.5">
-                🏦 Connect your bank account
-              </div>
-              <div className="text-blue-700 text-xs mt-0.5">Set up payouts to receive rent payments from tenants</div>
-            </div>
-            <span className="text-xs font-bold text-blue-900 bg-blue-200 px-2.5 py-1 rounded-full">Set up →</span>
-          </Link>
         )}
 
         <Link to="/landlord/listing/new" className="flex items-center justify-between bg-[#1D9E75] text-white rounded-xl px-4 py-4">
@@ -342,19 +290,10 @@ export default function LandlordDashboard() {
                   <Link to={`/landlord/listing/${p.id}/edit`} className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <div className="font-medium text-sm text-gray-900 truncate">{p.neighborhood}</div>
-                      {p.is_featured && <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                     </div>
                     <div className="text-gray-400 text-xs mt-0.5">{p.bedrooms}BR · ${p.rent_amount?.toLocaleString()}/mo</div>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
-                    {p.status === 'active' && !p.is_featured && (
-                      <button
-                        onClick={e => boostListing(e, p.id)}
-                        className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full hover:bg-amber-100 transition-colors"
-                      >
-                        <Crown className="w-3 h-3" /> Boost
-                      </button>
-                    )}
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                       p.status === 'active' ? 'bg-green-50 text-green-600' :
                       p.status === 'rented' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'

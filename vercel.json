@@ -1,14 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/recertification-alerts",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/saved-search-alerts",
-      "schedule": "0 9 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/((?!assets/).*)",

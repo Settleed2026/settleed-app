@@ -10,7 +10,28 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import sgMail from '@sendgrid/mail'
+
+const SG_URL = 'https://api.sendgrid.com/v3/mail/send'
+
+async function sendEmail(msg) {
+  const res = await fetch(SG_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: msg.to }] }],
+      from: msg.from,
+      subject: msg.subject,
+      content: [{ type: 'text/plain', value: msg.text }],
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`SendGrid ${res.status}: ${body}`)
+  }
+}
 
 export default async function handler(req, res) {
   // Protect with CRON_SECRET
@@ -25,7 +46,6 @@ export default async function handler(req, res) {
   }
 
   const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
   // Fetch all saved searches with email alerts on
   const { data: searches, error: searchErr } = await supabase
@@ -111,7 +131,7 @@ To manage your saved searches, visit your profile at https://settleed.com/tenant
     }
 
     try {
-      await sgMail.send(msg)
+      await sendEmail(msg)
       sent++
     } catch (err) {
       console.error(`[saved-search-alerts] email failed for ${email}:`, err.message)

@@ -9,13 +9,22 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-const sgMail = { send: async () => {} } // lazy — dynamic import below
-
 async function sendEmail(to, subject, html) {
   try {
-    const sg = await import('@sendgrid/mail')
-    sg.default.setApiKey(process.env.SENDGRID_API_KEY)
-    await sg.default.send({ to, from: 'notifications@settleed.com', subject, html })
+    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: 'notifications@settleed.com', name: 'Settleed' },
+        subject,
+        content: [{ type: 'text/html', value: html }],
+      }),
+    })
+    if (!res.ok) console.error('[send-message] email error:', res.status)
   } catch (e) {
     console.error('[send-message] email error:', e.message)
   }

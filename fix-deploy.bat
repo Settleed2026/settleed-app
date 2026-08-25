@@ -1,0 +1,13 @@
+@echo off
+echo Removing git lock files...
+del /f /q "C:\Users\Demetrius\Documents\Claude\Projects\Settleed\.git\index.lock" 2>nul
+del /f /q "C:\Users\Demetrius\Documents\Claude\Projects\Settleed\.git\HEAD.lock" 2>nul
+echo Staging changed files...
+cd /d "C:\Users\Demetrius\Documents\Claude\Projects\Settleed"
+git add api/admin-notify.js api/recertification-alerts.js api/saved-search-alerts.js api/send-message.js package.json
+echo Committing...
+git commit -m "fix: replace @sendgrid/mail SDK with raw fetch — removes ESM bundling issue"
+echo Pushing...
+git push
+echo Done!
+pause

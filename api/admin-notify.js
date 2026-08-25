@@ -9,15 +9,32 @@
  * Required env vars: SENDGRID_API_KEY
  */
 
-import sgMail from '@sendgrid/mail'
-
 const ADMIN_EMAIL = 'odtrius@gmail.com'
+const SG_URL = 'https://api.sendgrid.com/v3/mail/send'
+
+async function sendEmail({ to, from, subject, text }) {
+  const res = await fetch(SG_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: to }] }],
+      from,
+      subject,
+      content: [{ type: 'text/plain', value: text }],
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`SendGrid ${res.status}: ${body}`)
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   if (!process.env.SENDGRID_API_KEY) return res.status(500).json({ error: 'No email config' })
-
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
   const { event, payload = {} } = req.body || {}
 
@@ -58,7 +75,7 @@ Time: ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} ET
   }
 
   try {
-    await sgMail.send({
+    await sendEmail({
       to: ADMIN_EMAIL,
       from: { name: 'Settleed Alerts', email: 'noreply@settleed.com' },
       subject,

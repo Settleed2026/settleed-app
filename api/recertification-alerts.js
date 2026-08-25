@@ -3,14 +3,35 @@
 // Sends recertification reminder emails to tenants (and their landlords) at 90/60/30/14/7 days before recert date
 
 import { createClient } from '@supabase/supabase-js'
-import sgMail from '@sendgrid/mail'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const SG_URL = 'https://api.sendgrid.com/v3/mail/send'
+
+async function sendEmails(messages) {
+  for (const msg of messages) {
+    const res = await fetch(SG_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: msg.to }] }],
+        from: msg.from,
+        subject: msg.subject,
+        content: [{ type: 'text/html', value: msg.html }],
+      }),
+    })
+    if (!res.ok) {
+      const body = await res.text()
+      throw new Error(`SendGrid ${res.status}: ${body}`)
+    }
+  }
+}
 
 const ALERT_DAYS = [90, 60, 30, 14, 7]
 
@@ -204,7 +225,7 @@ export default async function handler(req, res) {
       try {
         const emailsToSend = [tenantEmail]
         if (landlordEmailMsg) emailsToSend.push(landlordEmailMsg)
-        await sgMail.send(emailsToSend)
+        await sendEmails(emailsToSend)
 
         // Log the alert
         await supabase.from('recert_alerts').insert({

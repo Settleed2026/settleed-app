@@ -44,8 +44,8 @@ export default function Terms() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-gray-900 mb-2">7. Subscriptions, Payments, and Cancellations</h2>
-            <p>Landlord subscriptions are billed monthly through Stripe and auto-renew unless canceled. You may cancel your subscription at any time from your Account settings; cancellation takes effect at the end of the current billing period and no partial refunds are issued. If you believe a charge was made in error, contact us at <a href="mailto:support@settleed.com" className="text-[#1D9E75] underline">support@settleed.com</a> within 30 days of the charge. Settleed also facilitates tenant rent payments through the Platform, charging a 2% platform fee on each transaction. Settleed collects the tenant's portion of rent and transfers the net amount to the landlord's connected Stripe account. You agree to Stripe's Terms of Service by using payment features.</p>
+            <h2 className="text-base font-semibold text-gray-900 mb-2">7. Early Access — Free Platform</h2>
+            <p>Settleed is currently in Early Access. During this period, all features of the Platform are provided free of charge to both landlords and tenants. No subscription, credit card, or payment of any kind is required to create an account, list a property, or submit a rental application. Settleed reserves the right to introduce paid features in the future, and will provide reasonable notice before any free features are converted to paid. If you have any questions about access or billing, contact us at <a href="mailto:support@settleed.com" className="text-[#1D9E75] underline">support@settleed.com</a>.</p>
           </section>
 
           <section>

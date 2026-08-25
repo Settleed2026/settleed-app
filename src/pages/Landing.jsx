@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import {
   Home, Building2, ChevronRight, Menu, X,
   DollarSign, Shield, User, Search, ClipboardCheck,
-  FileText, CheckCircle, Star, MapPin,
+  FileText, CheckCircle,
 } from 'lucide-react'
 
 const BRAND_NAVY  = '#0D1B4B'
@@ -35,49 +35,6 @@ const HOW_IT_WORKS = [
     icon: Home,
     title: 'Move In',
     desc: 'Get approved, sign your lease, and move into your new home with confidence.',
-  },
-]
-
-const TESTIMONIALS = [
-  {
-    quote: "I had my voucher for 5 months and couldn't find a place that would accept it. Settleed had me in a home in 3 weeks. I didn't have to beg anyone.",
-    name: 'Tamara J.',
-    location: 'Southwest Atlanta',
-  },
-  {
-    quote: "As a landlord I was skeptical about the voucher program. Settleed made the whole process easy — my units stay full and rent is guaranteed.",
-    name: 'Marcus D.',
-    location: 'East Atlanta',
-  },
-]
-
-const FEATURED_LISTINGS = [
-  {
-    // Craftsman bungalow — East Atlanta Village style
-    img: 'https://images.pexels.com/photos/34625609/pexels-photo-34625609.jpeg?auto=compress&cs=tinysrgb&w=500',
-    neighborhood: 'East Atlanta',
-    bedrooms: 3,
-    bathrooms: 2,
-    rent: 1250,
-    tag: 'Move-In Ready',
-  },
-  {
-    // Brick ranch — College Park / South Fulton style
-    img: 'https://images.pexels.com/photos/4682116/pexels-photo-4682116.jpeg?auto=compress&cs=tinysrgb&w=500',
-    neighborhood: 'College Park',
-    bedrooms: 2,
-    bathrooms: 1,
-    rent: 975,
-    tag: 'Newly Listed',
-  },
-  {
-    // Classic brick home — Decatur / DeKalb style
-    img: 'https://images.pexels.com/photos/7587470/pexels-photo-7587470.jpeg?auto=compress&cs=tinysrgb&w=500',
-    neighborhood: 'Decatur',
-    bedrooms: 4,
-    bathrooms: 2,
-    rent: 1450,
-    tag: 'Pets Allowed',
   },
 ]
 
@@ -126,18 +83,20 @@ export default function Landing() {
             >
               How It Works
             </a>
-            <a
-              href="#landlords"
+            <Link
+              to="/for-landlords"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               For Landlords
-            </a>
-            <Link
-              to={user && userRole === 'tenant' ? '/tenant/rent' : '/signup?role=tenant'}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Pay Rent
             </Link>
+            {user && userRole === 'tenant' && (
+              <Link
+                to="/tenant/rent"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Pay Rent
+              </Link>
+            )}
             {user && userRole ? (
               <Link
                 to={userRole === 'landlord' ? '/landlord' : '/tenant'}
@@ -153,18 +112,12 @@ export default function Landing() {
                 Sign In
               </Link>
             )}
-            <a
-              href="/admin/queue"
-              className="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors border border-gray-200 px-2.5 py-1 rounded-md"
-            >
-              Admin
-            </a>
             <Link
-              to="/signup?role=tenant"
+              to={user && userRole ? (userRole === 'landlord' ? '/landlord' : '/tenant') : '/listings'}
               className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               style={{ backgroundColor: BRAND_BLUE }}
             >
-              {user && userRole ? 'Go to Dashboard' : 'Find Housing'}
+              {user && userRole ? 'Go to Dashboard' : 'Browse Listings'}
             </Link>
           </nav>
 
@@ -188,20 +141,22 @@ export default function Landing() {
             >
               How It Works
             </a>
-            <a
-              href="#landlords"
+            <Link
+              to="/for-landlords"
               className="text-sm font-medium text-gray-700"
               onClick={() => setMenuOpen(false)}
             >
               For Landlords
-            </a>
-            <Link
-              to={user && userRole === 'tenant' ? '/tenant/rent' : '/signup?role=tenant'}
-              className="text-sm font-medium text-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              Pay Rent
             </Link>
+            {user && userRole === 'tenant' && (
+              <Link
+                to="/tenant/rent"
+                className="text-sm font-medium text-gray-700"
+                onClick={() => setMenuOpen(false)}
+              >
+                Pay Rent
+              </Link>
+            )}
             <Link
               to={user && userRole ? (userRole === 'landlord' ? '/landlord' : '/tenant') : '/login'}
               className="text-sm font-medium text-gray-700"
@@ -210,20 +165,13 @@ export default function Landing() {
               {user && userRole ? 'My Dashboard' : 'Sign In'}
             </Link>
             <Link
-              to="/signup?role=tenant"
+              to="/listings"
               className="text-sm font-semibold text-white text-center px-4 py-3 rounded-xl"
               style={{ backgroundColor: BRAND_BLUE }}
               onClick={() => setMenuOpen(false)}
             >
-              Find Housing
+              Browse Listings
             </Link>
-            <a
-              href="/admin/queue"
-              className="text-xs font-medium text-gray-400 text-center border border-gray-200 px-4 py-2.5 rounded-xl"
-              onClick={() => setMenuOpen(false)}
-            >
-              Admin Sign In
-            </a>
           </div>
         )}
       </header>
@@ -507,126 +455,27 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── FEATURED LISTINGS ────────────────────────────────── */}
+      {/* ── BROWSE CTA ───────────────────────────────────────── */}
       <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-widest mb-1" style={{ color: BRAND_BLUE }}>
-                Browse Listings
-              </p>
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: BRAND_NAVY }}>
-                Featured Homes
-              </h2>
-            </div>
-            <Link
-              to="/signup?role=tenant"
-              className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold"
-              style={{ color: BRAND_BLUE }}
-            >
-              View all
-              <ChevronRight size={14} />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {FEATURED_LISTINGS.map(listing => (
-              <Link
-                key={listing.neighborhood}
-                to="/signup?role=tenant"
-                className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow block"
-              >
-                <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                  <img
-                    src={listing.img}
-                    alt={listing.neighborhood}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={e => { e.target.src = FALLBACK_IMG }}
-                  />
-                  <span
-                    className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
-                    style={{ backgroundColor: BRAND_BLUE }}
-                  >
-                    {listing.tag}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <MapPin size={13} color="#9CA3AF" />
-                    <span className="text-sm font-medium text-gray-700">{listing.neighborhood}</span>
-                  </div>
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-xl font-bold" style={{ color: BRAND_NAVY }}>
-                      ${listing.rent.toLocaleString()}
-                      <span className="text-sm font-normal text-gray-400">/mo</span>
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {listing.bedrooms} bd · {listing.bathrooms} ba
-                    </p>
-                  </div>
-                  <p className="mt-2.5 text-xs font-semibold text-green-600 flex items-center gap-1.5">
-                    <CheckCircle size={12} />
-                    HCV Accepted
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-6 text-center sm:hidden">
-            <Link
-              to="/signup?role=tenant"
-              className="inline-flex items-center gap-1 text-sm font-semibold"
-              style={{ color: BRAND_BLUE }}
-            >
-              View all listings
-              <ChevronRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ─────────────────────────────────────── */}
-      <section className="py-16" style={{ backgroundColor: BRAND_LIGHT }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: BRAND_BLUE }}>
-              Success Stories
-            </p>
-            <h2 className="text-2xl md:text-3xl font-bold" style={{ color: BRAND_NAVY }}>
-              What Our Community Says
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {TESTIMONIALS.map(t => (
-              <div
-                key={t.name}
-                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} color="#F59E0B" fill="#F59E0B" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-5 italic">
-                  "{t.quote}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-                    style={{ backgroundColor: BRAND_NAVY }}
-                  >
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: BRAND_BLUE }}>
+            Browse Listings
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: BRAND_NAVY }}>
+            New Listings Arriving in Atlanta
+          </h2>
+          <p className="text-gray-500 text-base mb-8 max-w-md mx-auto leading-relaxed">
+            Settleed is launching in Atlanta. Every listing is from a verified landlord who accepts Housing Choice Vouchers — no guessing, no wasted calls.
+          </p>
+          <Link
+            to="/listings"
+            className="inline-flex items-center gap-2 text-white font-semibold text-base px-8 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: BRAND_BLUE }}
+          >
+            <Search size={18} />
+            Browse Available Listings
+            <ChevronRight size={18} />
+          </Link>
         </div>
       </section>
 
@@ -637,7 +486,7 @@ export default function Landing() {
             Ready to Find Your<br />Next Home?
           </h2>
           <p className="text-blue-200 text-base mb-9 max-w-md mx-auto leading-relaxed">
-            Join thousands of Atlanta families who've found safe, affordable housing through Settleed.
+            Free to join. Every listing accepts Housing Choice Vouchers. Atlanta-first.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center w-full max-w-xs sm:max-w-none mx-auto">
             <Link
@@ -706,7 +555,7 @@ export default function Landing() {
                   <Link to="/login"       className="hover:text-gray-700 transition-colors">Sign In</Link>
                   <Link to="/privacy"     className="hover:text-gray-700 transition-colors">Privacy Policy</Link>
                   <Link to="/terms"       className="hover:text-gray-700 transition-colors">Terms of Service</Link>
-                  <a    href="/admin/queue" className="hover:text-gray-700 transition-colors">Admin</a>
+                  <Link to="/for-agencies" className="hover:text-gray-700 transition-colors">For Agencies</Link>
                 </div>
               </div>
             </div>

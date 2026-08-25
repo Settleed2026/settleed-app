@@ -85,8 +85,6 @@ import PublicListings from './pages/PublicListings'
 import ForLandlords from './pages/ForLandlords'
 import ForAgencies from './pages/ForAgencies'
 import PublicListingDetail from './pages/PublicListingDetail'
-import Subscribe from './pages/Subscribe'
-import SubscribeSuccess from './pages/SubscribeSuccess'
 import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -120,8 +118,6 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/subscribe" element={<Subscribe />} />
-          <Route path="/subscribe/success" element={<SubscribeSuccess />} />
           <Route path="/tools/rent-analyzer" element={<RentAnalyzer />} />
           <Route path="/tools/voucher-estimator" element={<VoucherEstimator />} />
           <Route path="/listings" element={<PublicListings />} />

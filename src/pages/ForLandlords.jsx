@@ -24,11 +24,6 @@ const FEATURES = [
   },
 ]
 
-const TESTIMONIAL = {
-  quote: "As a landlord I was skeptical about the voucher program. Settleed made the whole process easy — my units stay full and rent is guaranteed.",
-  name: 'Marcus D.',
-  location: 'East Atlanta',
-}
 
 export default function ForLandlords() {
   const navigate = useNavigate()
@@ -60,26 +55,26 @@ export default function ForLandlords() {
           to="/signup?role=landlord"
           className="block w-full bg-[#1D9E75] text-white text-sm font-semibold py-3.5 rounded-xl text-center"
         >
-          Start your 7-day free trial
+          List your property — it's free
         </Link>
         <p className="text-white/40 text-xs text-center mt-2">
-          $49/month after trial · Card required · Cancel anytime
+          Free during Early Access · No credit card required
         </p>
       </div>
 
-      {/* Stats */}
+      {/* Early Access badge */}
       <div className="grid grid-cols-3 border-b border-gray-100">
         <div className="py-4 text-center border-r border-gray-100">
-          <p className="text-xl font-bold text-[#1B3A6B]">340+</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">active tenants</p>
+          <p className="text-xl font-bold text-[#1D9E75]">Free</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">during Early Access</p>
         </div>
         <div className="py-4 text-center border-r border-gray-100">
-          <p className="text-xl font-bold text-[#1B3A6B]">11 days</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">avg. to fill</p>
+          <p className="text-xl font-bold text-[#1B3A6B]">Atlanta</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">first market</p>
         </div>
         <div className="py-4 text-center">
-          <p className="text-xl font-bold text-[#1B3A6B]">$49</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">flat/month</p>
+          <p className="text-xl font-bold text-[#1B3A6B]">HCV</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">voucher-ready tenants</p>
         </div>
       </div>
 
@@ -132,31 +127,12 @@ export default function ForLandlords() {
         </div>
       </div>
 
-      {/* Testimonial */}
-      <div className="mx-5 mt-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
-        <p className="text-sm text-gray-700 leading-relaxed italic">"{TESTIMONIAL.quote}"</p>
-        <p className="text-xs font-semibold text-gray-900 mt-3">{TESTIMONIAL.name}</p>
-        <p className="text-xs text-gray-400">{TESTIMONIAL.location}</p>
-      </div>
-
-      {/* Pricing card */}
-      <div className="mx-5 mt-5 bg-gray-50 rounded-xl border border-gray-100 p-4">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-semibold text-gray-900">Founding member pricing</p>
-          <div>
-            <span className="text-xl font-bold text-[#1B3A6B]">$49</span>
-            <span className="text-xs text-gray-400">/mo</span>
-          </div>
-        </div>
-        <p className="text-xs text-gray-400 mb-3">
-          Unlimited listings · Rent collection · Applications · HQS tracker
+      {/* Early Access callout */}
+      <div className="mx-5 mt-6 bg-[#EBF9F4] rounded-xl p-4 border border-[#C3EFE0]">
+        <p className="text-xs font-semibold text-[#085041] mb-1">Early Access — completely free</p>
+        <p className="text-xs text-[#0F6E56] leading-relaxed">
+          Settleed is launching in Atlanta. List your property, connect with vetted voucher holders, and fill your vacancy — at no cost. No credit card, no subscription.
         </p>
-        <div className="bg-[#EBF9F4] rounded-lg p-3">
-          <p className="text-xs font-semibold text-[#085041] mb-0.5">7-day free trial included</p>
-          <p className="text-xs text-[#0F6E56] leading-relaxed">
-            Card required at signup. Cancel before day 7 and you won't be charged.
-          </p>
-        </div>
       </div>
 
       {/* Bottom CTA */}
@@ -165,7 +141,7 @@ export default function ForLandlords() {
           to="/signup?role=landlord"
           className="block w-full bg-[#1B3A6B] text-white text-sm font-semibold py-3.5 rounded-xl text-center mb-3"
         >
-          Start your 7-day free trial
+          List your property — it's free
         </Link>
         <p className="text-center text-xs text-gray-400">
           Already have an account?{' '}

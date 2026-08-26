@@ -13,6 +13,18 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/ai-listing-writer", "destination": "/api/ai?action=writer" },
+    { "source": "/api/ai-qa", "destination": "/api/ai?action=qa" },
+    { "source": "/api/sign-lease", "destination": "/api/lease?action=sign" },
+    { "source": "/api/activate-lease", "destination": "/api/lease?action=activate" },
+    { "source": "/api/create-subscription", "destination": "/api/subscription?action=create" },
+    { "source": "/api/cancel-subscription", "destination": "/api/subscription?action=cancel" },
+    { "source": "/api/create-service-checkout", "destination": "/api/subscription?action=checkout" },
+    { "source": "/api/feature-listing", "destination": "/api/subscription?action=feature" },
+    { "source": "/api/admin-notify", "destination": "/api/alerts?action=admin" },
+    { "source": "/api/send-match-alerts", "destination": "/api/alerts?action=match" },
+    { "source": "/api/recertification-alerts", "destination": "/api/alerts?action=recert" },
+    { "source": "/api/saved-search-alerts", "destination": "/api/alerts?action=search" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

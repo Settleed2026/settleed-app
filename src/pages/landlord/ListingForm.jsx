@@ -992,30 +992,14 @@ export default function ListingForm() {
               </div>
             </div>
 
-            {['trialing', 'active'].includes(subscriptionStatus) ? (
-              <button
-                type="button"
-                onClick={handleSubmitForReview}
-                disabled={saving || !form.agree_accurate || !form.agree_terms || !form.agree_publish || !form.agree_no_false_info}
-                className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm disabled:opacity-40"
-              >
-                {saving ? 'Submitting…' : 'Submit for Review'}
-              </button>
-            ) : (
-              <Link
-                to="/subscribe"
-                className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-4"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-amber-900 flex items-center gap-1.5">
-                    <Zap className="w-4 h-4" />
-                    Subscribe to publish this listing
-                  </div>
-                  <div className="text-amber-700 text-xs mt-0.5">Start your free 7-day trial — $49/mo after</div>
-                </div>
-                <span className="text-xs font-bold text-amber-900 bg-amber-200 px-2.5 py-1 rounded-full">Get started →</span>
-              </Link>
-            )}
+            <button
+              type="button"
+              onClick={handleSubmitForReview}
+              disabled={saving || !form.agree_accurate || !form.agree_terms || !form.agree_publish || !form.agree_no_false_info}
+              className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm disabled:opacity-40"
+            >
+              {saving ? 'Submitting…' : 'Submit for Review'}
+            </button>
 
             <button type="button" onClick={handleSaveDraft} disabled={saving}
               className="w-full border border-gray-300 text-gray-600 rounded-xl py-3 font-medium text-sm">

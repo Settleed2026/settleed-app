@@ -532,7 +532,7 @@ export default function Landing() {
             </div>
 
             {/* Link columns */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
+            <nav aria-label="Footer" className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
               <div>
                 <p className="font-semibold text-gray-900 mb-3">For Tenants</p>
                 <div className="flex flex-col gap-2.5 text-gray-400">
@@ -558,7 +558,7 @@ export default function Landing() {
                   <Link to="/for-agencies" className="hover:text-gray-700 transition-colors">For Agencies</Link>
                 </div>
               </div>
-            </div>
+            </nav>
           </div>
 
           <div className="mt-10 pt-6 border-t border-gray-100 space-y-3">

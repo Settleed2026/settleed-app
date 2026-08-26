@@ -390,11 +390,14 @@ export default function SearchListings() {
           <div>
             <p className="text-xs text-gray-500 mb-2 font-medium">Custom rent range</p>
             <div className="flex items-center gap-2">
-              <input type="number" value={minRent} onChange={e => setMinRent(e.target.value)}
+              <input type="number" value={minRent} min="0" onChange={e => setMinRent(e.target.value)}
                 placeholder="No min" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
               <span className="text-gray-400 text-sm">–</span>
-              <input type="number" value={maxRent} onChange={e => setMaxRent(e.target.value)}
+              <input type="number" value={maxRent} min="0" onChange={e => setMaxRent(e.target.value)}
                 placeholder="No max" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+              {minRent && maxRent && parseFloat(minRent) > parseFloat(maxRent) && (
+                <p className="w-full text-xs text-red-500 mt-1">Min rent can't exceed max rent.</p>
+              )}
             </div>
           </div>
         </div>

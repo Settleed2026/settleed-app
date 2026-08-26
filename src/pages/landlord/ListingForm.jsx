@@ -346,7 +346,7 @@ export default function ListingForm() {
     })
 
     // Notify admin
-    fetch('/api/admin-notify', {
+    fetch('/api/alerts?action=admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

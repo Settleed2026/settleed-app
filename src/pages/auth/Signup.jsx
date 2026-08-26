@@ -144,19 +144,23 @@ export default function Signup() {
 
     toast.success('Account created! Welcome to Settleed.')
 
-    // Notify admin of new landlord signup
+    // Notify admin of new landlord signup — awaited so navigate() doesn't cancel the request
     if (role === 'landlord') {
-      fetch('/api/admin-notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'landlord_signup',
-          payload: {
-            name: `${form.firstName} ${form.lastName}`.trim(),
-            email: form.email,
-          },
-        }),
-      }).catch(() => {})
+      try {
+        await fetch('/api/alerts?action=admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'landlord_signup',
+            payload: {
+              name: `${form.firstName} ${form.lastName}`.trim(),
+              email: form.email,
+            },
+          }),
+        })
+      } catch {
+        // Non-blocking — don't prevent signup if notification fails
+      }
     }
 
     navigate(role === 'landlord' ? '/landlord/listing/new' : '/tenant/profile/setup')
@@ -330,7 +334,7 @@ export default function Signup() {
                 <div>
                   <label className={labelClass}>Best time to contact <span className="text-gray-400 font-normal">(optional)</span></label>
                   <select name="bestTimeToContact" value={form.bestTimeToContact} onChange={handleChange}
-                    className={`${inputClass} bg-white`}>
+                    className={`${inputClass('bestTimeToContact')} bg-white`}>
                     <option value="">Select a time</option>
                     <option value="morning">Morning (8am–12pm)</option>
                     <option value="afternoon">Afternoon (12pm–5pm)</option>

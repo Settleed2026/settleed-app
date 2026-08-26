@@ -21,6 +21,16 @@ function jsonError(res, status, message) {
   return res.status(status).json({ error: message })
 }
 
+function escHtml(str) {
+  if (!str) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 async function sendEmail({ to, subject, html }) {
   const apiKey = process.env.SENDGRID_API_KEY
   const from   = process.env.FROM_EMAIL || 'info@settleed.com'
@@ -65,10 +75,10 @@ function buildNewApplicationEmail({ tenantName, propertyAddress, applicationDate
         </div>
         <div style="background:white;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:24px">
           <p style="color:#374151;font-size:15px;margin:0 0 16px">
-            <strong>${tenantName}</strong> has applied to your property at
-            <strong>${propertyAddress}</strong>.
+            <strong>${escHtml(tenantName)}</strong> has applied to your property at
+            <strong>${escHtml(propertyAddress)}</strong>.
           </p>
-          <p style="color:#6b7280;font-size:13px;margin:0 0 24px">Applied: ${applicationDate}</p>
+          <p style="color:#6b7280;font-size:13px;margin:0 0 24px">Applied: ${escHtml(applicationDate)}</p>
           <a href="https://www.settleed.com/landlord/applications"
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
             View Application →
@@ -92,21 +102,21 @@ function buildMaintenanceEmail({ tenantName, category, urgency, description, pro
         <div style="background:white;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:24px">
           <div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:16px">
             <p style="margin:0 0 6px;font-size:13px;color:#6b7280">Property</p>
-            <p style="margin:0;font-size:15px;font-weight:600;color:#111827">${propertyAddress}</p>
+            <p style="margin:0;font-size:15px;font-weight:600;color:#111827">${escHtml(propertyAddress)}</p>
           </div>
           <div style="display:flex;gap:12px;margin-bottom:16px">
             <div style="flex:1;background:#f9fafb;border-radius:8px;padding:12px">
               <p style="margin:0 0 4px;font-size:12px;color:#6b7280">Category</p>
-              <p style="margin:0;font-size:14px;font-weight:600;color:#111827;text-transform:capitalize">${category}</p>
+              <p style="margin:0;font-size:14px;font-weight:600;color:#111827;text-transform:capitalize">${escHtml(category)}</p>
             </div>
             <div style="flex:1;background:#f9fafb;border-radius:8px;padding:12px">
               <p style="margin:0 0 4px;font-size:12px;color:#6b7280">Urgency</p>
-              <p style="margin:0;font-size:14px;font-weight:600;color:${urgencyColor}">${urgencyLabel}</p>
+              <p style="margin:0;font-size:14px;font-weight:600;color:${urgencyColor}">${escHtml(urgencyLabel)}</p>
             </div>
           </div>
-          <p style="color:#374151;font-size:14px;margin:0 0 8px"><strong>From:</strong> ${tenantName}</p>
+          <p style="color:#374151;font-size:14px;margin:0 0 8px"><strong>From:</strong> ${escHtml(tenantName)}</p>
           <p style="color:#374151;font-size:14px;margin:0 0 24px;background:#f9fafb;padding:12px;border-radius:8px;line-height:1.6">
-            "${description}"
+            "${escHtml(description)}"
           </p>
           <a href="https://www.settleed.com/landlord/maintenance"
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
@@ -131,7 +141,7 @@ function buildStatusChangeEmail({ propertyAddress, newStatus, landlordNote }) {
         </div>
         <div style="background:white;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:24px">
           <p style="color:#374151;font-size:15px;margin:0 0 12px">
-            Your application to <strong>${propertyAddress}</strong> has been updated.
+            Your application to <strong>${escHtml(propertyAddress)}</strong> has been updated.
           </p>
           <div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:20px;text-align:center">
             <p style="font-size:20px;font-weight:700;color:${statusColor};margin:0">${statusLabel}</p>
@@ -146,7 +156,7 @@ function buildStatusChangeEmail({ propertyAddress, newStatus, landlordNote }) {
           }
           ${landlordNote ? `<div style="background:#EEF5FF;border-radius:8px;padding:12px;margin-bottom:20px">
             <p style="font-size:12px;color:#6b7280;margin:0 0 6px">Message from landlord</p>
-            <p style="font-size:14px;color:#1B3A6B;margin:0">${landlordNote}</p>
+            <p style="font-size:14px;color:#1B3A6B;margin:0">${escHtml(landlordNote)}</p>
           </div>` : ''}
           <a href="https://www.settleed.com/tenant/applications"
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">

@@ -70,7 +70,7 @@ export default function LandlordBackgroundChecks() {
       if (data.alreadyExists) {
         toast('A background check already exists for this applicant.', { icon: 'ℹ️' })
       } else {
-        toast.success('Background check requested! The tenant will receive a consent email.')
+        toast.success('Background check requested! We\'ll notify the tenant to complete their consent.')
       }
       fetchData()
       setTab('checks')

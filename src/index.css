@@ -8,6 +8,34 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ============================================================
+   iOS / Capacitor Safe Area Support
+   Handles iPhone notch, Dynamic Island, and home indicator.
+   Uses env() which falls back to 0px on web/Android.
+   ============================================================ */
+:root {
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+}
+
+/* Fixed bottom navigation — pushes nav above home indicator */
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Page content spacer — accounts for BottomNav height + safe area */
+/* Use on the main content wrapper of any page that uses BottomNav */
+.content-safe-bottom {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Status bar / notch — use on fixed headers if added in future */
+.header-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 body {
   font-family: 'Inter', system-ui, sans-serif;
   background-color: #f9fafb;

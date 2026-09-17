@@ -1,0 +1,20 @@
+{
+  "appId": "com.settleed.app",
+  "appName": "Settleed",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "scheme": "Settleed",
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#1B3A6B",
+      "showSpinner": false
+    }
+  }
+}

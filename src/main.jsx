@@ -6,8 +6,11 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import './index.css'
 
-// Register service worker for PWA support
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Register service worker for PWA support.
+// Skip inside Capacitor native apps — the service worker is not needed there
+// and can interfere with packaged asset loading.
+const _isCapacitorNative = window.Capacitor?.isNativePlatform?.() ?? false
+if (!_isCapacitorNative && 'serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   })

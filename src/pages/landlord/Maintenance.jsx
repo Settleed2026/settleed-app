@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
 import toast from 'react-hot-toast'
-import { ChevronRight, Wrench, AlertTriangle, CheckCircle } from 'lucide-react'
+import { ChevronRight, Wrench, AlertTriangle, CheckCircle, DollarSign, Send, Clock, XCircle } from 'lucide-react'
 
 const CATEGORIES = {
   plumbing:   { label: 'Plumbing',     icon: '🚿' },
@@ -41,6 +41,10 @@ export default function LandlordMaintenance() {
   const [notes, setNotes] = useState('')
   const [updating, setUpdating] = useState(false)
   const [filter, setFilter] = useState('open')
+  const [estimateAmount, setEstimateAmount] = useState('')
+  const [estimateNote, setEstimateNote] = useState('')
+  const [showEstimateForm, setShowEstimateForm] = useState(false)
+  const [sendingEstimate, setSendingEstimate] = useState(false)
 
   useEffect(() => {
     if (user) fetchRequests()
@@ -102,6 +106,33 @@ export default function LandlordMaintenance() {
       toast.error(err.message || 'Could not save notes.')
     } finally {
       setUpdating(false)
+    }
+  }
+
+  async function handleSendEstimate(requestId) {
+    const amt = parseFloat(estimateAmount.replace(/[^0-9.]/g, ''))
+    if (!amt || amt <= 0) { toast.error('Enter a valid estimate amount.'); return }
+    setSendingEstimate(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/maintenance-estimate', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'send', request_id: requestId, cost_estimate: amt, estimate_note: estimateNote }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success('Estimate sent to tenant.')
+      setShowEstimateForm(false)
+      setEstimateAmount('')
+      setEstimateNote('')
+      fetchRequests()
+      // Refresh selected to show updated state
+      setSelected(prev => ({ ...prev, pre_approval_status: 'pending', cost_estimate: amt, estimate_note: estimateNote }))
+    } catch (err) {
+      toast.error(err.message || 'Could not send estimate.')
+    } finally {
+      setSendingEstimate(false)
     }
   }
 
@@ -174,6 +205,100 @@ export default function LandlordMaintenance() {
                   <img key={i} src={url} alt="" className="w-full aspect-square object-cover rounded-lg" />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Pre-approval estimate section */}
+          {req.urgency !== 'emergency' && (
+            <div className="bg-white rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-900">Repair Estimate</p>
+                {req.pre_approval_status === 'none' && !showEstimateForm && (
+                  <button
+                    onClick={() => setShowEstimateForm(true)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-[#1B3A6B]"
+                  >
+                    <DollarSign className="w-3.5 h-3.5" /> Send Estimate
+                  </button>
+                )}
+              </div>
+
+              {/* Status badges */}
+              {req.pre_approval_status === 'pending' && (
+                <div className="flex items-center gap-2 bg-amber-50 text-amber-700 rounded-lg px-3 py-2.5 text-xs font-semibold">
+                  <Clock className="w-4 h-4 shrink-0" />
+                  <span>
+                    Estimate of <strong>${Number(req.cost_estimate || 0).toLocaleString()}</strong> sent — awaiting tenant approval.
+                  </span>
+                </div>
+              )}
+              {req.pre_approval_status === 'approved' && (
+                <div className="flex items-center gap-2 bg-green-50 text-green-700 rounded-lg px-3 py-2.5 text-xs font-semibold">
+                  <CheckCircle className="w-4 h-4 shrink-0" />
+                  <span>
+                    Tenant approved the <strong>${Number(req.cost_estimate || 0).toLocaleString()}</strong> estimate. You may proceed.
+                  </span>
+                </div>
+              )}
+              {req.pre_approval_status === 'rejected' && (
+                <div className="flex items-center gap-2 bg-red-50 text-red-700 rounded-lg px-3 py-2.5 text-xs font-semibold">
+                  <XCircle className="w-4 h-4 shrink-0" />
+                  <span>
+                    Tenant rejected the <strong>${Number(req.cost_estimate || 0).toLocaleString()}</strong> estimate. Consider messaging them.
+                  </span>
+                </div>
+              )}
+              {req.pre_approval_status === 'none' && !showEstimateForm && (
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Send the tenant a cost estimate before scheduling work — they can approve or reject it from the app.
+                </p>
+              )}
+
+              {/* Send estimate form */}
+              {showEstimateForm && req.pre_approval_status === 'none' && (
+                <div className="space-y-3 border-t border-gray-100 pt-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Estimated Cost ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="250"
+                        value={estimateAmount}
+                        onChange={e => setEstimateAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 pl-7 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Note to Tenant (optional)</label>
+                    <textarea
+                      value={estimateNote}
+                      onChange={e => setEstimateNote(e.target.value)}
+                      placeholder="e.g. Includes parts and labor. Plumber scheduled for Thursday."
+                      rows={3}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSendEstimate(req.id)}
+                      disabled={sendingEstimate}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#1B3A6B] text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                      {sendingEstimate ? 'Sending…' : 'Send to Tenant'}
+                    </button>
+                    <button
+                      onClick={() => { setShowEstimateForm(false); setEstimateAmount(''); setEstimateNote('') }}
+                      className="px-4 py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

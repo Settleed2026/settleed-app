@@ -89,6 +89,12 @@ export default function Landing() {
             >
               For Landlords
             </Link>
+            <Link
+              to="/guarantees"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Guarantees
+            </Link>
             {user && userRole === 'tenant' && (
               <Link
                 to="/tenant/rent"
@@ -479,6 +485,95 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── FREE RENT ANALYZER ───────────────────────────────── */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            {/* Text */}
+            <div className="flex-1">
+              <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: BRAND_BLUE }}>
+                Free Tool · No Sign-Up Required
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: BRAND_NAVY }}>
+                Is Your Rent Within<br />the Section 8 Limit?
+              </h2>
+              <p className="text-gray-500 text-base leading-relaxed mb-6 max-w-md">
+                Find out in seconds. Enter your ZIP code and bedroom size to see the 2026 HUD payment standard for your area — and whether your rent qualifies.
+              </p>
+              <Link
+                to="/tools/rent-analyzer"
+                className="inline-flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: BRAND_BLUE }}
+              >
+                Check Your Rent Free →
+              </Link>
+              <p className="text-xs text-gray-400 mt-3">Covers all 159 Georgia counties · Updated for 2026</p>
+            </div>
+            {/* Mini preview card */}
+            <div className="flex-shrink-0 w-full max-w-sm bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Georgia Section 8 Rent Analyzer</p>
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">ZIP Code</label>
+                  <div className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 bg-gray-50">e.g. 30310</div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Bedroom Size</label>
+                  <div className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 bg-gray-50">2 Bedrooms</div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Monthly Rent</label>
+                  <div className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 bg-gray-50">$1,200</div>
+                </div>
+              </div>
+              <Link
+                to="/tools/rent-analyzer"
+                className="block w-full text-center text-white font-semibold py-3 rounded-xl text-sm hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: BRAND_BLUE }}
+              >
+                Check Eligibility →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── GUARANTEES TRUST BAR ─────────────────────────────── */}
+      <section className="py-14 bg-white border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: BRAND_BLUE }}>
+            Built on Trust
+          </p>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: BRAND_NAVY }}>The Settleed Guarantees</h2>
+          <p className="text-gray-500 text-sm mb-8 max-w-md mx-auto">
+            We make specific, named commitments to every landlord and tenant on our platform.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+            {[
+              { emoji: '🛡️', title: 'Voucher Verified', sub: 'Every applicant holds a real, active voucher' },
+              { emoji: '💰', title: 'On-Time Payment', sub: 'HUD pays directly to you, every month' },
+              { emoji: '⚡', title: 'Fast Match', sub: 'First qualified inquiry within 30 days' },
+              { emoji: '✅', title: 'Simple Pricing', sub: 'One flat fee — no hidden charges' },
+              { emoji: '🚫', title: 'Cancel Anytime', sub: '30-day notice, no penalties ever' },
+              { emoji: '🔧', title: 'Maintenance Control', sub: 'You approve every repair cost first' },
+            ].map(g => (
+              <div key={g.title} className="bg-gray-50 rounded-xl p-4 text-left">
+                <div className="text-2xl mb-2">{g.emoji}</div>
+                <p className="text-sm font-bold text-gray-900 mb-1">{g.title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{g.sub}</p>
+              </div>
+            ))}
+          </div>
+          <Link
+            to="/guarantees"
+            className="text-sm font-semibold underline"
+            style={{ color: BRAND_BLUE }}
+          >
+            Read all six guarantees →
+          </Link>
+        </div>
+      </section>
+
       {/* ── FINAL CTA ────────────────────────────────────────── */}
       <section className="py-16 md:py-20" style={{ backgroundColor: BRAND_NAVY }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
@@ -556,6 +651,7 @@ export default function Landing() {
                   <Link to="/privacy"     className="hover:text-gray-700 transition-colors">Privacy Policy</Link>
                   <Link to="/terms"       className="hover:text-gray-700 transition-colors">Terms of Service</Link>
                   <Link to="/for-agencies" className="hover:text-gray-700 transition-colors">For Agencies</Link>
+                  <Link to="/guarantees" className="hover:text-gray-700 transition-colors">Our Guarantees</Link>
                 </div>
               </div>
             </nav>

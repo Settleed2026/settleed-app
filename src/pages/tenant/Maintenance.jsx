@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
 import toast from 'react-hot-toast'
-import { Plus, ChevronRight, Wrench, X, Upload, AlertTriangle } from 'lucide-react'
+import { Plus, ChevronRight, Wrench, X, Upload, AlertTriangle, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 
@@ -41,6 +41,7 @@ export default function TenantMaintenance() {
   const [submitting, setSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState(null)
+  const [respondingEstimate, setRespondingEstimate] = useState(false)
 
   const [form, setForm] = useState({
     category: '',
@@ -158,6 +159,31 @@ export default function TenantMaintenance() {
     }
   }
 
+  async function handleRespondToEstimate(requestId, approved) {
+    setRespondingEstimate(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/maintenance-estimate', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'respond', request_id: requestId, approved }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success(approved ? 'Estimate approved. Your landlord will proceed.' : 'Estimate rejected.')
+      setSelectedRequest(prev => ({
+        ...prev,
+        pre_approval_status: approved ? 'approved' : 'rejected',
+        pre_approval_responded_at: new Date().toISOString(),
+      }))
+      fetchRequests()
+    } catch (err) {
+      toast.error(err.message || 'Could not respond.')
+    } finally {
+      setRespondingEstimate(false)
+    }
+  }
+
   const catIcon = (c) => CATEGORIES.find(x => x.value === c)?.icon || '🔧'
   const catLabel = (c) => CATEGORIES.find(x => x.value === c)?.label || c
 
@@ -218,6 +244,63 @@ export default function TenantMaintenance() {
                   <img key={i} src={url} alt="" className="w-full aspect-square object-cover rounded-lg" />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Estimate approval card */}
+          {req.pre_approval_status && req.pre_approval_status !== 'none' && (
+            <div className="bg-white rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-gray-500" />
+                <p className="text-sm font-semibold text-gray-900">Repair Estimate</p>
+              </div>
+
+              {req.pre_approval_status === 'pending' && (
+                <>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    <p className="text-xs font-semibold text-amber-700 mb-1">Action Required</p>
+                    <p className="text-sm text-amber-900">
+                      Your landlord has sent an estimate of{' '}
+                      <strong>${Number(req.cost_estimate || 0).toLocaleString()}</strong> for this repair.
+                    </p>
+                    {req.estimate_note && (
+                      <p className="text-xs text-amber-800 mt-1 italic">"{req.estimate_note}"</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRespondToEstimate(req.id, true)}
+                      disabled={respondingEstimate}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 text-white text-sm font-semibold py-3 rounded-xl disabled:opacity-50"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {respondingEstimate ? '…' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => handleRespondToEstimate(req.id, false)}
+                      disabled={respondingEstimate}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-red-500 text-white text-sm font-semibold py-3 rounded-xl disabled:opacity-50"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      {respondingEstimate ? '…' : 'Reject'}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {req.pre_approval_status === 'approved' && (
+                <div className="flex items-center gap-2 bg-green-50 text-green-700 rounded-xl px-4 py-3 text-sm font-semibold">
+                  <CheckCircle className="w-4 h-4" />
+                  You approved the ${Number(req.cost_estimate || 0).toLocaleString()} estimate. Work can proceed.
+                </div>
+              )}
+
+              {req.pre_approval_status === 'rejected' && (
+                <div className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-3 text-sm font-semibold">
+                  <XCircle className="w-4 h-4" />
+                  You rejected the ${Number(req.cost_estimate || 0).toLocaleString()} estimate.
+                </div>
+              )}
             </div>
           )}
         </div>

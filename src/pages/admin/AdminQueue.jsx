@@ -7,7 +7,7 @@ import {
   CheckCircle, XCircle, Clock, User, Home, AlertTriangle,
   Users, BarChart2, FileText, CreditCard, Activity,
   ShieldCheck, RefreshCw, TrendingUp, Key, Wrench, Eye,
-  Search, MapPin, Image, Save, AlertCircle,
+  Search, MapPin, Image, Save, AlertCircle, UserX, UserCheck, Trash2,
 } from 'lucide-react'
 
 const fmt = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -459,6 +459,49 @@ export default function AdminQueue() {
     setFraudAlerts(prev => prev.filter(a => a.id !== id))
   }
 
+  async function handleUserAction(targetUser, action) {
+    const labels = { suspend: 'suspend', unsuspend: 're-activate', delete: 'permanently delete' }
+    const confirmed = window.confirm(
+      action === 'delete'
+        ? `PERMANENTLY DELETE "${targetUser.full_name || targetUser.email}"?\n\nThis cannot be undone. Their login and profile will be removed.`
+        : `${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} "${targetUser.full_name || targetUser.email}"?`
+    )
+    if (!confirmed) return
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { toast.error('Not authenticated'); return }
+
+    const toastId = toast.loading(`${labels[action]}…`)
+    try {
+      const res = await fetch('/api/admin-user-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ userId: targetUser.id, action }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Request failed')
+
+      toast.success(
+        action === 'suspend'   ? `${targetUser.full_name || targetUser.email} suspended` :
+        action === 'unsuspend' ? `${targetUser.full_name || targetUser.email} re-activated` :
+                                 `${targetUser.full_name || targetUser.email} deleted`,
+        { id: toastId }
+      )
+
+      if (action === 'delete') {
+        setUsers(prev => prev.filter(u => u.id !== targetUser.id))
+      } else {
+        setUsers(prev => prev.map(u =>
+          u.id === targetUser.id
+            ? { ...u, suspended_at: action === 'suspend' ? new Date().toISOString() : null }
+            : u
+        ))
+      }
+    } catch (err) {
+      toast.error(err.message, { id: toastId })
+    }
+  }
+
   // ── Access denied / loading ──
   if (isAdmin === false) {
     return (
@@ -574,32 +617,73 @@ export default function AdminQueue() {
         {tab === 'users' && (
           loading && !loadedTabs.has('users') ? <Spinner /> : (
             <div className="space-y-2">
-              <p className="text-xs text-gray-400 mb-3">{users.length} users total</p>
-              {users.map(u => (
-                <div key={u.id} className="bg-white rounded-xl p-3 flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
-                    u.role === 'landlord' ? 'bg-[#EEF5FF] text-[#1B3A6B]' : 'bg-green-50 text-[#1D9E75]'
-                  }`}>
-                    {u.full_name?.[0] || u.email?.[0] || '?'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{u.full_name || u.email}</p>
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                        u.role === 'landlord' ? 'bg-[#EEF5FF] text-[#1B3A6B]' : 'bg-green-50 text-[#1D9E75]'
-                      }`}>{u.role}</span>
-                      {u.verification_status === 'verified' && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">✓ Verified</span>}
-                      {u.subscription_status === 'active' && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700">Subscribed</span>}
-                    </div>
-                    <p className="text-xs text-gray-500 truncate">{u.email}</p>
-                    <div className="flex gap-3 mt-0.5">
-                      {u.housing_authority && <span className="text-[10px] text-gray-400">{u.housing_authority}</span>}
-                      {u.voucher_size != null && <span className="text-[10px] text-gray-400">{u.voucher_size === 0 ? 'Studio' : `${u.voucher_size}BR`} voucher</span>}
-                      <span className="text-[10px] text-gray-400">Joined {fmt(u.created_at)}</span>
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-gray-400">{users.length} users total</p>
+                <div className="flex gap-2">
+                  <span className="text-[10px] bg-[#EEF5FF] text-[#1B3A6B] px-2 py-0.5 rounded-full font-semibold">
+                    {users.filter(u => u.role === 'landlord').length} landlords
+                  </span>
+                  <span className="text-[10px] bg-green-50 text-[#1D9E75] px-2 py-0.5 rounded-full font-semibold">
+                    {users.filter(u => u.role === 'tenant').length} tenants
+                  </span>
                 </div>
-              ))}
+              </div>
+              {users.map(u => {
+                const isSuspended = !!u.suspended_at
+                return (
+                  <div key={u.id} className={`bg-white rounded-xl p-3 flex items-start gap-3 ${isSuspended ? 'opacity-60' : ''}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                      u.role === 'landlord' ? 'bg-[#EEF5FF] text-[#1B3A6B]' : 'bg-green-50 text-[#1D9E75]'
+                    }`}>
+                      {u.full_name?.[0] || u.email?.[0] || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{u.full_name || u.email}</p>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                          u.role === 'landlord' ? 'bg-[#EEF5FF] text-[#1B3A6B]' : 'bg-green-50 text-[#1D9E75]'
+                        }`}>{u.role}</span>
+                        {u.verification_status === 'verified' && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">✓ Verified</span>}
+                        {u.subscription_status === 'active' && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700">Subscribed</span>}
+                        {isSuspended && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">Suspended</span>}
+                      </div>
+                      <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                      <div className="flex gap-3 mt-0.5 flex-wrap">
+                        {u.housing_authority && <span className="text-[10px] text-gray-400">{u.housing_authority}</span>}
+                        {u.voucher_size != null && <span className="text-[10px] text-gray-400">{u.voucher_size === 0 ? 'Studio' : `${u.voucher_size}BR`} voucher</span>}
+                        <span className="text-[10px] text-gray-400">Joined {fmt(u.created_at)}</span>
+                      </div>
+                    </div>
+                    {/* Action buttons */}
+                    <div className="flex gap-1 shrink-0">
+                      {isSuspended ? (
+                        <button
+                          onClick={() => handleUserAction(u, 'unsuspend')}
+                          title="Re-activate account"
+                          className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleUserAction(u, 'suspend')}
+                          title="Suspend account (blocks login)"
+                          className="p-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors"
+                        >
+                          <UserX className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleUserAction(u, 'delete')}
+                        title="Permanently delete account"
+                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
               {users.length === 0 && <EmptyState icon={<Users className="w-10 h-10" />} message="No users yet" />}
             </div>
           )

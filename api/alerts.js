@@ -20,8 +20,14 @@ export default async function handler(req, res) {
   // ── Admin Notify ──────────────────────────────────────────────────────────
   if (action === 'admin') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    // Require ALERTS_SECRET to prevent admin inbox spam from unauthenticated callers
+    const alertsSecret = process.env.ALERTS_SECRET
+    if (alertsSecret) {
+      const auth = req.headers.authorization || ''
+      if (auth !== `Bearer ${alertsSecret}`) return res.status(401).json({ error: 'Unauthorized' })
+    }
     if (!process.env.RESEND_API_KEY) return res.status(500).json({ error: 'No email config' })
-    const ADMIN_EMAIL = 'odtrius@gmail.com'
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'odtrius@gmail.com'
     const { event, payload = {} } = req.body || {}
     let subject, text
     if (event === 'landlord_signup') {
@@ -37,7 +43,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Unknown event type' })
     }
     try {
-      await sgSend({ personalizations: [{ to: [{ email: ADMIN_EMAIL }] }], from: { name: 'Settleed Alerts', email: 'noreply@settleed.com' }, subject, content: [{ type: 'text/plain', value: text }] })
+      await sgSend({ from: 'Settleed Alerts <noreply@settleed.com>', to: ADMIN_EMAIL, subject, text })
       return res.status(200).json({ ok: true })
     } catch (err) {
       console.error('[alerts/admin]', err.message)
@@ -48,6 +54,12 @@ export default async function handler(req, res) {
   // ── Send Match Alerts ─────────────────────────────────────────────────────
   if (action === 'match') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    // Require ALERTS_SECRET to prevent unauthorized bulk tenant emails
+    const alertsSecret = process.env.ALERTS_SECRET
+    if (alertsSecret) {
+      const auth = req.headers.authorization || ''
+      if (auth !== `Bearer ${alertsSecret}`) return res.status(401).json({ error: 'Unauthorized' })
+    }
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
     if (!process.env.RESEND_API_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY || !supabaseUrl) {
       return res.status(200).json({ sent: 0, skipped: true, reason: 'env_not_configured' })
@@ -75,7 +87,7 @@ export default async function handler(req, res) {
       const beds = listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`
       const firstName = tenant.full_name?.split(' ')[0] || 'there'
       try {
-        await sgSend({ from: { email: 'info@settleed.com', name: 'Settleed' }, to: [{ email }], subject: `New match: ${beds} in ${listing.city || 'Atlanta'} — Settleed`, content: [{ type: 'text/plain', value: `Hi ${firstName},\n\nA new ${beds} listing matches your voucher!\n\nRent: $${listing.rent_amount?.toLocaleString()}/mo\nView & Apply: https://settleed.com/tenant/listing/${listing.id}\n\n— Settleed Team` }] })
+        await sgSend({ from: 'Settleed <info@settleed.com>', to: email, subject: `New match: ${beds} in ${listing.city || 'Atlanta'} — Settleed`, text: `Hi ${firstName},\n\nA new ${beds} listing matches your voucher!\n\nRent: $${listing.rent_amount?.toLocaleString()}/mo\nView & Apply: https://settleed.com/tenant/listing/${listing.id}\n\n— Settleed Team` })
         sent++
       } catch (err) { console.error('[alerts/match] email error:', err.message) }
     }
@@ -103,7 +115,7 @@ export default async function handler(req, res) {
         const { data: existing } = await supabase.from('recert_alerts').select('id').eq('tenant_id', tenant.id).eq('days_before', days).gte('sent_at', today.toISOString()).maybeSingle()
         if (existing) continue
         try {
-          await sgSend({ personalizations: [{ to: [{ email: tenant.email }] }], from: { name: 'Settleed', email: 'info@settleed.com' }, subject: `Reminder: Your Section 8 recertification is in ${days} days`, content: [{ type: 'text/plain', value: `Hi ${tenant.full_name?.split(' ')[0] || 'there'},\n\nYour Section 8 recertification is in ${days} days. Start gathering your documents now.\n\nContact your housing authority at least 2 weeks before your recertification date.\n\n— Settleed Team` }] })
+          await sgSend({ from: 'Settleed <info@settleed.com>', to: tenant.email, subject: `Reminder: Your Section 8 recertification is in ${days} days`, text: `Hi ${tenant.full_name?.split(' ')[0] || 'there'},\n\nYour Section 8 recertification is in ${days} days. Start gathering your documents now.\n\nContact your housing authority at least 2 weeks before your recertification date.\n\n— Settleed Team` })
           await supabase.from('recert_alerts').insert({ tenant_id: tenant.id, days_before: days, email_type: 'recertification_reminder' })
           totalSent++
         } catch (err) { errors.push({ tenant: tenant.id, days, error: err.message }) }
@@ -145,7 +157,7 @@ export default async function handler(req, res) {
       if (!matches.length) continue
       const listingLines = matches.slice(0, 5).map(l => `• ${l.bedrooms === 0 ? 'Studio' : `${l.bedrooms} BR`} in ${l.neighborhood || l.zip_code} — $${l.rent_amount?.toLocaleString()}/mo\n  View: https://settleed.com/listing/${l.id}`).join('\n\n')
       try {
-        await sgSend({ personalizations: [{ to: [{ email }] }], from: { name: 'Settleed', email: 'noreply@settleed.com' }, subject: `${matches.length} new listing${matches.length > 1 ? 's' : ''} match your saved search "${search.name}"`, content: [{ type: 'text/plain', value: `Hi ${firstName},\n\n${matches.length} new listing${matches.length > 1 ? 's match' : ' matches'} your saved search "${search.name}":\n\n${listingLines}\n\nView all: https://settleed.com/tenant/search\n\n— The Settleed Team` }] })
+        await sgSend({ from: 'Settleed <noreply@settleed.com>', to: email, subject: `${matches.length} new listing${matches.length > 1 ? 's' : ''} match your saved search "${search.name}"`, text: `Hi ${firstName},\n\n${matches.length} new listing${matches.length > 1 ? 's match' : ' matches'} your saved search "${search.name}":\n\n${listingLines}\n\nView all: https://settleed.com/tenant/search\n\n— The Settleed Team` })
         sent++
       } catch (err) { console.error(`[alerts/search] email failed for ${email}:`, err.message) }
     }

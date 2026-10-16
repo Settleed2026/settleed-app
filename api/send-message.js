@@ -33,10 +33,19 @@ async function sendEmail(to, subject, html) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { conversation_id, property_id, landlord_id, tenant_id, sender_id, content } = req.body
+  // Require authenticated session; derive sender from token (not body) to prevent spoofing
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Please sign in.' })
+  const { data: authData, error: authErr } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+  if (authErr || !authData?.user) return res.status(401).json({ error: 'Session expired.' })
+  const authenticatedSenderId = authData.user.id
 
-  if (!sender_id || !content?.trim()) {
-    return res.status(400).json({ error: 'sender_id and content required' })
+  const { conversation_id, property_id, landlord_id, tenant_id, content } = req.body
+  // sender_id is always derived from the verified session — never trusted from the body
+  const sender_id = authenticatedSenderId
+
+  if (!content?.trim()) {
+    return res.status(400).json({ error: 'content required' })
   }
   if (content.length > 2000) {
     return res.status(400).json({ error: 'Message too long (max 2000 chars)' })

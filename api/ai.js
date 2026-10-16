@@ -2,8 +2,20 @@
 // Combined AI handler — routes by ?action=writer or ?action=qa
 // Replaces: api/ai-listing-writer.js, api/ai-qa.js
 
+import { createClient } from '@supabase/supabase-js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  // Require authenticated session to prevent cost-abuse attacks
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Please sign in.' })
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  if (supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    const { data: authData, error: authErr } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (authErr || !authData?.user) return res.status(401).json({ error: 'Session expired.' })
+  }
 
   const action = req.query.action
 

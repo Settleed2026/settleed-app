@@ -149,7 +149,7 @@ export default function Signup() {
       try {
         await fetch('/api/alerts?action=admin', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_ALERTS_SECRET}` },
           body: JSON.stringify({
             event: 'landlord_signup',
             payload: {

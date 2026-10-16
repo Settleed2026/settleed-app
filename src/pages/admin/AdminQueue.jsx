@@ -422,9 +422,9 @@ export default function AdminQueue() {
       // Fire-and-forget match alerts to tenants whose voucher size matches
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session) return
-        fetch('/api/send-match-alerts', {
+        fetch('/api/alerts?action=match', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_ALERTS_SECRET}` },
           body: JSON.stringify({ listing_id: review.property_id }),
         }).catch(e => console.warn('[match-alerts]', e.message))
       })

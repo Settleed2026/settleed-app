@@ -348,7 +348,7 @@ export default function ListingForm() {
     // Notify admin
     fetch('/api/alerts?action=admin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_ALERTS_SECRET}` },
       body: JSON.stringify({
         event: 'listing_review',
         payload: {

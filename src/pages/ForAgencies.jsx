@@ -85,7 +85,7 @@ export default function ForAgencies() {
     // Notify admin
     fetch('/api/alerts?action=admin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_ALERTS_SECRET}` },
       body: JSON.stringify({
         event: 'agency_inquiry',
         payload: { contact_name: form.name, contact_title: form.title, agency: form.agency, email: form.email, phone: form.phone, message: form.message },

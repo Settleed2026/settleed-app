@@ -11,17 +11,17 @@ const supabase = createClient(
 
 async function sendEmail(to, subject, html) {
   try {
-    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: 'notifications@settleed.com', name: 'Settleed' },
+        from: 'Settleed <notifications@settleed.com>',
+        to,
         subject,
-        content: [{ type: 'text/html', value: html }],
+        html,
       }),
     })
     if (!res.ok) console.error('[send-message] email error:', res.status)

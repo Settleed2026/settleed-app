@@ -24,10 +24,20 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import sgMail from '@sendgrid/mail'
 
-const FROM_EMAIL = 'no-reply@settleed.com'
-const FROM_NAME  = 'Settleed'
+const FROM = 'Settleed <no-reply@settleed.com>'
+
+async function sendEmail(to, subject, text) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM, to, subject, text }),
+    })
+  } catch (_) { /* email failure is non-fatal */ }
+}
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message })
@@ -99,36 +109,29 @@ export default async function handler(req, res) {
     if (updateErr) return jsonError(res, 500, 'Could not save estimate.')
 
     // Email the tenant
-    if (process.env.SENDGRID_API_KEY && mreq.tenant_profile?.email) {
-      try {
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-        const cat = mreq.category ? mreq.category.charAt(0).toUpperCase() + mreq.category.slice(1) : 'Maintenance'
-        const address = mreq.property
-          ? `${mreq.property.street_address}${mreq.property.unit_number ? ` #${mreq.property.unit_number}` : ''}`
-          : 'Your property'
-
-        await sgMail.send({
-          to:   mreq.tenant_profile.email,
-          from: { email: FROM_EMAIL, name: FROM_NAME },
-          subject: `Action Required: Approve Repair Estimate — ${formatCurrency(cost_estimate)}`,
-          text: [
-            `Hi ${mreq.tenant_profile.full_name || 'there'},`,
-            '',
-            `Your landlord has sent a cost estimate for your ${cat} maintenance request at ${address}.`,
-            '',
-            `Estimated cost: ${formatCurrency(cost_estimate)}`,
-            estimate_note ? `Note from landlord: ${estimate_note}` : '',
-            '',
-            'Please log in to Settleed to approve or reject this estimate before work can begin.',
-            '',
-            'View request: https://settleed.com/tenant/maintenance',
-            '',
-            '— The Settleed Team',
-          ].filter(Boolean).join('\n'),
-        })
-      } catch (_) {
-        // Email failure is non-fatal
-      }
+    if (mreq.tenant_profile?.email) {
+      const cat = mreq.category ? mreq.category.charAt(0).toUpperCase() + mreq.category.slice(1) : 'Maintenance'
+      const address = mreq.property
+        ? `${mreq.property.street_address}${mreq.property.unit_number ? ` #${mreq.property.unit_number}` : ''}`
+        : 'Your property'
+      await sendEmail(
+        mreq.tenant_profile.email,
+        `Action Required: Approve Repair Estimate — ${formatCurrency(cost_estimate)}`,
+        [
+          `Hi ${mreq.tenant_profile.full_name || 'there'},`,
+          '',
+          `Your landlord has sent a cost estimate for your ${cat} maintenance request at ${address}.`,
+          '',
+          `Estimated cost: ${formatCurrency(cost_estimate)}`,
+          estimate_note ? `Note from landlord: ${estimate_note}` : '',
+          '',
+          'Please log in to Settleed to approve or reject this estimate before work can begin.',
+          '',
+          'View request: https://settleed.com/tenant/maintenance',
+          '',
+          '— The Settleed Team',
+        ].filter(Boolean).join('\n'),
+      )
     }
 
     return res.status(200).json({ success: true, action: 'sent' })
@@ -161,35 +164,28 @@ export default async function handler(req, res) {
     if (updateErr) return jsonError(res, 500, 'Could not save response.')
 
     // Email the landlord
-    if (process.env.SENDGRID_API_KEY && mreq.landlord_profile?.email) {
-      try {
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-        const cat = mreq.category ? mreq.category.charAt(0).toUpperCase() + mreq.category.slice(1) : 'Maintenance'
-        const address = mreq.property
-          ? `${mreq.property.street_address}${mreq.property.unit_number ? ` #${mreq.property.unit_number}` : ''}`
-          : 'Your property'
-
-        await sgMail.send({
-          to:   mreq.landlord_profile.email,
-          from: { email: FROM_EMAIL, name: FROM_NAME },
-          subject: `Repair Estimate ${approved ? 'Approved ✅' : 'Rejected ❌'} — ${cat} at ${address}`,
-          text: [
-            `Hi ${mreq.landlord_profile.full_name || 'there'},`,
-            '',
-            `Your tenant has ${approved ? 'approved' : 'rejected'} the ${formatCurrency(mreq.cost_estimate)} estimate for the ${cat} repair at ${address}.`,
-            '',
-            approved
-              ? 'You can now proceed with scheduling the repair.'
-              : 'The tenant has declined the estimate. You may want to reach out to discuss alternative options.',
-            '',
-            'View request: https://settleed.com/landlord/maintenance',
-            '',
-            '— The Settleed Team',
-          ].join('\n'),
-        })
-      } catch (_) {
-        // Email failure is non-fatal
-      }
+    if (mreq.landlord_profile?.email) {
+      const cat = mreq.category ? mreq.category.charAt(0).toUpperCase() + mreq.category.slice(1) : 'Maintenance'
+      const address = mreq.property
+        ? `${mreq.property.street_address}${mreq.property.unit_number ? ` #${mreq.property.unit_number}` : ''}`
+        : 'Your property'
+      await sendEmail(
+        mreq.landlord_profile.email,
+        `Repair Estimate ${approved ? 'Approved ✅' : 'Rejected ❌'} — ${cat} at ${address}`,
+        [
+          `Hi ${mreq.landlord_profile.full_name || 'there'},`,
+          '',
+          `Your tenant has ${approved ? 'approved' : 'rejected'} the ${formatCurrency(mreq.cost_estimate)} estimate for the ${cat} repair at ${address}.`,
+          '',
+          approved
+            ? 'You can now proceed with scheduling the repair.'
+            : 'The tenant has declined the estimate. You may want to reach out to discuss alternative options.',
+          '',
+          'View request: https://settleed.com/landlord/maintenance',
+          '',
+          '— The Settleed Team',
+        ].join('\n'),
+      )
     }
 
     return res.status(200).json({ success: true, action: newStatus })

@@ -5,15 +5,13 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const SG_URL = 'https://api.sendgrid.com/v3/mail/send'
-
-async function sgSend(payload) {
-  const res = await fetch(SG_URL, {
+async function sgSend({ to, from, subject, text, html }) {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to, subject, ...(html ? { html } : { text }) }),
   })
-  if (!res.ok) { const b = await res.text(); throw new Error(`SendGrid ${res.status}: ${b}`) }
+  if (!res.ok) { const b = await res.text(); throw new Error(`Resend ${res.status}: ${b}`) }
 }
 
 export default async function handler(req, res) {
@@ -22,7 +20,7 @@ export default async function handler(req, res) {
   // ── Admin Notify ──────────────────────────────────────────────────────────
   if (action === 'admin') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-    if (!process.env.SENDGRID_API_KEY) return res.status(500).json({ error: 'No email config' })
+    if (!process.env.RESEND_API_KEY) return res.status(500).json({ error: 'No email config' })
     const ADMIN_EMAIL = 'odtrius@gmail.com'
     const { event, payload = {} } = req.body || {}
     let subject, text
@@ -51,7 +49,7 @@ export default async function handler(req, res) {
   if (action === 'match') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-    if (!process.env.SENDGRID_API_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY || !supabaseUrl) {
+    if (!process.env.RESEND_API_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY || !supabaseUrl) {
       return res.status(200).json({ sent: 0, skipped: true, reason: 'env_not_configured' })
     }
     const { listing_id } = req.body ?? {}
@@ -89,7 +87,7 @@ export default async function handler(req, res) {
     const auth = req.headers.authorization || ''
     if (auth !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).json({ error: 'Unauthorized' })
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-    if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SENDGRID_API_KEY) {
+    if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.RESEND_API_KEY) {
       return res.status(500).json({ error: 'Missing env vars' })
     }
     const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -119,7 +117,7 @@ export default async function handler(req, res) {
     const auth = req.headers.authorization || ''
     if (auth !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).json({ error: 'Unauthorized' })
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-    if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SENDGRID_API_KEY) {
+    if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.RESEND_API_KEY) {
       return res.status(500).json({ error: 'Missing env vars' })
     }
     const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)

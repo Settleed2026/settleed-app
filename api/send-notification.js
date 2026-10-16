@@ -9,7 +9,7 @@
  *   payload: { ... type-specific data ... }
  *
  * Required env vars:
- *   SENDGRID_API_KEY
+ *   RESEND_API_KEY
  *   FROM_EMAIL          (default: info@settleed.com)
  *   SUPABASE_SERVICE_ROLE_KEY
  *   VITE_SUPABASE_URL
@@ -32,31 +32,26 @@ function escHtml(str) {
 }
 
 async function sendEmail({ to, subject, html }) {
-  const apiKey = process.env.SENDGRID_API_KEY
-  const from   = process.env.FROM_EMAIL || 'info@settleed.com'
+  const apiKey = process.env.RESEND_API_KEY
+  const from   = `Settleed <${process.env.FROM_EMAIL || 'info@settleed.com'}>`
 
   if (!apiKey) {
-    console.warn('[send-notification] SENDGRID_API_KEY not set — skipping email to', to)
+    console.warn('[send-notification] RESEND_API_KEY not set — skipping email to', to)
     return { skipped: true }
   }
 
-  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: from, name: 'Settleed' },
-      subject,
-      content: [{ type: 'text/html', value: html }],
-    }),
+    body: JSON.stringify({ from, to, subject, html }),
   })
 
   if (!res.ok) {
     const body = await res.text()
-    console.error('[send-notification] SendGrid error:', res.status, body)
+    console.error('[send-notification] Resend error:', res.status, body)
     return { error: body }
   }
 

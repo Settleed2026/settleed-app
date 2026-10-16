@@ -65,13 +65,13 @@ export default function LandlordMaintenance() {
     setUpdating(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/update-maintenance', {
+      const res = await fetch('/api/maintenance-estimate', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ request_id: requestId, status: newStatus, landlord_notes: notes || undefined }),
+        body: JSON.stringify({ action: 'update', request_id: requestId, status: newStatus, landlord_notes: notes || undefined }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -90,13 +90,13 @@ export default function LandlordMaintenance() {
     setUpdating(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/update-maintenance', {
+      const res = await fetch('/api/maintenance-estimate', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ request_id: requestId, landlord_notes: notes }),
+        body: JSON.stringify({ action: 'update', request_id: requestId, landlord_notes: notes }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)

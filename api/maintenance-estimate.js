@@ -191,5 +191,39 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, action: newStatus })
   }
 
-  return jsonError(res, 400, 'Invalid action. Must be "send" or "respond".')
+  // ── UPDATE REQUEST (landlord action: status / notes) ────────────────────
+  if (action === 'update') {
+    if (mreq.landlord_id !== user.id) {
+      return jsonError(res, 403, 'Not authorized for this request.')
+    }
+
+    const { status, landlord_notes } = req.body
+
+    const validStatuses = ['acknowledged', 'in_progress', 'completed', 'closed']
+    if (status && !validStatuses.includes(status)) {
+      return jsonError(res, 400, `Invalid status. Must be one of: ${validStatuses.join(', ')}`)
+    }
+
+    const updates = {}
+    if (status) {
+      updates.status = status
+      if (status === 'acknowledged') updates.acknowledged_at = new Date().toISOString()
+      if (status === 'completed') updates.completed_at = new Date().toISOString()
+    }
+    if (landlord_notes !== undefined) updates.landlord_notes = landlord_notes
+
+    const { error } = await supabase
+      .from('maintenance_requests')
+      .update(updates)
+      .eq('id', request_id)
+
+    if (error) {
+      console.error('[maintenance-estimate] update error:', error.message)
+      return jsonError(res, 500, 'Failed to update request.')
+    }
+
+    return res.status(200).json({ success: true })
+  }
+
+  return jsonError(res, 400, 'Invalid action. Must be "send", "respond", or "update".')
 }

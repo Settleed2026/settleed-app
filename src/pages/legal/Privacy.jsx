@@ -45,7 +45,9 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">7. Your Rights</h2>
-            <p>You have the right to access, correct, or delete your personal data. To exercise these rights, email support@settleed.com. We will respond within 30 days.</p>
+            <p className="mb-2">You have the right to access, correct, or delete your personal data. To exercise these rights, email <a href="mailto:support@settleed.com" className="text-[#1D9E75] underline">support@settleed.com</a>. We will respond within 30 days.</p>
+            <p className="mb-2"><strong>California residents (CCPA):</strong> You have the right to know what personal information we collect, request deletion of your data, and opt out of any sale of personal information. We do not sell your personal information. To submit a request, email <a href="mailto:support@settleed.com" className="text-[#1D9E75] underline">support@settleed.com</a>.</p>
+            <p><strong>EEA/UK residents (GDPR):</strong> In addition to the rights above, you may have the right to data portability and to lodge a complaint with your local supervisory authority. Our legal basis for processing your data is the performance of our service agreement with you. To exercise any right, email <a href="mailto:support@settleed.com" className="text-[#1D9E75] underline">support@settleed.com</a>.</p>
           </section>
 
           <section>

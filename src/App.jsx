@@ -131,8 +131,10 @@ export default function App() {
           <Route path="/tenant/services" element={<TenantServices />} />
           <Route path="/messages" element={<Messages />} />
 
-          {/* Admin routes — AdminQueue does its own is_admin check */}
-          <Route path="/admin/queue" element={<AdminQueue />} />
+          {/* Admin routes — requires login; AdminQueue does its own is_admin check */}
+          <Route path="/admin" element={<ProtectedRoute />}>
+            <Route path="queue" element={<AdminQueue />} />
+          </Route>
 
           {/* Landlord routes */}
           <Route path="/landlord" element={<ProtectedRoute role="landlord" />}>

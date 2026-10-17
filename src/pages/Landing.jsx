@@ -206,7 +206,7 @@ export default function Landing() {
                 className="inline-block self-start text-xs font-semibold uppercase tracking-widest mb-4 px-3 py-1 rounded-full"
                 style={{ color: BRAND_BLUE, backgroundColor: BRAND_LIGHT }}
               >
-                Atlanta's #1 Section 8 Marketplace
+                Atlanta's Housing Voucher Marketplace
               </span>
 
               <h1
@@ -652,6 +652,7 @@ export default function Landing() {
                   <Link to="/terms"       className="hover:text-gray-700 transition-colors">Terms of Service</Link>
                   <Link to="/for-agencies" className="hover:text-gray-700 transition-colors">For Agencies</Link>
                   <Link to="/guarantees" className="hover:text-gray-700 transition-colors">Our Guarantees</Link>
+                  <a href="mailto:support@settleed.com" className="hover:text-gray-700 transition-colors">Contact Us</a>
                 </div>
               </div>
             </nav>

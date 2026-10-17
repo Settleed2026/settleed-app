@@ -78,6 +78,9 @@ export default function TenantMaintenance() {
     const file = e.target.files?.[0]
     if (!file) return
     if (!CLOUDINARY_CLOUD) { toast.error('Photo upload not configured.'); return }
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+    if (!ALLOWED.includes(file.type)) { toast.error('Only JPG, PNG, WebP, or HEIC images are allowed.'); return }
+    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10 MB.'); return }
     setUploading(true)
     try {
       const fd = new FormData()

@@ -4,6 +4,15 @@
 
 import { createClient } from '@supabase/supabase-js'
 
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -151,8 +160,8 @@ export default async function handler(req, res) {
             <h2 style="color:#fff;margin:0;font-size:18px">New message on Settleed</h2>
           </div>
           <div style="background:#f9f9f9;padding:20px 24px;border-radius:0 0 8px 8px;border:1px solid #e5e7eb;border-top:none">
-            <p style="color:#374151;margin:0 0 12px"><strong>${sender?.full_name || 'Someone'}</strong> sent you a message about <strong>${address}</strong>:</p>
-            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:16px;color:#374151;font-size:15px;line-height:1.6">${content.trim()}</div>
+            <p style="color:#374151;margin:0 0 12px"><strong>${escHtml(sender?.full_name || 'Someone')}</strong> sent you a message about <strong>${escHtml(address)}</strong>:</p>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:16px;color:#374151;font-size:15px;line-height:1.6;white-space:pre-wrap">${escHtml(content.trim())}</div>
             <a href="${process.env.VITE_SITE_URL || 'https://settleed.com'}/messages" style="display:inline-block;margin-top:20px;background:#1B3A6B;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-size:14px">Reply on Settleed</a>
             <p style="color:#9ca3af;font-size:12px;margin-top:20px">Settleed · Section 8 Housing Marketplace</p>
           </div>

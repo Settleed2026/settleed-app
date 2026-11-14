@@ -12,15 +12,20 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchRole(session.user, mounted)
-      } else {
-        setLoading(false)
-      }
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          fetchRole(session.user, mounted)
+        } else {
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        // Supabase unreachable — treat as logged out so the app doesn't hang
+        if (mounted) setLoading(false)
+      })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return

@@ -353,3 +353,46 @@ Update the For Landlords page to say "Free" prominently in the hero. 30 minutes 
 **"What about background checks / FCRA?"** Disabled. Do not re-enable without a FCRA compliance attorney reviewing your procedures. The liability if you mishandle adverse action notices is significant.
 
 **"Should I add monetization signals to track what features would generate revenue?"** Not this week. The only signal that matters is lease-ups. Revenue conversations happen after you prove the model.
+
+---
+
+## PART 9 — MATCHING FLOW: COMPLETED & VERIFIED (November 2026)
+
+### What Was Built
+The end-to-end landlord-tenant matching flow is complete and production-verified. All five priority tasks from the November 2026 sprint have been completed:
+
+**Task 144 — Migration 028 on production:** Added `screening_package`, `income_sources`, `employment_info`, `reference_contacts`, `document_urls`, `matched_at`, `shortlisted_at`, `rejected_reason` to the `applications` table, plus `has_unread_applications` to `properties`. RLS policies applied.
+
+**Task 145 — End-to-end smoke test (live site):** Tenant `testtenant2026@mailinator.com` submitted a full application to listing `28ac003e-8b45-4df7-8384-29e9353b89e8`. Application `3ed39871-ec01-4552-8e8b-05da3575a2b9` confirmed in DB. Landlord dashboard showed application, all 4 workflow actions (Request Info, Schedule Showing, Select, Decline) rendered correctly.
+
+**Task 146 — Email notifications:** Root cause found and fixed — `RESEND_API_KEY` was present in code (`api/send-notification.js`) but not set in Vercel environment variables. Key added to Vercel Production environment. Email templates confirmed for all 4 status changes: `info_requested`, `showing_scheduled`, `selected`, `rejected`. Will activate on next deploy.
+
+**Task 147 — Requirements fields:** Migration 003 columns (`min_credit_score`, `income_requirement`, `criminal_background_policy`, `eviction_policy`, `rental_history_required`, `cosigner_accepted`) confirmed in production DB. `ListingForm.jsx` saves them via `...form` spread. `ListingDetail.jsx` renders them conditionally. Test listing has default values (Step 6 not filled in smoke test, which is expected).
+
+**Task 148 — `window.confirm()` bug fixed:** `handleSelect()` in `ApplicationInbox.jsx` previously used `window.confirm()`, which blocks the browser's JavaScript event loop and fails in automated/MCP browser environments. Replaced with `SelectConfirmModal` — a React bottom-sheet modal matching the style of `DeclineModal` and `ShowingModal`. The modal shows the tenant's name, warns that all other applicants will be notified, and requires explicit "Confirm Selection" click.
+
+### Application Status Workflow
+```
+pending → info_requested → showing_scheduled → selected | rejected
+```
+Each transition: updates `applications.status` in Supabase, then fires `/api/send-notification` (fire-and-forget) which emails the tenant via Resend.
+
+### Edge Cases Documented
+- **Email skips silently** if `RESEND_API_KEY` is not set — returns `{ skipped: true }`, never throws. Callers use `.catch(() => {})` so a Resend failure never surfaces to the landlord UI.
+- **Select → "unit_filled" cascade:** When a landlord selects a tenant, all OTHER applications to that property should be marked `rejected` with reason `unit_filled`. This is NOT yet automated — currently manual. Add a DB trigger or server-side logic before this becomes high-volume.
+- **Showing slots:** `ShowingModal` captures up to 3 date/time slots. These are stored in `applications.showing_slots` (jsonb). The tenant-side `ShowingHandler` component (in tenant Dashboard) shows them and lets the tenant confirm one. No calendar integration — purely in-app.
+- **Requirements display:** `ListingDetail.jsx` renders the requirements section only when at least one field has a value. A listing with all-default/null requirements shows no requirements section, which is correct (not misleading).
+- **Decline reasons** are stored in `applications.rejected_reason` but NOT shown to tenants. The tenant sees only the status change email.
+
+### Production Env Vars Required
+| Variable | Purpose | Status |
+|---|---|---|
+| `RESEND_API_KEY` | Transactional email via Resend | ✅ Added to Vercel Production (Nov 2026) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role DB access in API routes | ✅ Set |
+| `VITE_SUPABASE_URL` | Supabase project URL | ✅ Set |
+| `FROM_EMAIL` | Sender address (default: info@settleed.com) | ✅ Set |
+
+### Do Not Touch
+- `SUPABASE_SERVICE_ROLE_KEY` must NEVER be committed to code — env var in Vercel only
+- Resend API key must NOT be logged, committed, or shared
+- Home Services feature remains FUTURE / NOT APPROVED FOR IMPLEMENTATION

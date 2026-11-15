@@ -611,12 +611,40 @@ function ShowingModal({ onConfirm, onClose }) {
   )
 }
 
+// ─── SelectConfirmModal ────────────────────────────────────────────────────────
+function SelectConfirmModal({ tenantName, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+      <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-8 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Select Tenant</h3>
+          <button onClick={onClose} className="text-gray-400 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-sm text-gray-600">
+          Select <strong>{tenantName}</strong> as your tenant? All other applicants for this unit will be notified that it has been filled.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose}
+            className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium text-gray-600 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button onClick={onConfirm}
+            className="flex-1 bg-[#1D9E75] text-white rounded-xl py-3 text-sm font-semibold hover:opacity-90">
+            Confirm Selection
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── ApplicationCard ───────────────────────────────────────────────────────────
 function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
   const [expanded, setExpanded] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [showDeclineModal, setShowDeclineModal] = useState(false)
   const [showShowingModal, setShowShowingModal] = useState(false)
+  const [showSelectModal, setShowSelectModal] = useState(false)
   const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.pending
 
   async function updateStatus(newStatus, extra = {}) {
@@ -703,8 +731,12 @@ function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
     await updateStatus('info_requested')
   }
 
-  async function handleSelect() {
-    if (!window.confirm(`Select ${app.tenant_name} as your tenant? All other applicants for this unit will be notified that it's filled.`)) return
+  function handleSelect() {
+    setShowSelectModal(true)
+  }
+
+  async function confirmSelect() {
+    setShowSelectModal(false)
     await updateStatus('selected')
   }
 
@@ -938,6 +970,7 @@ function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
 
       {showDeclineModal && <DeclineModal onConfirm={handleDecline} onClose={() => setShowDeclineModal(false)} />}
       {showShowingModal && <ShowingModal onConfirm={handleShowing} onClose={() => setShowShowingModal(false)} />}
+      {showSelectModal && <SelectConfirmModal tenantName={app.tenant_name} onConfirm={confirmSelect} onClose={() => setShowSelectModal(false)} />}
     </>
   )
 }

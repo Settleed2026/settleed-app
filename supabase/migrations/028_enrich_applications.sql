@@ -73,21 +73,24 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS: tenant can upload/read their own docs; landlord can read docs for applications to their properties
-CREATE POLICY IF NOT EXISTS "tenant_docs_own_upload"
+DROP POLICY IF EXISTS "tenant_docs_own_upload" ON storage.objects;
+CREATE POLICY "tenant_docs_own_upload"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'tenant-documents'
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
 
-CREATE POLICY IF NOT EXISTS "tenant_docs_own_read"
+DROP POLICY IF EXISTS "tenant_docs_own_read" ON storage.objects;
+CREATE POLICY "tenant_docs_own_read"
   ON storage.objects FOR SELECT
   USING (
     bucket_id = 'tenant-documents'
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
 
-CREATE POLICY IF NOT EXISTS "landlord_docs_read"
+DROP POLICY IF EXISTS "landlord_docs_read" ON storage.objects;
+CREATE POLICY "landlord_docs_read"
   ON storage.objects FOR SELECT
   USING (
     bucket_id = 'tenant-documents'

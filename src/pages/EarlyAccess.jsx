@@ -3,7 +3,6 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { Home, CheckCircle, ArrowRight, Users, Building2 } from 'lucide-react'
 
 const LANDLORD_BENEFITS = [
@@ -40,28 +39,29 @@ function SignupForm({ role, onSuccess }) {
     setLoading(true)
     setError('')
 
-    const { error: dbErr } = await supabase
-      .from('early_access_signups')
-      .insert({
-        role,
-        name: form.name.trim(),
-        email: form.email.trim().toLowerCase(),
-        zip: form.zip.trim() || null,
-        voucher_size: isLandlord ? null : (form.voucher_size || null),
-        unit_count: null,
+    try {
+      const res = await fetch('/api/early-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role,
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          zip: form.zip.trim() || null,
+          voucher_size: isLandlord ? null : (form.voucher_size || null),
+        }),
       })
-
-    setLoading(false)
-    if (dbErr) {
-      if (dbErr.code === '23505') {
-        // duplicate email — treat as success
-        onSuccess()
+      setLoading(false)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Something went wrong. Please try again.')
         return
       }
+      onSuccess()
+    } catch {
+      setLoading(false)
       setError('Something went wrong. Please try again.')
-      return
     }
-    onSuccess()
   }
 
   return (

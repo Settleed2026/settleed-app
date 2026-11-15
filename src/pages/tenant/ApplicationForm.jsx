@@ -596,7 +596,7 @@ export default function ApplicationForm() {
                 Have you been convicted of a felony in the last 7 years? *
               </label>
               <div className="grid grid-cols-2 gap-3">
-                {[{ val: 'no', label: 'No' }, { val: 'yes', label: 'Yes — I'll explain below' }].map(opt => (
+                {[{ val: 'no', label: 'No' }, { val: 'yes', label: "Yes — I'll explain below" }].map(opt => (
                   <button key={opt.val} type="button"
                     onClick={() => setForm(prev => ({ ...prev, has_criminal_history: opt.val }))}
                     className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${

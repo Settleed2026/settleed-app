@@ -86,6 +86,7 @@ import ForLandlords from './pages/ForLandlords'
 import ForAgencies from './pages/ForAgencies'
 import PublicListingDetail from './pages/PublicListingDetail'
 import Guarantees from './pages/Guarantees'
+import EarlyAccess from './pages/EarlyAccess'
 import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/for-agencies" element={<ForAgencies />} />
           <Route path="/listing/:id" element={<PublicListingDetail />} />
           <Route path="/guarantees" element={<Guarantees />} />
+          <Route path="/early-access" element={<EarlyAccess />} />
           <Route path="/services" element={<Services />} />
           <Route path="/ai" element={<AITools />} />
           <Route path="/tenant/services" element={<TenantServices />} />

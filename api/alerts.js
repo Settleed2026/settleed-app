@@ -17,6 +17,36 @@ async function sgSend({ to, from, subject, text, html }) {
 export default async function handler(req, res) {
   const action = req.query.action
 
+  // ── Early Access Signup (public) ──────────────────────────────────────────
+  if (action === 'early-access') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    const { role, name, email, zip, voucher_size } = req.body || {}
+    if (!role || !['landlord', 'tenant'].includes(role))
+      return res.status(400).json({ error: 'Invalid role' })
+    if (!name || typeof name !== 'string' || !name.trim())
+      return res.status(400).json({ error: 'Name is required' })
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return res.status(400).json({ error: 'Valid email is required' })
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+    if (!supabaseUrl || !process.env.SUPABASE_SERVICE_ROLE_KEY)
+      return res.status(500).json({ error: 'Server misconfiguration' })
+    const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    const { error: insertErr } = await supabase.from('early_access_signups').insert({
+      role,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      zip: zip?.trim() || null,
+      voucher_size: role === 'tenant' ? (voucher_size || null) : null,
+      unit_count: null,
+    })
+    if (insertErr) {
+      if (insertErr.code === '23505') return res.status(200).json({ ok: true })
+      console.error('early-access insert error:', insertErr.message)
+      return res.status(500).json({ error: 'Insert failed' })
+    }
+    return res.status(200).json({ ok: true })
+  }
+
   // ── Admin Notify ──────────────────────────────────────────────────────────
   if (action === 'admin') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })

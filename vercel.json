@@ -21,6 +21,7 @@
     { "source": "/api/cancel-subscription", "destination": "/api/subscription?action=cancel" },
     { "source": "/api/create-service-checkout", "destination": "/api/subscription?action=checkout" },
     { "source": "/api/feature-listing", "destination": "/api/subscription?action=feature" },
+    { "source": "/api/early-access", "destination": "/api/alerts?action=early-access" },
     { "source": "/api/admin-notify", "destination": "/api/alerts?action=admin" },
     { "source": "/api/send-match-alerts", "destination": "/api/alerts?action=match" },
     { "source": "/api/recertification-alerts", "destination": "/api/alerts?action=recert" },

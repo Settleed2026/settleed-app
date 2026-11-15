@@ -40,7 +40,13 @@ export default function BottomNav({ role }) {
       .then(({ data }) => setIsAdmin(!!data?.is_admin))
   }, [user])
 
-  const links = role === 'landlord' ? landlordLinks : tenantLinks
+  // When the user is an admin, Home should land on the admin queue,
+  // not the landlord dashboard (which shows "Add a new listing" CTAs).
+  // Listing creation remains accessible via the Admin Queue's Listings tab.
+  const baseLinks = role === 'landlord' ? landlordLinks : tenantLinks
+  const links = isAdmin
+    ? baseLinks.map(l => l.label === 'Home' ? { ...l, to: '/admin/queue', end: true } : l)
+    : baseLinks
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-50 bottom-nav-safe">

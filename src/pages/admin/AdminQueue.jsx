@@ -274,6 +274,7 @@ export default function AdminQueue() {
   const [leases, setLeases]         = useState([])
   const [insights, setInsights]     = useState(null)
   const [visitors, setVisitors]     = useState([])
+  const [waitlist, setWaitlist]     = useState([])
 
   const [loading, setLoading]       = useState(false)
 
@@ -386,6 +387,13 @@ export default function AdminQueue() {
           upcomingRecerts: recertRes.data || [],
           openMaintenance: maintRes.count ?? (maintRes.data?.length ?? 0),
         })
+      }
+      if (t === 'waitlist') {
+        const { data } = await supabase.from('early_access_signups')
+          .select('id,role,name,email,zip,voucher_size,unit_count,contacted_at,notes,created_at')
+          .order('created_at', { ascending: false })
+          .limit(500)
+        setWaitlist(data || [])
       }
       if (t === 'visitors') {
         const { data: views } = await supabase.from('page_views')
@@ -529,6 +537,7 @@ export default function AdminQueue() {
     { key: 'leases',        label: 'Leases',        icon: Key },
     { key: 'insights',      label: 'Insights',      icon: BarChart2 },
     { key: 'visitors',      label: 'Visitors',      icon: Eye },
+    { key: 'waitlist',      label: 'Waitlist',      icon: Users, badge: null },
   ]
 
   return (
@@ -932,6 +941,13 @@ export default function AdminQueue() {
             : <VisitorsTab visitors={visitors} />
         )}
 
+        {/* ── WAITLIST ── */}
+        {tab === 'waitlist' && (
+          loading && !loadedTabs.has('waitlist')
+            ? <Spinner />
+            : <WaitlistTab rows={waitlist} />
+        )}
+
       </div>
     </div>
   )
@@ -1048,6 +1064,76 @@ function Spinner() {
   return (
     <div className="flex justify-center py-16">
       <div className="w-6 h-6 border-4 border-[#1B3A6B] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+
+function WaitlistTab({ rows }) {
+  const landlords = rows.filter(r => r.role === 'landlord')
+  const tenants   = rows.filter(r => r.role === 'tenant')
+  const contacted = rows.filter(r => r.contacted_at)
+
+  const fmtTime = d => d ? new Date(d).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  }) : '—'
+
+  const Row = ({ r }) => (
+    <div className="py-2.5 border-b border-gray-50 last:border-0">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">{r.name}</p>
+          <p className="text-xs text-gray-500 truncate">{r.email}</p>
+          {r.zip && <p className="text-[11px] text-gray-400">ZIP {r.zip}{r.voucher_size != null ? ` · ${r.voucher_size === '0' ? 'Studio' : r.voucher_size + ' BR'} voucher` : ''}</p>}
+        </div>
+        <div className="text-right shrink-0 space-y-0.5">
+          <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+            r.role === 'landlord' ? 'bg-[#EEF5FF] text-[#1B3A6B]' : 'bg-green-50 text-[#1D9E75]'
+          }`}>{r.role}</span>
+          <p className="text-[10px] text-gray-400">{fmtTime(r.created_at)}</p>
+          {r.contacted_at && <p className="text-[10px] text-[#1D9E75]">✓ contacted</p>}
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-2">
+        <StatCard label="Total Signups"  value={rows.length}       color="blue" />
+        <StatCard label="Landlords"      value={landlords.length}  color="blue" />
+        <StatCard label="Tenants"        value={tenants.length}    color="green" />
+      </div>
+
+      {/* Landlords */}
+      <div className="bg-white rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            Founding Landlords ({landlords.length})
+          </p>
+          <span className="text-[10px] text-gray-400">{contacted.filter(r => r.role === 'landlord').length} contacted</span>
+        </div>
+        {landlords.length === 0
+          ? <p className="text-xs text-gray-400 py-4 text-center">No landlords yet</p>
+          : landlords.map(r => <Row key={r.id} r={r} />)
+        }
+      </div>
+
+      {/* Tenants */}
+      <div className="bg-white rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            Early Access Tenants ({tenants.length})
+          </p>
+          <span className="text-[10px] text-gray-400">{contacted.filter(r => r.role === 'tenant').length} contacted</span>
+        </div>
+        {tenants.length === 0
+          ? <p className="text-xs text-gray-400 py-4 text-center">No tenants yet</p>
+          : tenants.map(r => <Row key={r.id} r={r} />)
+        }
+      </div>
+
     </div>
   )
 }

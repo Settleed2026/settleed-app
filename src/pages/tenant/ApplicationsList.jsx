@@ -3,16 +3,105 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Clock, CheckCircle2, XCircle, Home, ChevronRight, FileText } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { Clock, CheckCircle2, XCircle, Home, ChevronRight, FileText, AlertCircle, CalendarClock, Star } from 'lucide-react'
 
 const STATUS_CONFIG = {
-  pending:   { label: 'Pending',   color: 'text-amber-600 bg-amber-50',  icon: Clock },
-  approved:  { label: 'Approved',  color: 'text-green-700 bg-green-50',  icon: CheckCircle2 },
-  rejected:  { label: 'Declined',  color: 'text-red-600 bg-red-50',      icon: XCircle },
-  withdrawn: { label: 'Withdrawn', color: 'text-gray-600 bg-gray-100',   icon: XCircle },
+  pending:            { label: 'Submitted',          color: 'text-amber-600 bg-amber-50',   icon: Clock },
+  reviewing:          { label: 'Under Review',        color: 'text-blue-700 bg-blue-50',     icon: FileText },
+  info_requested:     { label: 'Info Requested',      color: 'text-purple-700 bg-purple-50', icon: AlertCircle },
+  showing_scheduled:  { label: 'Showing Scheduled',   color: 'text-cyan-700 bg-cyan-50',     icon: CalendarClock },
+  selected:           { label: "You're Selected! 🎉", color: 'text-green-800 bg-green-50',   icon: Star },
+  approved:           { label: 'Approved',            color: 'text-green-700 bg-green-50',   icon: CheckCircle2 },
+  rejected:           { label: 'Not Selected',        color: 'text-red-600 bg-red-50',       icon: XCircle },
+  withdrawn:          { label: 'Withdrawn',           color: 'text-gray-600 bg-gray-100',    icon: XCircle },
 }
 
-function ApplicationCard({ application, onClick }) {
+// ─── Slot Picker Modal ────────────────────────────────────────────────────────
+function SlotPickerModal({ application, onClose, onConfirmed }) {
+  const [chosen, setChosen] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const slots = application.showing_proposed_times || []
+
+  async function confirm() {
+    if (!chosen) return
+    setSubmitting(true)
+    const { error } = await supabase
+      .from('applications')
+      .update({ showing_confirmed_at: chosen, showing_tenant_choice: chosen })
+      .eq('id', application.id)
+    if (error) {
+      toast.error('Failed to confirm. Try again.')
+    } else {
+      toast.success('Showing confirmed!')
+      onConfirmed(chosen)
+    }
+    setSubmitting(false)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+      <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-10 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Pick a Showing Time</h3>
+          <button onClick={onClose} className="text-gray-400 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-xs text-gray-500">The landlord proposed the following times. Pick the one that works best for you.</p>
+        <div className="space-y-2">
+          {slots.map((slot, i) => (
+            <button key={i} type="button" onClick={() => setChosen(slot)}
+              className={`w-full text-left px-4 py-3 rounded-xl text-sm border-2 transition-all ${
+                chosen === slot ? 'border-[#1B3A6B] bg-[#EEF5FF] text-[#1B3A6B] font-semibold' : 'border-gray-100 text-gray-700'
+              }`}>
+              {new Date(slot).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+            </button>
+          ))}
+        </div>
+        <button onClick={confirm} disabled={!chosen || submitting}
+          className="w-full bg-[#1B3A6B] text-white rounded-xl py-3 font-semibold text-sm disabled:opacity-40">
+          Confirm This Time
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── RFTA Prompt Modal ────────────────────────────────────────────────────────
+function RFTAPromptModal({ application, onClose }) {
+  const address = application.properties?.neighborhood || 'this property'
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+      <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-10 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">🎉 You've Been Selected!</h3>
+          <button onClick={onClose} className="text-gray-400 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-sm text-gray-700 leading-relaxed">
+          Congratulations! The landlord at <strong>{address}</strong> has selected you as their tenant.
+        </p>
+        <div className="bg-[#EEF5FF] rounded-xl p-4 space-y-2">
+          <p className="text-sm font-semibold text-[#1B3A6B]">📋 Next Step: Request for Tenancy Approval (RFTA)</p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Because you have a Housing Choice Voucher (Section 8), your housing authority must inspect the unit and approve it before you can move in.
+          </p>
+          <ol className="text-xs text-gray-600 space-y-1 ml-4 list-decimal">
+            <li>Contact your housing authority and let them know you've been selected.</li>
+            <li>Provide this address to your housing authority.</li>
+            <li>Your housing authority will schedule an inspection and issue the RFTA form.</li>
+            <li>Once approved, sign your lease through the app.</li>
+          </ol>
+        </div>
+        <button onClick={onClose}
+          className="w-full bg-[#1D9E75] text-white rounded-xl py-3 font-semibold text-sm">
+          Got it — I'll contact my housing authority
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ApplicationCard({ application, onActionComplete }) {
+  const navigate = useNavigate()
   const p = application.properties
   const status = STATUS_CONFIG[application.status] || STATUS_CONFIG.pending
   const Icon = status.icon
@@ -21,34 +110,92 @@ function ApplicationCard({ application, onClick }) {
   const appliedDate = new Date(application.created_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   })
+  const needsAction = application.status === 'info_requested' || application.status === 'showing_scheduled'
+  const [showSlotPicker, setShowSlotPicker] = useState(false)
+  const [showRFTA, setShowRFTA] = useState(false)
+  const alreadyConfirmed = !!application.showing_confirmed_at
 
   return (
-    <div onClick={onClick}
-      className="bg-white rounded-xl p-3 flex items-center gap-3 cursor-pointer active:bg-gray-50 transition-colors border border-gray-100">
-      {photo
-        ? <img src={photo} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
-        : <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-            <Home className="w-6 h-6 text-gray-300" />
+    <>
+      <div
+        className={`bg-white rounded-xl overflow-hidden border ${needsAction ? 'border-purple-300' : application.status === 'selected' ? 'border-green-300' : 'border-gray-100'} shadow-sm`}>
+        {/* Main row */}
+        <div onClick={() => navigate(`/tenant/listing/${p?.id}`)}
+          className="p-3 flex items-center gap-3 cursor-pointer active:bg-gray-50 transition-colors">
+          <div className="relative shrink-0">
+            {photo
+              ? <img src={photo} alt="" className="w-16 h-16 rounded-xl object-cover" />
+              : <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <Home className="w-6 h-6 text-gray-300" />
+                </div>
+            }
+            {needsAction && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />}
           </div>
-      }
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate">{p?.neighborhood || 'Property'}</p>
-        <p className="text-xs text-gray-500">{beds} · {p?.city || p?.zip_code}</p>
-        <p className="text-sm font-bold text-[#1B3A6B]">${p?.rent_amount?.toLocaleString()}/mo</p>
-        <p className="text-[10px] text-gray-400 mt-0.5">Applied {appliedDate}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate">{p?.neighborhood || 'Property'}</p>
+            <p className="text-xs text-gray-500">{beds} · {p?.city || p?.zip_code}</p>
+            <p className="text-sm font-bold text-[#1B3A6B]">${p?.rent_amount?.toLocaleString()}/mo</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Applied {appliedDate}</p>
+          </div>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <span className={`flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
+              <Icon className="w-3 h-3" />
+              {status.label}
+            </span>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
+          </div>
+        </div>
+
+        {/* Showing CTA */}
+        {application.status === 'showing_scheduled' && (application.showing_proposed_times?.length > 0) && (
+          <div className="border-t border-cyan-100 bg-cyan-50 px-3 py-2.5">
+            {alreadyConfirmed ? (
+              <p className="text-xs text-cyan-800 font-semibold">
+                ✓ Confirmed: {new Date(application.showing_confirmed_at).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}
+              </p>
+            ) : (
+              <button onClick={() => setShowSlotPicker(true)}
+                className="w-full flex items-center justify-center gap-1.5 bg-[#1B3A6B] text-white rounded-xl py-2 text-xs font-semibold">
+                <CalendarClock className="w-3.5 h-3.5" /> Pick a Showing Time
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Info requested CTA */}
+        {application.status === 'info_requested' && (
+          <div className="border-t border-purple-100 bg-purple-50 px-3 py-2.5">
+            <button onClick={() => navigate('/tenant/messages')}
+              className="w-full flex items-center justify-center gap-1.5 bg-purple-600 text-white rounded-xl py-2 text-xs font-semibold">
+              <AlertCircle className="w-3.5 h-3.5" /> Check Your Messages
+            </button>
+          </div>
+        )}
+
+        {/* Selected — RFTA CTA */}
+        {application.status === 'selected' && (
+          <div className="border-t border-green-100 bg-green-50 px-3 py-2.5">
+            <button onClick={() => setShowRFTA(true)}
+              className="w-full flex items-center justify-center gap-1.5 bg-[#1D9E75] text-white rounded-xl py-2 text-xs font-semibold">
+              <Star className="w-3.5 h-3.5" /> What Happens Next? (RFTA)
+            </button>
+          </div>
+        )}
       </div>
-      <div className="flex flex-col items-end gap-2 shrink-0">
-        <span className={`flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
-          <Icon className="w-3 h-3" />
-          {status.label}
-        </span>
-        <ChevronRight className="w-4 h-4 text-gray-300" />
-      </div>
-    </div>
+
+      {showSlotPicker && (
+        <SlotPickerModal
+          application={application}
+          onClose={() => setShowSlotPicker(false)}
+          onConfirmed={slot => { setShowSlotPicker(false); onActionComplete && onActionComplete(application.id, { showing_confirmed_at: slot }) }}
+        />
+      )}
+      {showRFTA && <RFTAPromptModal application={application} onClose={() => setShowRFTA(false)} />}
+    </>
   )
 }
 
-const FILTERS = ['All', 'Pending', 'Approved', 'Declined']
+const FILTERS = ['All', 'Pending', 'Showing', 'Selected', 'Declined']
 
 export default function ApplicationsList() {
   const { user } = useAuth()
@@ -62,7 +209,11 @@ export default function ApplicationsList() {
       if (!user) return
       const { data, error } = await supabase
         .from('applications')
-        .select('id, status, created_at, properties:property_id(id, neighborhood, city, zip_code, bedrooms, rent_amount, photos)')
+        .select(`
+          id, status, created_at,
+          showing_proposed_times, showing_confirmed_at, showing_tenant_choice,
+          properties:property_id(id, neighborhood, city, zip_code, bedrooms, rent_amount, photos)
+        `)
         .eq('tenant_id', user.id)
         .order('created_at', { ascending: false })
       if (!error) setApplications(data || [])
@@ -71,17 +222,23 @@ export default function ApplicationsList() {
     fetchApplications()
   }, [user])
 
+  function handleActionComplete(appId, updates) {
+    setApplications(prev => prev.map(a => a.id === appId ? { ...a, ...updates } : a))
+  }
+
   const filtered = applications.filter(a => {
     if (filter === 'All') return true
-    if (filter === 'Pending') return a.status === 'pending'
-    if (filter === 'Approved') return a.status === 'approved'
+    if (filter === 'Pending') return ['pending', 'reviewing', 'info_requested'].includes(a.status)
+    if (filter === 'Showing') return a.status === 'showing_scheduled'
+    if (filter === 'Selected') return ['selected', 'approved'].includes(a.status)
     if (filter === 'Declined') return a.status === 'rejected'
     return true
   })
 
   const counts = {
-    pending:  applications.filter(a => a.status === 'pending').length,
-    approved: applications.filter(a => a.status === 'approved').length,
+    pending:  applications.filter(a => ['pending','reviewing','info_requested'].includes(a.status)).length,
+    showing:  applications.filter(a => a.status === 'showing_scheduled').length,
+    selected: applications.filter(a => ['selected','approved'].includes(a.status)).length,
     rejected: applications.filter(a => a.status === 'rejected').length,
   }
 
@@ -101,8 +258,8 @@ export default function ApplicationsList() {
               <p className="text-blue-200 text-[10px] font-medium">Pending</p>
             </div>
             <div className="bg-white/10 rounded-xl px-3 py-2 text-center flex-1">
-              <p className="text-green-300 font-bold text-lg">{counts.approved}</p>
-              <p className="text-blue-200 text-[10px] font-medium">Approved</p>
+              <p className="text-green-300 font-bold text-lg">{counts.selected}</p>
+              <p className="text-blue-200 text-[10px] font-medium">Selected</p>
             </div>
           </div>
         )}
@@ -156,7 +313,7 @@ export default function ApplicationsList() {
         ) : (
           filtered.map(app => (
             <ApplicationCard key={app.id} application={app}
-              onClick={() => navigate(`/tenant/listing/${app.properties?.id}`)} />
+              onActionComplete={handleActionComplete} />
           ))
         )}
       </div>

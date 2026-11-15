@@ -7,15 +7,39 @@ import {
   User, Home, Calendar, ChevronDown, ChevronUp,
   CheckCircle, XCircle, Key, Clock, FileText,
   Upload, PenLine, ChevronRight, ChevronLeft,
+  MessageSquare, CalendarClock, ThumbsDown, Star,
+  DollarSign, Briefcase, MapPin, AlertTriangle, ExternalLink,
 } from 'lucide-react'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  pending:   { label: 'Pending',   color: 'bg-amber-100 text-amber-700' },
-  reviewing: { label: 'Reviewing', color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Approved',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Declined',  color: 'bg-red-100 text-red-700' },
-  withdrawn: { label: 'Withdrawn', color: 'bg-gray-100 text-gray-500' },
+  pending:            { label: 'Pending',           color: 'bg-amber-100 text-amber-700' },
+  reviewing:          { label: 'Reviewing',         color: 'bg-blue-100 text-blue-700' },
+  info_requested:     { label: 'Info Requested',    color: 'bg-purple-100 text-purple-700' },
+  showing_scheduled:  { label: 'Showing Scheduled', color: 'bg-cyan-100 text-cyan-700' },
+  selected:           { label: 'Selected',          color: 'bg-green-100 text-green-700' },
+  approved:           { label: 'Approved',          color: 'bg-green-100 text-green-700' },
+  rejected:           { label: 'Declined',          color: 'bg-red-100 text-red-700' },
+  withdrawn:          { label: 'Withdrawn',         color: 'bg-gray-100 text-gray-500' },
+}
+
+const DECLINE_REASONS = [
+  { value: 'unit_filled',         label: 'Unit has been filled' },
+  { value: 'voucher_mismatch',    label: 'Voucher size doesn\'t match unit' },
+  { value: 'requirements_not_met',label: 'Requirements not met' },
+  { value: 'income_insufficient', label: 'Income requirements not met' },
+  { value: 'other',               label: 'Other' },
+]
+
+const INCOME_SOURCE_LABELS = {
+  employment:       'Employment / Wages',
+  self_employment:  'Self-Employment',
+  ssi:              'SSI / Social Security',
+  disability:       'Disability Benefits',
+  tanf:             'TANF / Public Assistance',
+  child_support:    'Child Support / Alimony',
+  pension:          'Pension / Retirement',
+  other:            'Other',
 }
 
 const UTILITIES = ['Water', 'Gas', 'Electricity', 'Trash / Recycling', 'Internet', 'Cable']
@@ -526,38 +550,162 @@ function LeaseBuilderModal({ application, property, onClose, onSuccess }) {
   )
 }
 
+// ─── DeclineModal ──────────────────────────────────────────────────────────────
+function DeclineModal({ onConfirm, onClose }) {
+  const [reason, setReason] = useState('')
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+      <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-8 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Decline Application</h3>
+          <button onClick={onClose} className="text-gray-400 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-xs text-gray-500">Select the reason for declining (not shown to the applicant):</p>
+        <div className="space-y-2">
+          {DECLINE_REASONS.map(r => (
+            <button key={r.value} type="button" onClick={() => setReason(r.value)}
+              className={`w-full text-left px-4 py-3 rounded-xl text-sm border-2 transition-all ${
+                reason === r.value ? 'border-red-400 bg-red-50 text-red-800 font-semibold' : 'border-gray-100 text-gray-700'
+              }`}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => reason && onConfirm(reason)} disabled={!reason}
+          className="w-full bg-red-600 text-white rounded-xl py-3 font-semibold text-sm disabled:opacity-40">
+          Confirm Decline
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── ShowingModal ──────────────────────────────────────────────────────────────
+function ShowingModal({ onConfirm, onClose }) {
+  const today = new Date().toISOString().split('T')[0]
+  const [slots, setSlots] = useState(['', '', ''])
+  function setSlot(i, v) { setSlots(prev => { const s = [...prev]; s[i] = v; return s }) }
+  const filled = slots.filter(Boolean)
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end">
+      <div className="bg-white w-full rounded-t-2xl px-4 pt-5 pb-8 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">Propose Showing Times</h3>
+          <button onClick={onClose} className="text-gray-400 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-xs text-gray-500">Propose up to 3 date/time options. The tenant will pick one.</p>
+        {slots.map((slot, i) => (
+          <div key={i}>
+            <label className="text-xs text-gray-400 mb-1 block">Option {i + 1}{i === 0 ? ' *' : ' (optional)'}</label>
+            <input type="datetime-local" value={slot} min={today}
+              onChange={e => setSlot(i, e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+          </div>
+        ))}
+        <button onClick={() => filled.length && onConfirm(filled)} disabled={!filled.length}
+          className="w-full bg-[#1B3A6B] text-white rounded-xl py-3 font-semibold text-sm disabled:opacity-40">
+          Send Showing Request
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── ApplicationCard ───────────────────────────────────────────────────────────
-function ApplicationCard({ app, onStatusChange, onCreateLease }) {
+function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
   const [expanded, setExpanded] = useState(false)
   const [updating, setUpdating] = useState(false)
+  const [showDeclineModal, setShowDeclineModal] = useState(false)
+  const [showShowingModal, setShowShowingModal] = useState(false)
   const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.pending
 
-  async function updateStatus(newStatus) {
+  async function updateStatus(newStatus, extra = {}) {
     setUpdating(true)
     const { error } = await supabase
       .from('applications')
-      .update({ status: newStatus })
+      .update({ status: newStatus, ...extra })
       .eq('id', app.id)
     if (error) {
       toast.error('Failed to update status.')
-    } else {
-      toast.success(newStatus === 'approved' ? 'Application approved.' : 'Application declined.')
-      onStatusChange(app.id, newStatus)
-      const tenantId = app.tenant?.id
-      if (tenantId && (newStatus === 'approved' || newStatus === 'rejected')) {
+      setUpdating(false)
+      return
+    }
+    onStatusChange(app.id, newStatus)
+    const tenantId = app.tenant?.id
+
+    // Notify the tenant of the status change
+    if (tenantId) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        fetch('/api/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({
+            type: 'application_status',
+            payload: { tenant_id: tenantId, property_address: app.property_address, new_status: newStatus, landlord_note: null },
+          }),
+        }).catch(() => {})
+      }).catch(() => {})
+    }
+
+    // If selecting tenant, notify all OTHER applicants on this property that it's filled
+    if (newStatus === 'selected' && propertyId) {
+      const { data: others } = await supabase
+        .from('applications')
+        .select('id, tenant_id')
+        .eq('property_id', propertyId)
+        .neq('id', app.id)
+        .not('status', 'in', '("rejected","withdrawn")')
+      if (others?.length) {
+        // Decline all other pending applicants
+        await supabase.from('applications')
+          .update({ status: 'rejected', decline_reason: 'unit_filled' })
+          .in('id', others.map(o => o.id))
+
+        // Notify them
         supabase.auth.getSession().then(({ data: { session } }) => {
-          fetch('/api/send-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-            body: JSON.stringify({
-              type: 'application_status',
-              payload: { tenant_id: tenantId, property_address: app.property_address, new_status: newStatus, landlord_note: null },
-            }),
-          }).catch(() => {})
+          others.forEach(o => {
+            fetch('/api/send-notification', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+              body: JSON.stringify({
+                type: 'application_status',
+                payload: { tenant_id: o.tenant_id, property_address: app.property_address, new_status: 'unit_filled', landlord_note: null },
+              }),
+            }).catch(() => {})
+          })
         }).catch(() => {})
       }
+      toast.success('Tenant selected! Notify them to expect their lease soon.')
+    } else if (newStatus === 'rejected') {
+      toast.success('Application declined.')
+    } else if (newStatus === 'info_requested') {
+      toast.success('Info request sent — tenant will be notified.')
+    } else if (newStatus === 'showing_scheduled') {
+      toast.success('Showing times sent! Tenant will pick a slot.')
+    } else if (newStatus === 'reviewing') {
+      toast.success('Marked as reviewing.')
     }
+
     setUpdating(false)
+  }
+
+  async function handleDecline(reason) {
+    setShowDeclineModal(false)
+    await updateStatus('rejected', { decline_reason: reason })
+  }
+
+  async function handleShowing(slots) {
+    setShowShowingModal(false)
+    await updateStatus('showing_scheduled', { showing_proposed_times: slots })
+  }
+
+  async function handleRequestInfo() {
+    await updateStatus('info_requested')
+  }
+
+  async function handleSelect() {
+    if (!window.confirm(`Select ${app.tenant_name} as your tenant? All other applicants for this unit will be notified that it's filled.`)) return
+    await updateStatus('selected')
   }
 
   const moveIn = app.desired_move_in
@@ -568,99 +716,229 @@ function ApplicationCard({ app, onStatusChange, onCreateLease }) {
     app.lease_status === 'pending_tenant_signature' ? 'Awaiting Tenant Signature' :
     app.lease_status === 'active'                   ? 'Lease Active'              : null
 
+  const isActive = ['pending','reviewing','info_requested','showing_scheduled'].includes(app.status)
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-[#EEF5FF] flex items-center justify-center shrink-0">
-              <User className="w-5 h-5 text-[#1B3A6B]" />
+    <>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-[#EEF5FF] flex items-center justify-center shrink-0">
+                <User className="w-5 h-5 text-[#1B3A6B]" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 text-sm truncate">{app.tenant_name}</p>
+                <p className="text-xs text-gray-500 truncate">{app.property_address}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">{app.tenant_name}</p>
-              <p className="text-xs text-gray-500 truncate">{app.property_address}</p>
-            </div>
+            <span className={`shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>
           </div>
-          <span className={`shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>
+
+          {/* Quick badges */}
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {app.housing_authority && (
+              <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">{app.housing_authority}</span>
+            )}
+            {app.voucher_size != null && (
+              <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">
+                {app.voucher_size === 0 ? 'Studio' : `${app.voucher_size} BR`} voucher
+              </span>
+            )}
+            {app.household_size && (
+              <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">{app.household_size} in household</span>
+            )}
+            {moveIn && (
+              <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100 flex items-center gap-1">
+                <Calendar className="w-3 h-3" /> {moveIn}
+              </span>
+            )}
+            {/* Document indicators */}
+            {app.id_document_url && <span className="text-[11px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">ID ✓</span>}
+            {app.voucher_document_url && <span className="text-[11px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">Voucher ✓</span>}
+            {app.income_document_url && <span className="text-[11px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">Income ✓</span>}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Applied {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {app.housing_authority && (
-            <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">{app.housing_authority}</span>
-          )}
-          {app.voucher_size != null && (
-            <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">
-              {app.voucher_size === 0 ? 'Studio' : `${app.voucher_size} BR`} voucher
-            </span>
-          )}
-          {app.household_size && (
-            <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100">{app.household_size} in household</span>
-          )}
-          {moveIn && (
-            <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full border border-gray-100 flex items-center gap-1">
-              <Calendar className="w-3 h-3" /> {moveIn}
-            </span>
-          )}
-        </div>
-
-        <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          Applied {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        </p>
-      </div>
-
-      {app.message && (
+        {/* Expandable full application */}
         <div className="border-t border-gray-50">
           <button onClick={() => setExpanded(p => !p)}
             className="w-full px-4 py-2.5 flex items-center justify-between text-xs text-gray-500 hover:bg-gray-50 transition-colors">
-            <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Message from applicant</span>
+            <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> View full application</span>
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
+
           {expanded && (
-            <div className="px-4 pb-3">
-              <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 leading-relaxed">{app.message}</p>
+            <div className="px-4 pb-4 space-y-3">
+              {/* Introduction */}
+              {app.message && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Introduction</p>
+                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 leading-relaxed">{app.message}</p>
+                </div>
+              )}
+
+              {/* Household */}
+              {(app.adults_count || app.adult_names?.length) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Household</p>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+                    {app.adults_count && <div className="flex justify-between text-xs"><span className="text-gray-500">Adults</span><span className="font-medium">{app.adults_count}</span></div>}
+                    {app.children_count > 0 && <div className="flex justify-between text-xs"><span className="text-gray-500">Children</span><span className="font-medium">{app.children_count}{app.children_ages?.length ? ` (ages: ${app.children_ages.join(', ')})` : ''}</span></div>}
+                    {app.adult_names?.length > 0 && (
+                      <div className="text-xs"><span className="text-gray-500">On lease: </span><span className="font-medium">{app.adult_names.join(', ')}</span></div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Income */}
+              {app.monthly_income && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Income</p>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+                    <div className="flex justify-between text-xs"><span className="text-gray-500">Monthly income</span><span className="font-medium text-gray-900">${Number(app.monthly_income).toLocaleString()}/mo</span></div>
+                    {app.income_source && <div className="flex justify-between text-xs"><span className="text-gray-500">Source</span><span className="font-medium">{INCOME_SOURCE_LABELS[app.income_source] || app.income_source}</span></div>}
+                    {app.employer_name && <div className="flex justify-between text-xs"><span className="text-gray-500">Employer</span><span className="font-medium">{app.employer_name}</span></div>}
+                    {app.employment_length && <div className="flex justify-between text-xs"><span className="text-gray-500">Length</span><span className="font-medium">{app.employment_length}</span></div>}
+                  </div>
+                </div>
+              )}
+
+              {/* Rental history */}
+              {app.current_address && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Rental History</p>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+                    <div className="text-xs"><span className="text-gray-500">Current address: </span><span className="font-medium">{app.current_address}</span></div>
+                    {app.time_at_address && <div className="flex justify-between text-xs"><span className="text-gray-500">Time there</span><span className="font-medium">{app.time_at_address}</span></div>}
+                    {app.move_reason && <div className="text-xs"><span className="text-gray-500">Reason moving: </span><span className="font-medium">{app.move_reason}</span></div>}
+                    {app.prev_landlord_contact && <div className="text-xs"><span className="text-gray-500">Prev. landlord: </span><span className="font-medium">{app.prev_landlord_contact}</span></div>}
+                  </div>
+                </div>
+              )}
+
+              {/* Background */}
+              {app.has_criminal_history != null && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Background</p>
+                  <div className={`rounded-lg p-3 text-xs ${app.has_criminal_history ? 'bg-amber-50' : 'bg-green-50'}`}>
+                    <p className={`font-semibold mb-1 ${app.has_criminal_history ? 'text-amber-800' : 'text-green-700'}`}>
+                      {app.has_criminal_history ? '⚠ Felony conviction disclosed' : '✓ No felony convictions in past 7 years'}
+                    </p>
+                    {app.criminal_explanation && (
+                      <p className="text-gray-700 leading-relaxed">{app.criminal_explanation}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {(app.id_document_url || app.voucher_document_url || app.income_document_url || app.reference_document_url) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Documents</p>
+                  <div className="space-y-2">
+                    {[
+                      { url: app.id_document_url,        label: 'Government-Issued ID' },
+                      { url: app.voucher_document_url,   label: 'Voucher Letter' },
+                      { url: app.income_document_url,    label: 'Proof of Income' },
+                      { url: app.reference_document_url, label: 'Reference Letter' },
+                    ].filter(d => d.url).map(d => (
+                      <a key={d.label} href={d.url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between bg-[#EEF5FF] rounded-lg px-3 py-2.5 text-xs font-semibold text-[#1B3A6B] hover:opacity-80">
+                        {d.label} <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Showing slots (if scheduled) */}
+              {app.showing_proposed_times?.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Showing Times Sent</p>
+                  <div className="bg-cyan-50 rounded-lg p-3 space-y-1">
+                    {app.showing_proposed_times.map((t, i) => (
+                      <p key={i} className="text-xs text-cyan-800 font-medium">
+                        {new Date(t).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}
+                      </p>
+                    ))}
+                    {app.showing_confirmed_at && (
+                      <p className="text-xs text-[#1D9E75] font-semibold mt-1">
+                        ✓ Tenant confirmed: {new Date(app.showing_confirmed_at).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
 
-      {/* Action buttons */}
-      {(app.status === 'pending' || app.status === 'reviewing') && (
-        <div className="border-t border-gray-100 px-4 py-3 flex gap-2">
-          <button onClick={() => updateStatus('rejected')} disabled={updating}
-            className="flex-1 flex items-center justify-center gap-1.5 border border-red-200 text-red-600 rounded-lg py-2 text-xs font-semibold hover:bg-red-50 disabled:opacity-50 transition-colors">
-            <XCircle className="w-3.5 h-3.5" /> Decline
-          </button>
-          <button onClick={() => updateStatus('approved')} disabled={updating}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-[#1D9E75] text-white rounded-lg py-2 text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-colors">
-            <CheckCircle className="w-3.5 h-3.5" /> Approve
-          </button>
-        </div>
-      )}
+        {/* ── ACTION BUTTONS ──────────────────────────────────────────────── */}
+        {isActive && (
+          <div className="border-t border-gray-100 p-3 space-y-2">
+            {/* Primary row: Decline | Select Tenant */}
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setShowDeclineModal(true)} disabled={updating}
+                className="flex items-center justify-center gap-1.5 border-2 border-red-200 text-red-600 rounded-xl py-2.5 text-xs font-semibold hover:bg-red-50 disabled:opacity-50 transition-colors">
+                <ThumbsDown className="w-3.5 h-3.5" /> Decline
+              </button>
+              <button onClick={handleSelect} disabled={updating}
+                className="flex items-center justify-center gap-1.5 bg-[#1D9E75] text-white rounded-xl py-2.5 text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-colors">
+                <Star className="w-3.5 h-3.5" /> Select Tenant
+              </button>
+            </div>
+            {/* Secondary row: Request Info | Schedule Showing */}
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={handleRequestInfo} disabled={updating || app.status === 'info_requested'}
+                className="flex items-center justify-center gap-1.5 border border-purple-200 text-purple-700 rounded-xl py-2 text-xs font-semibold hover:bg-purple-50 disabled:opacity-50 transition-colors">
+                <MessageSquare className="w-3.5 h-3.5" /> Request Info
+              </button>
+              <button onClick={() => setShowShowingModal(true)} disabled={updating}
+                className="flex items-center justify-center gap-1.5 border border-cyan-200 text-cyan-700 rounded-xl py-2 text-xs font-semibold hover:bg-cyan-50 disabled:opacity-50 transition-colors">
+                <CalendarClock className="w-3.5 h-3.5" /> Schedule Showing
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center pt-0.5">
+              "Select Tenant" notifies the applicant and closes this unit to others.
+            </p>
+          </div>
+        )}
 
-      {app.status === 'approved' && !app.lease_status && (
-        <div className="border-t border-gray-100 px-4 py-3">
-          <button onClick={() => onCreateLease(app)}
-            className="w-full flex items-center justify-center gap-2 bg-[#1B3A6B] text-white rounded-lg py-2.5 text-sm font-semibold hover:opacity-90 transition-colors">
-            <FileText className="w-4 h-4" /> Create Lease Agreement
-          </button>
-          <p className="text-[10px] text-gray-400 text-center mt-1.5">
-            Digital or upload your own PDF — tenant signs in the app
-          </p>
-        </div>
-      )}
+        {/* Post-selection: Create Lease */}
+        {(app.status === 'selected' || app.status === 'approved') && !app.lease_status && (
+          <div className="border-t border-gray-100 px-4 py-3">
+            <button onClick={() => onCreateLease(app)}
+              className="w-full flex items-center justify-center gap-2 bg-[#1B3A6B] text-white rounded-xl py-3 text-sm font-semibold hover:opacity-90 transition-colors">
+              <FileText className="w-4 h-4" /> Create Lease Agreement
+            </button>
+            <p className="text-[10px] text-gray-400 text-center mt-1.5">
+              Digital or upload your own PDF — tenant signs in the app
+            </p>
+          </div>
+        )}
 
-      {leaseLabel && (
-        <div className={`border-t border-gray-100 px-4 py-3 flex items-center justify-center gap-2 text-xs font-semibold ${
-          app.lease_status === 'active' ? 'text-[#1D9E75]' : 'text-amber-600'
-        }`}>
-          {app.lease_status === 'active'
-            ? <><CheckCircle className="w-4 h-4" /> Lease Active</>
-            : <><Clock className="w-4 h-4" /> Awaiting Tenant Signature</>
-          }
-        </div>
-      )}
-    </div>
+        {leaseLabel && (
+          <div className={`border-t border-gray-100 px-4 py-3 flex items-center justify-center gap-2 text-xs font-semibold ${
+            app.lease_status === 'active' ? 'text-[#1D9E75]' : 'text-amber-600'
+          }`}>
+            {app.lease_status === 'active'
+              ? <><CheckCircle className="w-4 h-4" /> Lease Active</>
+              : <><Clock className="w-4 h-4" /> Awaiting Tenant Signature</>
+            }
+          </div>
+        )}
+      </div>
+
+      {showDeclineModal && <DeclineModal onConfirm={handleDecline} onClose={() => setShowDeclineModal(false)} />}
+      {showShowingModal && <ShowingModal onConfirm={handleShowing} onClose={() => setShowShowingModal(false)} />}
+    </>
   )
 }
 
@@ -680,6 +958,12 @@ export default function ApplicationInbox() {
       .select(`
         id, status, message, desired_move_in, household_size,
         housing_authority, voucher_size, created_at,
+        adults_count, children_count, children_ages, adult_names,
+        monthly_income, income_source, employer_name, employment_length,
+        current_address, time_at_address, move_reason, prev_landlord_contact,
+        has_criminal_history, criminal_explanation,
+        id_document_url, voucher_document_url, income_document_url, reference_document_url,
+        decline_reason, showing_proposed_times, showing_confirmed_at, showing_tenant_choice,
         property:property_id(id, neighborhood, street_address, unit_number, rent_amount, deposit_amount),
         tenant:tenant_id(id, full_name, email)
       `)
@@ -727,13 +1011,16 @@ export default function ApplicationInbox() {
 
   const filtered = filter === 'all' ? applications
     : filter === 'pending' ? applications.filter(a => a.status === 'pending' || a.status === 'reviewing')
+    : filter === 'selected' ? applications.filter(a => a.status === 'selected' || a.status === 'approved')
     : applications.filter(a => a.status === filter)
 
   const counts = {
-    all:      applications.length,
-    pending:  applications.filter(a => a.status === 'pending' || a.status === 'reviewing').length,
-    approved: applications.filter(a => a.status === 'approved').length,
-    rejected: applications.filter(a => a.status === 'rejected').length,
+    all:              applications.length,
+    pending:          applications.filter(a => a.status === 'pending' || a.status === 'reviewing').length,
+    info_requested:   applications.filter(a => a.status === 'info_requested').length,
+    showing_scheduled:applications.filter(a => a.status === 'showing_scheduled').length,
+    selected:         applications.filter(a => a.status === 'selected' || a.status === 'approved').length,
+    rejected:         applications.filter(a => a.status === 'rejected').length,
   }
 
   return (
@@ -749,10 +1036,12 @@ export default function ApplicationInbox() {
 
       <div className="bg-white border-b border-gray-100 px-4 flex gap-1 overflow-x-auto">
         {[
-          { key: 'all',      label: 'All' },
-          { key: 'pending',  label: 'To Review' },
-          { key: 'approved', label: 'Approved' },
-          { key: 'rejected', label: 'Declined' },
+          { key: 'all',               label: 'All' },
+          { key: 'pending',           label: 'To Review' },
+          { key: 'info_requested',    label: 'Info Needed' },
+          { key: 'showing_scheduled', label: 'Showings' },
+          { key: 'selected',          label: 'Selected' },
+          { key: 'rejected',          label: 'Declined' },
         ].map(tab => (
           <button key={tab.key} onClick={() => setFilter(tab.key)}
             className={`shrink-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors ${
@@ -801,6 +1090,7 @@ export default function ApplicationInbox() {
               <ApplicationCard
                 key={app.id}
                 app={app}
+                propertyId={app.property?.id}
                 onStatusChange={handleStatusChange}
                 onCreateLease={application => setLeaseModal({ application, property: application.property })}
               />

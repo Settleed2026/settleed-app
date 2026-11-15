@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { checkRentEligibility } from '../../lib/paymentStandards'
-import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck, MessageSquare, Star, Zap, MapPin, Accessibility } from 'lucide-react'
+import { ChevronLeft, BedDouble, Bath, Ruler, Heart, Share2, ChevronRight, Flag, ShieldCheck, MessageSquare, Star, Zap, MapPin, Accessibility, ClipboardList, Users, DollarSign, FileCheck } from 'lucide-react'
 import { ReviewsDisplay, LeaveReviewForm } from '../../components/ReviewsSection'
 import toast from 'react-hot-toast'
 
@@ -23,6 +23,7 @@ export default function ListingDetail() {
   const [loading, setLoading] = useState(true)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [similarListings, setSimilarListings] = useState([])
+  const [applicationCount, setApplicationCount] = useState(null)
   const [reportOpen, setReportOpen] = useState(false)
   const [reportType, setReportType] = useState('scam')
   const [reportDesc, setReportDesc] = useState('')
@@ -46,15 +47,23 @@ export default function ListingDetail() {
         setListing(data || null)
         // Fetch similar listings
         if (data) {
-          const { data: similar } = await supabase
-            .from('properties')
-            .select('id, neighborhood, zip_code, bedrooms, bathrooms, rent_amount, photos')
-            .eq('status', 'active')
-            .neq('id', id)
-            .or(`neighborhood.eq.${data.neighborhood},zip_code.eq.${data.zip_code}`)
-            .eq('bedrooms', data.bedrooms)
-            .limit(3)
-          setSimilarListings(similar || [])
+          const [similarRes, countRes] = await Promise.all([
+            supabase
+              .from('properties')
+              .select('id, neighborhood, zip_code, bedrooms, bathrooms, rent_amount, photos')
+              .eq('status', 'active')
+              .neq('id', id)
+              .or(`neighborhood.eq.${data.neighborhood},zip_code.eq.${data.zip_code}`)
+              .eq('bedrooms', data.bedrooms)
+              .limit(3),
+            supabase
+              .from('applications')
+              .select('id', { count: 'exact', head: true })
+              .eq('property_id', id)
+              .not('status', 'in', '("withdrawn","rejected")'),
+          ])
+          setSimilarListings(similarRes.data || [])
+          if (countRes.count != null) setApplicationCount(countRes.count)
         }
       } catch (err) {
         console.error('Listing fetch error:', err)
@@ -215,7 +224,15 @@ export default function ListingDetail() {
               <span className="ml-1 text-gray-400">({ps.county} County)</span>
             </div>
           )}
-          <div className="mt-3 text-sm text-gray-700 font-medium">{listing.neighborhood} · {listing.zip_code}</div>
+          <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+            <span className="text-sm text-gray-700 font-medium">{listing.neighborhood} · {listing.zip_code}</span>
+            {applicationCount !== null && (
+              <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                <Users className="w-3 h-3" />
+                {applicationCount === 0 ? 'Be the first to apply' : `${applicationCount} application${applicationCount !== 1 ? 's' : ''} so far`}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-xl p-4">
@@ -347,6 +364,66 @@ export default function ListingDetail() {
           </div>
         )}
 
+        {/* Landlord Requirements */}
+        {(listing.income_requirement || listing.min_credit_score || listing.criminal_background_policy ||
+          listing.pets_allowed != null || listing.rental_history_required != null || listing.cosigner_accepted != null) && (
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-[#1B3A6B]" /> Landlord Requirements
+            </h2>
+            <div className="space-y-2.5">
+              {listing.income_requirement && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Income</span>
+                  <span className="text-xs font-medium text-gray-800 text-right">{listing.income_requirement}</span>
+                </div>
+              )}
+              {listing.min_credit_score && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500 flex items-center gap-1.5"><FileCheck className="w-3.5 h-3.5" /> Min. credit score</span>
+                  <span className="text-xs font-medium text-gray-800">{listing.min_credit_score}</span>
+                </div>
+              )}
+              {listing.criminal_background_policy && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500">Background policy</span>
+                  <span className="text-xs font-medium text-gray-800 text-right capitalize">
+                    {listing.criminal_background_policy === 'standard' ? 'Standard screening'
+                      : listing.criminal_background_policy === 'fair_chance' ? 'Fair chance / case-by-case'
+                      : listing.criminal_background_policy === 'strict' ? 'No felonies'
+                      : listing.criminal_background_policy}
+                  </span>
+                </div>
+              )}
+              {listing.pets_allowed != null && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500">Pets</span>
+                  <span className="text-xs font-medium text-gray-800">
+                    {listing.pets_allowed ? 'Allowed' : 'Not allowed'}
+                    {listing.pet_types?.length > 0 ? ` (${listing.pet_types.join(', ')})` : ''}
+                  </span>
+                </div>
+              )}
+              {listing.rental_history_required && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500">Rental history</span>
+                  <span className="text-xs font-medium text-gray-800">Required</span>
+                </div>
+              )}
+              {listing.cosigner_accepted && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-gray-500">Co-signer</span>
+                  <span className="text-xs font-medium text-[#1D9E75]">Accepted</span>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">
+              Requirements are set by the landlord. Meeting them does not guarantee approval.
+              Settleed enforces Fair Housing — landlords may not discriminate based on protected class.
+            </p>
+          </div>
+        )}
+
         {/* Verification badge */}
         {isVerified && (
           <div className="bg-[#EBF9F4] border border-[#1D9E75]/30 rounded-xl px-4 py-3 flex items-center gap-3">
@@ -469,7 +546,7 @@ export default function ListingDetail() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 safe-area-bottom">
         <div className="flex gap-3">
           <button
             onClick={() => {
@@ -479,9 +556,9 @@ export default function ListingDetail() {
               })
               navigate(`/messages?${params}`)
             }}
-            className="flex items-center justify-center gap-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl py-3.5 px-4 font-semibold text-sm"
+            className="flex items-center justify-center gap-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl py-3.5 px-4 font-semibold text-sm whitespace-nowrap"
           >
-            <MessageSquare className="w-4 h-4" /> Message
+            <MessageSquare className="w-4 h-4" /> Ask a Question
           </button>
           <button
             onClick={() => navigate(`/tenant/apply/${id}`)}

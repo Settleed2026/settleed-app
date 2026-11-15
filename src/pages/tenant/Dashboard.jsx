@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
-import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart, Bot, LifeBuoy, CalendarClock, CreditCard, Bookmark } from 'lucide-react'
+import { Search, FileText, Clock, CheckCircle2, XCircle, ChevronRight, Home, Sparkles, Heart, Bot, LifeBuoy, CalendarClock, CreditCard, Bookmark, AlertCircle, Star } from 'lucide-react'
 
 const STATUS_CONFIG = {
-  pending:   { label: 'Pending',   color: 'text-amber-600 bg-amber-50',  icon: Clock },
-  approved:  { label: 'Approved',  color: 'text-green-700 bg-green-50',  icon: CheckCircle2 },
-  rejected:  { label: 'Declined',  color: 'text-red-600 bg-red-50',      icon: XCircle },
-  withdrawn: { label: 'Withdrawn', color: 'text-gray-600 bg-gray-100',   icon: XCircle },
+  pending:            { label: 'Submitted',         color: 'text-amber-600 bg-amber-50',   icon: Clock,         desc: 'Your application is in the landlord\'s queue.' },
+  reviewing:          { label: 'Under Review',       color: 'text-blue-700 bg-blue-50',     icon: FileText,      desc: 'The landlord is reviewing your application.' },
+  info_requested:     { label: 'Info Requested',     color: 'text-purple-700 bg-purple-50', icon: AlertCircle,   desc: 'The landlord needs more information. Check your messages.' },
+  showing_scheduled:  { label: 'Showing Scheduled',  color: 'text-cyan-700 bg-cyan-50',     icon: CalendarClock, desc: 'The landlord has proposed showing times. Confirm your slot.' },
+  selected:           { label: 'You\'re Selected! 🎉', color: 'text-green-800 bg-green-50',  icon: Star,          desc: 'Congratulations! The landlord chose you. Expect your lease soon.' },
+  approved:           { label: 'Approved',           color: 'text-green-700 bg-green-50',   icon: CheckCircle2,  desc: 'You have been approved for this unit.' },
+  rejected:           { label: 'Not Selected',       color: 'text-red-600 bg-red-50',       icon: XCircle,       desc: 'The landlord selected another applicant.' },
+  withdrawn:          { label: 'Withdrawn',          color: 'text-gray-600 bg-gray-100',    icon: XCircle,       desc: 'You withdrew this application.' },
 }
 
 function ApplicationCard({ application, onClick }) {
@@ -17,20 +21,38 @@ function ApplicationCard({ application, onClick }) {
   const Icon = status.icon
   const beds = p?.bedrooms === 0 ? 'Studio' : `${p?.bedrooms} BR`
   const photo = p?.photos?.[0]
+  const needsAction = application.status === 'info_requested' || application.status === 'showing_scheduled'
 
   return (
-    <div onClick={onClick} className="bg-white rounded-xl p-3 flex items-center gap-3 cursor-pointer active:bg-gray-50 transition-colors border border-gray-100">
-      {photo
-        ? <img src={photo} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
-        : <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-            <Home className="w-5 h-5 text-gray-300" />
-          </div>
-      }
+    <div onClick={onClick}
+      className={`bg-white rounded-xl p-3 flex gap-3 cursor-pointer active:bg-gray-50 transition-colors border ${
+        needsAction ? 'border-purple-300 shadow-sm' : 'border-gray-100'
+      }`}>
+      {/* Thumbnail */}
+      <div className="relative shrink-0">
+        {photo
+          ? <img src={photo} alt="" className="w-14 h-14 rounded-lg object-cover" />
+          : <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Home className="w-5 h-5 text-gray-300" />
+            </div>
+        }
+        {needsAction && (
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white" />
+        )}
+      </div>
+      {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-900 truncate">{p?.neighborhood || 'Property'}</p>
         <p className="text-xs text-gray-500">{beds} · {p?.zip_code}</p>
         <p className="text-sm font-bold text-[#1B3A6B]">${p?.rent_amount?.toLocaleString()}/mo</p>
+        {needsAction && status.desc && (
+          <p className="text-[11px] text-purple-700 font-medium mt-1 leading-tight">{status.desc}</p>
+        )}
+        {application.status === 'selected' && (
+          <p className="text-[11px] text-green-700 font-semibold mt-1">🎉 Expect your lease soon!</p>
+        )}
       </div>
+      {/* Status badge */}
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         <span className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full ${status.color}`}>
           <Icon className="w-3 h-3" />
@@ -275,8 +297,9 @@ export default function TenantDashboard() {
     setShowVoucherModal(false)
   }
 
-  const pending  = applications.filter(a => a.status === 'pending').length
-  const approved = applications.filter(a => a.status === 'approved').length
+  const pending     = applications.filter(a => ['pending','reviewing'].includes(a.status)).length
+  const needsAction = applications.filter(a => ['info_requested','showing_scheduled'].includes(a.status)).length
+  const selected    = applications.filter(a => ['selected','approved'].includes(a.status)).length
   const firstName = profile?.full_name?.split(' ')[0] || 'there'
   const isNewUser = applications.length === 0
 
@@ -304,12 +327,12 @@ export default function TenantDashboard() {
             <p className="text-[10px] text-gray-500 mt-0.5">Applied</p>
           </div>
           <div className="py-3 text-center">
-            <p className="text-xl font-bold text-amber-500">{pending}</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">Pending</p>
+            <p className={`text-xl font-bold ${needsAction > 0 ? 'text-purple-600' : 'text-amber-500'}`}>{needsAction > 0 ? needsAction : pending}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">{needsAction > 0 ? 'Action Needed' : 'Pending'}</p>
           </div>
           <div className="py-3 text-center">
-            <p className="text-xl font-bold text-green-600">{approved}</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">Approved</p>
+            <p className="text-xl font-bold text-green-600">{selected}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">Selected</p>
           </div>
         </div>
       )}

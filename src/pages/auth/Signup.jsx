@@ -228,7 +228,7 @@ export default function Signup() {
                 className="w-full border-2 border-gray-200 rounded-xl p-4 text-left hover:border-[#1B3A6B] transition-colors"
               >
                 <div className="font-semibold text-gray-900 text-sm">I'm a Landlord</div>
-                <div className="text-gray-500 text-xs mt-0.5">List properties and find verified Section 8 tenants</div>
+                <div className="text-gray-500 text-xs mt-0.5">List properties and find verified Housing Choice Voucher (Section 8) tenants</div>
               </button>
               <button
                 onClick={() => { setRole('tenant'); setStep(2) }}

@@ -420,7 +420,7 @@ function LeaseBuilderModal({ application, property, onClose, onSuccess }) {
 
               {/* Section 8 */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Section 8 / HAP</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">HCV (Section 8) / HAP</p>
                 <div className="space-y-3">
                   <div>
                     <label className={labelClass}>HAP contract # <span className="text-gray-400 font-normal">(optional)</span></label>

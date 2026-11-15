@@ -25,7 +25,7 @@ const GUARANTEES = [
     title: 'On-Time Payment Guarantee',
     tagline: 'HUD pays directly to you, every month, on time.',
     body:
-      'Section 8 Housing Assistance Payments (HAP) come from the housing authority, not the tenant. That means your government-backed portion arrives by the 1st of every month regardless of whether your tenant is late. Settleed helps you set up direct deposit so your HAP payment clears on schedule — every time.',
+      'Housing Choice Voucher (Section 8) Housing Assistance Payments (HAP) come from the housing authority, not the tenant. That means your government-backed portion arrives by the 1st of every month regardless of whether your tenant is late. Settleed helps you set up direct deposit so your HAP payment clears on schedule — every time.',
   },
   {
     icon: Clock,
@@ -95,7 +95,7 @@ export default function Guarantees() {
         <p className="text-blue-200 text-xs font-semibold tracking-widest uppercase mb-3">Our Promises to You</p>
         <h1 className="text-white text-4xl font-bold leading-tight mb-4">The Settleed Guarantees</h1>
         <p className="text-blue-100 text-base leading-relaxed max-w-xl mx-auto">
-          Accepting Section 8 for the first time takes trust. Here is exactly what we commit to every landlord and tenant on our platform.
+          Accepting Housing Choice Voucher (Section 8) for the first time takes trust. Here is exactly what we commit to every landlord and tenant on our platform.
         </p>
       </div>
 
@@ -127,7 +127,7 @@ export default function Guarantees() {
               'Equal Housing Opportunity',
               'HUD-Compliant Platform',
               'No Discrimination Policy',
-              'Section 8 Specialist',
+              'Housing Choice Voucher (Section 8) Specialist',
             ].map(label => (
               <span key={label} className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-green-500" />
@@ -141,7 +141,7 @@ export default function Guarantees() {
         <div className="mt-10 rounded-2xl p-8 text-center" style={{ backgroundColor: BRAND_BLUE }}>
           <h2 className="text-white text-2xl font-bold mb-2">Ready to list your property?</h2>
           <p className="text-blue-200 text-sm mb-6 leading-relaxed max-w-md mx-auto">
-            Join landlords across Georgia who are filling vacancies faster with housing-ready Section 8 tenants.
+            Join landlords across Georgia who are filling vacancies faster with Housing Choice Voucher (Section 8) tenants.
           </p>
           <Link
             to={user && userRole === 'landlord' ? '/landlord' : '/signup?role=landlord'}

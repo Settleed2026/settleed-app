@@ -441,7 +441,7 @@ export default function HQSTracker() {
               <ClipboardCheck className="w-7 h-7 text-gray-300" />
             </div>
             <p className="text-gray-500 font-medium text-sm">No properties tracked yet</p>
-            <p className="text-gray-400 text-xs mt-1">Add your Section 8 properties to track HQS inspections</p>
+            <p className="text-gray-400 text-xs mt-1">Add your Housing Choice Voucher (Section 8) properties to track HQS inspections</p>
           </div>
         ) : (
           records.map(record => (

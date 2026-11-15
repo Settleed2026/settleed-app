@@ -213,7 +213,7 @@ export default function Landing() {
                 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4"
                 style={{ color: BRAND_NAVY }}
               >
-                Find Your Next <br />Section 8 Home
+                Find Your Next <br />Housing Choice Voucher (Section 8) Home
               </h1>
 
               <p className="text-gray-500 text-base leading-relaxed mb-7 max-w-md">
@@ -495,7 +495,7 @@ export default function Landing() {
                 Free Tool · No Sign-Up Required
               </p>
               <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: BRAND_NAVY }}>
-                Is Your Rent Within<br />the Section 8 Limit?
+                Is Your Rent Within<br />the Housing Choice Voucher (Section 8) Limit?
               </h2>
               <p className="text-gray-500 text-base leading-relaxed mb-6 max-w-md">
                 Find out in seconds. Enter your ZIP code and bedroom size to see the 2026 HUD payment standard for your area — and whether your rent qualifies.
@@ -511,7 +511,7 @@ export default function Landing() {
             </div>
             {/* Mini preview card */}
             <div className="flex-shrink-0 w-full max-w-sm bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Georgia Section 8 Rent Analyzer</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Georgia Housing Choice Voucher (Section 8) Rent Analyzer</p>
               <div className="space-y-3 mb-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">ZIP Code</label>
@@ -621,7 +621,7 @@ export default function Landing() {
                 <span className="text-lg font-bold" style={{ color: BRAND_NAVY }}>Settleed</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed">
-                Atlanta's Section 8 housing marketplace — connecting HCV families with
+                Georgia's Housing Choice Voucher Program (Section 8) — connecting HCV families with
                 verified, welcoming landlords.
               </p>
             </div>

@@ -46,7 +46,7 @@ Property Details:
 Write a 3-paragraph property description (150-200 words total) that:
 1. Opens with the property's best features
 2. Covers the key amenities and practical details
-3. Ends with a warm, welcoming call to action for Section 8 voucher holders
+3. Ends with a warm, welcoming call to action for Housing Choice Voucher (Section 8) holders
 
 Output only the description text, no headers or labels.`
 
@@ -79,7 +79,7 @@ Output only the description text, no headers or labels.`
     const { question, role, housingAuthority } = req.body
     if (!question) return res.status(400).json({ error: 'Question is required' })
 
-    const systemPrompt = `You are a Section 8 Housing Choice Voucher expert assistant for Settleed, a housing marketplace in Atlanta, Georgia. You have deep knowledge of:
+    const systemPrompt = `You are a Section 8 Housing Choice Voucher expert assistant for Settleed, a housing marketplace in Georgia. You have deep knowledge of:
 - HUD Housing Choice Voucher program rules and regulations
 - Atlanta Housing Authority (AHA) policies and procedures
 - Georgia DCA Housing Choice Voucher program
@@ -88,7 +88,7 @@ Output only the description text, no headers or labels.`
 - Annual recertification processes
 - Payment standards and rent reasonableness
 
-The user is a ${role === 'landlord' ? 'landlord' : 'Section 8 tenant'} ${housingAuthority ? `using ${housingAuthority}` : 'in Atlanta, Georgia'}.
+The user is a ${role === 'landlord' ? 'landlord' : 'Housing Choice Voucher (Section 8) tenant'} ${housingAuthority ? `using ${housingAuthority}` : 'in Atlanta, Georgia'}.
 
 Provide accurate, helpful answers. If you're not certain about something, say so and recommend they contact their housing authority directly. Keep answers concise and practical. Never provide legal advice — recommend a housing counselor or attorney for legal questions.`
 

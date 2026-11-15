@@ -78,7 +78,7 @@ function buildNewApplicationEmail({ tenantName, propertyAddress, applicationDate
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
             View Application →
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Atlanta's Section 8 marketplace</p>
+          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Georgia Housing Choice Voucher Program (Section 8)</p>
         </div>
       </div>`,
   }
@@ -117,7 +117,7 @@ function buildMaintenanceEmail({ tenantName, category, urgency, description, pro
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
             View Request →
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Atlanta's Section 8 marketplace</p>
+          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Georgia Housing Choice Voucher Program (Section 8)</p>
         </div>
       </div>`,
   }
@@ -128,7 +128,7 @@ function buildStatusChangeEmail({ propertyAddress, newStatus, landlordNote }) {
     info_requested:    { color: '#7c3aed', label: '📋 More Info Needed',    body: `The landlord reviewing your application at <strong>${escHtml(propertyAddress)}</strong> has requested additional information. Please check your messages in the app and reply as soon as possible to keep your application active.`, cta: 'Check My Messages', link: 'https://www.settleed.com/tenant/messages' },
     showing_scheduled: { color: '#0891b2', label: '📅 Showing Time Proposed', body: `Great progress! The landlord at <strong>${escHtml(propertyAddress)}</strong> wants to schedule a showing. Open the app to pick a time that works for you.`, cta: 'Pick a Showing Time', link: 'https://www.settleed.com/tenant/applications' },
     selected:          { color: '#1D9E75', label: "🎉 You've Been Selected!", body: `Congratulations! The landlord at <strong>${escHtml(propertyAddress)}</strong> has selected you as their tenant. Your next step is to contact your housing authority to begin the RFTA (Request for Tenancy Approval) process, then sign your lease in the app.`, cta: 'View My Applications', link: 'https://www.settleed.com/tenant/applications' },
-    unit_filled:       { color: '#6b7280', label: '🏠 Unit Has Been Filled',  body: `Thank you for your interest in <strong>${escHtml(propertyAddress)}</strong>. The landlord has selected another applicant for this unit. Keep searching — new Section 8 listings are added regularly.`, cta: 'Browse Listings', link: 'https://www.settleed.com/tenant/search' },
+    unit_filled:       { color: '#6b7280', label: '🏠 Unit Has Been Filled',  body: `Thank you for your interest in <strong>${escHtml(propertyAddress)}</strong>. The landlord has selected another applicant for this unit. Keep searching — new Housing Choice Voucher (Section 8) listings are added regularly.`, cta: 'Browse Listings', link: 'https://www.settleed.com/tenant/search' },
     approved:          { color: '#1D9E75', label: '✅ Approved',              body: `Great news! Your landlord has approved your application at <strong>${escHtml(propertyAddress)}</strong>. They may reach out shortly to discuss next steps for your lease.`, cta: 'View My Applications', link: 'https://www.settleed.com/tenant/applications' },
     rejected:          { color: '#dc2626', label: '❌ Not Selected',          body: `Your application to <strong>${escHtml(propertyAddress)}</strong> was not selected. Don't give up — keep browsing available listings on Settleed.`, cta: 'Browse Listings', link: 'https://www.settleed.com/tenant/search' },
   }
@@ -153,7 +153,7 @@ function buildStatusChangeEmail({ propertyAddress, newStatus, landlordNote }) {
              style="display:inline-block;background:#1B3A6B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
             ${cta} →
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Atlanta's Section 8 marketplace</p>
+          <p style="color:#9ca3af;font-size:12px;margin:24px 0 0">Settleed · Georgia Housing Choice Voucher Program (Section 8)</p>
         </div>
       </div>`,
   }

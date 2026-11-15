@@ -363,7 +363,7 @@ export default function TenantDashboard() {
               <Bot className="w-5 h-5 text-[#1B3A6B]" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Section 8 AI</p>
+              <p className="text-sm font-semibold text-gray-900">Housing Choice Voucher (Section 8) AI</p>
               <p className="text-[11px] text-gray-400 leading-tight">Ask any voucher question</p>
             </div>
           </button>

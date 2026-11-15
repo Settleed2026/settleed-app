@@ -128,7 +128,7 @@ function AuthGateSheet({ listingId, onClose }) {
           Sign up to see full details
         </h2>
         <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">
-          View contact info, floor plans, and apply online — free for Section 8 tenants.
+          View contact info, floor plans, and apply online — free for Housing Choice Voucher (Section 8) tenants.
         </p>
         <Link
           to={`/signup?role=tenant&listing=${listingId}`}

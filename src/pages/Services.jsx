@@ -65,7 +65,7 @@ const SERVICES = [
     description: 'Requesting a rent increase through AHA or DCA is confusing and easy to mess up. Settleed handles the entire process — market analysis, comparable rents, and submission to your housing authority.',
     includes: [
       'Market rent analysis for your area',
-      'Comparable Section 8 rents pulled',
+      'Comparable Housing Choice Voucher (Section 8) rents pulled',
       'Request letter drafted for you',
       'Submission to your housing authority',
       'Status follow-up until resolved',
@@ -139,10 +139,10 @@ export default function Services() {
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <h1 className="text-white text-2xl font-bold">Settleed Services</h1>
-        <p className="text-blue-200 text-sm mt-1">Expert help for every step of your Section 8 journey</p>
+        <p className="text-blue-200 text-sm mt-1">Expert help for every step of your Housing Choice Voucher (Section 8) journey</p>
         <div className="flex items-center gap-2 mt-3">
           <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-          <span className="text-blue-100 text-xs">Backed by Section 8 housing specialists</span>
+          <span className="text-blue-100 text-xs">Backed by Housing Choice Voucher (Section 8) specialists</span>
         </div>
       </div>
 

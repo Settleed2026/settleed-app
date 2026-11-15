@@ -125,7 +125,7 @@ export default function ForAgencies() {
             For Housing Authorities & Agencies
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-            The Section 8 Platform<br />Built Around Your Mission
+            The Housing Choice Voucher Program (Section 8) Platform<br />Built Around Your Mission
           </h1>
           <p className="text-blue-200 text-lg leading-relaxed mb-10 max-w-2xl mx-auto">
             Settleed helps housing authorities reduce voucher expiration, improve lease-up rates,

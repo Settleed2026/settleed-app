@@ -121,7 +121,7 @@ export default function TenantServices() {
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <h1 className="text-white text-2xl font-bold">Tenant Services</h1>
-          <p className="text-blue-200 text-sm mt-1">Resources for Atlanta Section 8 voucher holders</p>
+          <p className="text-blue-200 text-sm mt-1">Resources for Georgia Housing Choice Voucher (Section 8) holders</p>
         </div>
         <div className="px-4 pt-8 flex flex-col items-center text-center gap-4">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">

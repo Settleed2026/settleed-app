@@ -20,7 +20,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-base font-semibold text-gray-900 mb-2">2. Platform Description</h2>
-            <p>Settleed is a marketplace that connects Section 8 voucher holders with landlords who accept Housing Choice Vouchers. We do not own or manage any properties listed on the Platform, nor do we act as a housing authority.</p>
+            <p>Settleed is a marketplace that connects Housing Choice Voucher (Section 8) holders with landlords who accept Housing Choice Vouchers. We do not own or manage any properties listed on the Platform, nor do we act as a housing authority.</p>
           </section>
 
           <section>

@@ -13,7 +13,7 @@ const PLANS = {
     name: 'Landlord',
     price: '$49',
     period: '/month',
-    tagline: 'Find verified Section 8 tenants fast',
+    tagline: 'Find verified Housing Choice Voucher (Section 8) tenants fast',
     color: '#1B3A6B',
     features: [
       'Unlimited property listings',
@@ -28,7 +28,7 @@ const PLANS = {
     name: 'Voucher Holder',
     price: '$4.99',
     period: '/month',
-    tagline: 'Find your next Section 8 home',
+    tagline: 'Find your next Housing Choice Voucher (Section 8) home',
     color: '#1D9E75',
     features: [
       'Search all verified listings',

@@ -19,7 +19,7 @@ function MetaTags({ listing }) {
     if (!listing) return
     const beds = listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`
     const title = `${beds} in ${listing.neighborhood} — $${listing.rent_amount?.toLocaleString()}/mo | Settleed`
-    const desc = `Section 8 / HCV housing in ${listing.neighborhood}, Atlanta (${listing.zip_code}). ${listing.bedrooms} bed, ${listing.bathrooms} bath. Vouchers accepted. Apply on Settleed.`
+    const desc = `Housing Choice Voucher (Section 8) housing in ${listing.neighborhood}, Atlanta (${listing.zip_code}). ${listing.bedrooms} bed, ${listing.bathrooms} bath. Vouchers accepted. Apply on Settleed.`
 
     document.title = title
     const setMeta = (name, content, prop = 'name') => {
@@ -34,7 +34,7 @@ function MetaTags({ listing }) {
     if (listing.photos?.[0]) setMeta('og:image', listing.photos[0], 'property')
     setMeta('og:url', `https://settleed.com/listing/${listing.id}`, 'property')
 
-    return () => { document.title = 'Settleed — Find Section 8 Housing in Atlanta' }
+    return () => { document.title = 'Settleed — Find Housing Choice Voucher (Section 8) Homes in Georgia' }
   }, [listing])
   return null
 }

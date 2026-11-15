@@ -264,7 +264,7 @@ export default function ListingDetail() {
         </div>
 
         <div className="bg-white rounded-xl p-4">
-          <h2 className="font-semibold text-sm text-gray-900 mb-3">Section 8 Details</h2>
+          <h2 className="font-semibold text-sm text-gray-900 mb-3">Housing Choice Voucher (Section 8) Details</h2>
           <div>
             <p className="text-xs text-gray-500 mb-2">Accepted Housing Authorities</p>
             <div className="flex gap-2 flex-wrap">

@@ -1,5 +1,5 @@
 // src/pages/AITools.jsx
-// Layer 4 — AI Features: Section 8 Q&A assistant + AI Listing Writer entry point
+// Layer 4 — AI Features: Housing Choice Voucher (Section 8) Q&A assistant + AI Listing Writer entry point
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { ArrowLeft, Bot, Send, Loader2, Sparkles, RotateCcw } from 'lucide-react
 const SAMPLE_QUESTIONS = [
   'How does the annual recertification process work?',
   'What do inspectors look for in an HQS inspection?',
-  'Can my landlord raise my rent if I have a Section 8 voucher?',
+  'Can my landlord raise my rent if I have a Housing Choice Voucher (Section 8)?',
   'What happens if I fail my HQS inspection?',
   'How long does the RFTA approval process take?',
   'What income counts toward my recertification?',
@@ -64,7 +64,7 @@ export default function AITools() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-white text-xl font-bold">Section 8 Assistant</h1>
+            <h1 className="text-white text-xl font-bold">Housing Choice Voucher (Section 8) Assistant</h1>
             <p className="text-blue-200 text-xs mt-0.5">Powered by AI · HUD & AHA knowledge</p>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function AITools() {
             value={question}
             onChange={e => setQuestion(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && askQuestion()}
-            placeholder="Ask anything about Section 8…"
+            placeholder="Ask anything about Housing Choice Vouchers (Section 8)…"
             className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
           />
           <button

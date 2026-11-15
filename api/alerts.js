@@ -115,7 +115,7 @@ export default async function handler(req, res) {
         const { data: existing } = await supabase.from('recert_alerts').select('id').eq('tenant_id', tenant.id).eq('days_before', days).gte('sent_at', today.toISOString()).maybeSingle()
         if (existing) continue
         try {
-          await sgSend({ from: 'Settleed <info@settleed.com>', to: tenant.email, subject: `Reminder: Your Section 8 recertification is in ${days} days`, text: `Hi ${tenant.full_name?.split(' ')[0] || 'there'},\n\nYour Section 8 recertification is in ${days} days. Start gathering your documents now.\n\nContact your housing authority at least 2 weeks before your recertification date.\n\n— Settleed Team` })
+          await sgSend({ from: 'Settleed <info@settleed.com>', to: tenant.email, subject: `Reminder: Your Housing Choice Voucher (Section 8) recertification is in ${days} days`, text: `Hi ${tenant.full_name?.split(' ')[0] || 'there'},\n\nYour Housing Choice Voucher (Section 8) recertification is in ${days} days. Start gathering your documents now.\n\nContact your housing authority at least 2 weeks before your recertification date.\n\n— Settleed Team` })
           await supabase.from('recert_alerts').insert({ tenant_id: tenant.id, days_before: days, email_type: 'recertification_reminder' })
           totalSent++
         } catch (err) { errors.push({ tenant: tenant.id, days, error: err.message }) }

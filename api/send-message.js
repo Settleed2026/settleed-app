@@ -163,7 +163,7 @@ export default async function handler(req, res) {
             <p style="color:#374151;margin:0 0 12px"><strong>${escHtml(sender?.full_name || 'Someone')}</strong> sent you a message about <strong>${escHtml(address)}</strong>:</p>
             <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:16px;color:#374151;font-size:15px;line-height:1.6;white-space:pre-wrap">${escHtml(content.trim())}</div>
             <a href="${process.env.VITE_SITE_URL || 'https://settleed.com'}/messages" style="display:inline-block;margin-top:20px;background:#1B3A6B;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-size:14px">Reply on Settleed</a>
-            <p style="color:#9ca3af;font-size:12px;margin-top:20px">Settleed · Section 8 Housing Marketplace</p>
+            <p style="color:#9ca3af;font-size:12px;margin-top:20px">Settleed · Georgia Housing Choice Voucher Program (Section 8)</p>
           </div>
         </div>`
       )

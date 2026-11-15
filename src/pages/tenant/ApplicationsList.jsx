@@ -300,7 +300,7 @@ export default function ApplicationsList() {
             {applications.length === 0 ? (
               <>
                 <p className="text-gray-700 font-semibold text-base">No applications yet</p>
-                <p className="text-gray-400 text-sm mt-2 mb-5">Apply to listings with your Section 8 voucher and they appear here.</p>
+                <p className="text-gray-400 text-sm mt-2 mb-5">Apply to listings with your Housing Choice Voucher (Section 8) and they appear here.</p>
                 <button onClick={() => navigate('/tenant/search')}
                   className="bg-[#1D9E75] text-white px-6 py-3 rounded-xl text-sm font-semibold">
                   Browse Listings

@@ -91,10 +91,10 @@ export default function RentAnalyzer() {
       <div className="bg-[#1B3A6B] px-6 py-10 text-center">
         <p className="text-blue-200 text-xs font-semibold tracking-widest uppercase mb-2">Free Tool · All of Georgia</p>
         <h1 className="text-white text-3xl font-bold leading-tight mb-3">
-          Georgia Section 8<br />Rent Analyzer
+          Georgia Housing Choice Voucher (Section 8)<br />Rent Analyzer
         </h1>
         <p className="text-blue-100 text-sm leading-relaxed max-w-sm mx-auto">
-          Find out if a rental unit's price falls within the Section 8 payment standard for your ZIP code — before you apply.
+          Find out if a rental unit's price falls within the Housing Choice Voucher (Section 8) payment standard for your ZIP code — before you apply.
         </p>
       </div>
 
@@ -254,7 +254,7 @@ export default function RentAnalyzer() {
       {/* CTA */}
       <div className="px-4 mt-6 mb-6 max-w-lg mx-auto w-full">
         <div className="bg-[#1B3A6B] rounded-2xl p-5">
-          <p className="text-white font-bold text-base mb-1">Find Section 8 homes on Settleed</p>
+          <p className="text-white font-bold text-base mb-1">Find Housing Choice Voucher (Section 8) homes on Settleed</p>
           <p className="text-blue-200 text-sm mb-4 leading-relaxed">
             Every listing on Settleed already accepts Housing Choice Vouchers — no guessing, no wasted calls.
           </p>
@@ -269,7 +269,7 @@ export default function RentAnalyzer() {
 
       {/* How it works */}
       <div className="px-4 mb-8 max-w-lg mx-auto w-full">
-        <h2 className="text-base font-bold text-gray-900 mb-4">How Section 8 rent limits work</h2>
+        <h2 className="text-base font-bold text-gray-900 mb-4">How Housing Choice Voucher (Section 8) rent limits work</h2>
         <div className="space-y-3">
           {[
             {

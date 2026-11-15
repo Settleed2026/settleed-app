@@ -37,7 +37,7 @@ const SPECIALS_LIST = [
   { value: 'no_security_deposit', label: 'No security deposit' },
   { value: 'utilities_included',  label: 'Utilities included' },
   { value: 'furnished',           label: 'Furnished' },
-  { value: 'section8_welcome',    label: 'Section 8 welcome' },
+  { value: 'section8_welcome',    label: 'Housing Choice Voucher (Section 8) welcome' },
 ]
 
 const STEP_LABELS = [

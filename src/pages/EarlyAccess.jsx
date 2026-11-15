@@ -191,13 +191,13 @@ export default function EarlyAccess() {
         {/* Hero */}
         <div className="text-center space-y-3">
           <span className="inline-block bg-[#1D9E75]/10 text-[#1D9E75] text-xs font-semibold px-3 py-1 rounded-full">
-            Early Access · Atlanta, GA
+            Early Access · Georgia
           </span>
           <h1 className="text-3xl font-bold text-[#0D1B4B] leading-tight">
-            Atlanta's Section 8<br />housing marketplace
+            Georgia's Housing Choice Voucher<br />Program (Section 8) Marketplace
           </h1>
           <p className="text-gray-600 text-base leading-relaxed max-w-md mx-auto">
-            Settleed connects landlords who accept Housing Choice Vouchers with pre-screened tenants — free for everyone during Early Access.
+            Settleed connects landlords who accept Housing Choice Vouchers (Section 8) with pre-screened tenants — free for everyone during Early Access.
           </p>
         </div>
 

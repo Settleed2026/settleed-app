@@ -111,7 +111,7 @@ export default function VoucherEstimator() {
           Voucher Estimator
         </h1>
         <p className="text-blue-100 text-sm leading-relaxed max-w-sm mx-auto">
-          Enter your voucher size and income to see how much your Section 8 voucher could cover — and what rent you can realistically search for.
+          Enter your voucher size and income to see how much your Housing Choice Voucher (Section 8) could cover — and what rent you can realistically search for.
         </p>
       </div>
 
@@ -256,7 +256,7 @@ export default function VoucherEstimator() {
                   Now find homes in your budget on Settleed
                 </p>
                 <p className="text-[#1D9E75] text-sm mb-4">
-                  Every listing accepts Section 8 vouchers. Search by ZIP and bedroom size right now — free.
+                  Every listing accepts Housing Choice Vouchers (Section 8). Search by ZIP and bedroom size right now — free.
                 </p>
                 <Link
                   to={tenantCTA}
@@ -286,7 +286,7 @@ export default function VoucherEstimator() {
             {
               step: '2',
               title: 'You pay 30% of your income',
-              body: 'By federal law, Section 8 tenants pay approximately 30% of their monthly adjusted income toward rent. The voucher covers the rest.',
+              body: 'By federal law, Housing Choice Voucher (Section 8) tenants pay approximately 30% of their monthly adjusted income toward rent. The voucher covers the rest.',
             },
             {
               step: '3',

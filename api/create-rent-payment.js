@@ -20,7 +20,7 @@ function jsonError(res, status, message) {
   return res.status(status).json({ error: message })
 }
 
-const PLATFORM_FEE_PCT = 0.02 // 2%
+const PLATFORM_FEE_PCT = 0 // 0% — Settleed passes Stripe's fee through; revenue comes from subscriptions
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return jsonError(res, 405, 'Method not allowed')

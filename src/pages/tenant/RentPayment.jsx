@@ -51,6 +51,10 @@ function PayForm({ clientSecret, amountCents, onSuccess }) {
       >
         {paying ? 'Processing…' : `Pay $${(amountCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
       </button>
+      <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-[#1B3A6B] space-y-0.5">
+        <p className="font-semibold">💡 Pay less with bank transfer</p>
+        <p className="text-blue-700 opacity-80">Bank transfer (ACH): ~$5 max fee · Card: 2.9% + $0.30 · Settleed takes nothing — fees go to Stripe for processing.</p>
+      </div>
       <p className="text-center text-xs text-gray-400">Payments are processed securely by Stripe.</p>
     </form>
   )

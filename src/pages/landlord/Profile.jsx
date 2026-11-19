@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
 import toast from 'react-hot-toast'
-import { LogOut, ChevronRight, Building2, CreditCard, AlertTriangle, X, Upload, ShieldCheck, ShieldAlert, Clock } from 'lucide-react'
+import { LogOut, ChevronRight, Building2, AlertTriangle, X, Upload, ShieldCheck, ShieldAlert, Clock } from 'lucide-react'
 
 export default function LandlordProfile() {
   const { user } = useAuth()
@@ -12,10 +12,7 @@ export default function LandlordProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [connectStatus, setConnectStatus] = useState(null)
-  const [subscriptionStatus, setSubscriptionStatus] = useState(null)
   const [connectLoading, setConnectLoading] = useState(false)
-  const [cancelLoading, setCancelLoading] = useState(false)
-  const [showCancelModal, setShowCancelModal] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState('unverified')
   const [uploadedDocs, setUploadedDocs] = useState([])
   const [uploading, setUploading] = useState({})
@@ -52,7 +49,6 @@ export default function LandlordProfile() {
         bestTimeToContact: data.best_time_to_contact || '',
       })
       setConnectStatus(data.connect_onboarding_status ?? null)
-      setSubscriptionStatus(data.subscription_status ?? null)
       setVerificationStatus(data.verification_status || 'unverified')
     }
 
@@ -85,29 +81,6 @@ export default function LandlordProfile() {
       toast.error(err.message || 'Could not open payout dashboard.')
     } finally {
       setConnectLoading(false)
-    }
-  }
-
-  async function handleCancelSubscription() {
-    setCancelLoading(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/cancel-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setSubscriptionStatus('canceling')
-      setShowCancelModal(false)
-      toast.success(`Subscription canceled. You keep access until ${data.cancelDate}.`)
-    } catch (err) {
-      toast.error(err.message || 'Could not cancel subscription.')
-    } finally {
-      setCancelLoading(false)
     }
   }
 
@@ -328,27 +301,6 @@ export default function LandlordProfile() {
           </button>
         )}
 
-        {/* Subscription */}
-        {['trialing', 'active'].includes(subscriptionStatus) && (
-          <button
-            onClick={() => setShowCancelModal(true)}
-            className="w-full mt-3 bg-white border border-gray-200 rounded-xl px-4 py-3.5 flex items-center justify-between text-sm text-gray-700"
-          >
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-gray-500" />
-              <span>Cancel subscription</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </button>
-        )}
-
-        {subscriptionStatus === 'canceling' && (
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3.5 text-sm text-amber-800 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            Your subscription is canceled and will end at the close of your current billing period.
-          </div>
-        )}
-
         {/* ── Verification ────────────────────────────────────────────── */}
         <div className="mt-3 bg-white rounded-xl p-4 space-y-4">
           <div className="flex items-center justify-between">
@@ -435,38 +387,9 @@ export default function LandlordProfile() {
 
       <BottomNav role="landlord" />
 
-      {/* Cancel confirmation modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 px-4 pb-8">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <button onClick={() => setShowCancelModal(false)}>
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Cancel subscription?</h2>
-            <p className="text-sm text-gray-500 mb-6">
-              You'll keep full access until the end of your current billing period. After that, your listings will be deactivated and you won't be charged again.
-            </p>
-            <div className="space-y-2">
-              <button
-                onClick={handleCancelSubscription}
-                disabled={cancelLoading}
-                className="w-full py-3 rounded-xl bg-red-600 text-white text-sm font-semibold disabled:opacity-50"
-              >
-                {cancelLoading ? 'Canceling…' : 'Yes, cancel my subscription'}
-              </button>
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium"
-              >
-                Keep my subscription
-              </button>
-            </div>
-          </div>
+      {/* (subscription modal removed — Settleed has no monthly subscription) */}
+      {false && (
+        <div>
         </div>
       )}
     </div>

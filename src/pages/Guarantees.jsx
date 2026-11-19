@@ -41,18 +41,18 @@ const GUARANTEES = [
     color: 'bg-purple-50',
     iconColor: 'text-purple-600',
     title: 'Simple Pricing Guarantee',
-    tagline: 'One plan. No hidden per-listing or per-tenant fees.',
+    tagline: 'No monthly fees. You only pay when you earn.',
     body:
-      'Settleed charges a single flat subscription. There are no setup fees, no per-listing fees, no success fees, and no charges when a tenant signs a lease. What you see on our pricing page is what you pay — nothing more.',
+      'Settleed charges no subscriptions, no setup fees, and no per-listing fees. Landlords pay nothing to list a property. The only fees are a small service fee on application payments and a flat fee when a background check is ordered — both disclosed upfront before any charge is made.',
   },
   {
     icon: Ban,
     color: 'bg-red-50',
     iconColor: 'text-red-600',
-    title: 'Cancel Anytime Guarantee',
-    tagline: 'Leave whenever you want. No lock-ins, no penalties.',
+    title: 'No Lock-In Guarantee',
+    tagline: 'No contracts. No commitments. No surprises.',
     body:
-      'We earn your business every month. Cancel your Settleed subscription any time with 30 days notice — no early termination fees, no penalties, and no awkward phone calls. Your listings, applications, and lease records are available to export at any time.',
+      'There is no subscription to cancel. Use Settleed as much or as little as you need — your listings, applications, and lease records are yours and available to export at any time, with no penalties or termination fees.',
   },
   {
     icon: Home,

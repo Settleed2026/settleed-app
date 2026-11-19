@@ -4,7 +4,11 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { HOUSING_AUTHORITIES } from '../../lib/paymentStandards'
 import toast from 'react-hot-toast'
-import { ChevronLeft, Upload, X, CheckCircle, AlertTriangle, ChevronRight } from 'lucide-react'
+import { ChevronLeft, Upload, X, CheckCircle, AlertTriangle, ChevronRight, CreditCard } from 'lucide-react'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]'
 const labelClass = 'text-xs text-gray-500 mb-1 block'
@@ -97,6 +101,48 @@ function StepBar({ steps, current }) {
   )
 }
 
+// ── Stripe payment form (application fee) ──────────────────────────────────
+function AppFeePayForm({ amountCents, onSuccess }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [paying, setPaying] = useState(false)
+
+  async function handlePay(e) {
+    e.preventDefault()
+    if (!stripe || !elements) return
+    setPaying(true)
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: window.location.href },
+      redirect: 'if_required',
+    })
+    if (error) {
+      toast.error(error.message || 'Payment failed. Please try again.')
+      setPaying(false)
+    } else {
+      onSuccess()
+    }
+  }
+
+  const dollars = (amountCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })
+
+  return (
+    <form onSubmit={handlePay} className="space-y-4">
+      <div className="bg-white rounded-xl p-4">
+        <PaymentElement />
+      </div>
+      <button
+        type="submit"
+        disabled={!stripe || paying}
+        className="w-full bg-[#1D9E75] text-white rounded-xl py-4 text-sm font-semibold disabled:opacity-50 shadow-lg shadow-green-200"
+      >
+        {paying ? 'Processing…' : `Pay $${dollars} & Submit Application`}
+      </button>
+      <p className="text-center text-xs text-gray-400">Payments processed securely by Stripe.</p>
+    </form>
+  )
+}
+
 export default function ApplicationForm() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -108,6 +154,12 @@ export default function ApplicationForm() {
   const [submitted, setSubmitted] = useState(false)
   const [alreadyApplied, setAlreadyApplied] = useState(false)
   const [step, setStep] = useState('voucher')
+  // Application fee payment state
+  const [showPayment, setShowPayment] = useState(false)
+  const [clientSecret, setClientSecret] = useState(null)
+  const [paymentCreating, setPaymentCreating] = useState(false)
+  const [paymentAmountCents, setPaymentAmountCents] = useState(0)
+  const [appFeeCents, setAppFeeCents] = useState(0)
 
   const [form, setForm] = useState({
     // Voucher
@@ -239,16 +291,13 @@ export default function ApplicationForm() {
     if (idx > 0) setStep(STEPS[idx - 1].key)
   }
 
-  async function handleSubmit() {
-    if (!validateStep()) return
+  // Core DB submission — called after payment (or directly if free)
+  async function submitApplicationToDb() {
     setSubmitting(true)
 
-    // Build the household_size from adults + children
     const adultsN = parseInt(form.adults_count) || 1
     const childrenN = parseInt(form.children_count) || 0
     const householdSize = adultsN + childrenN
-
-    // Parse children ages
     const childrenAges = form.children_ages
       ? form.children_ages.split(',').map(a => parseInt(a.trim())).filter(n => !isNaN(n))
       : []
@@ -257,36 +306,29 @@ export default function ApplicationForm() {
       property_id: id,
       tenant_id: user.id,
       status: 'pending',
-      // Voucher
       housing_authority: form.housing_authority,
       voucher_size: parseInt(form.voucher_size),
       voucher_expiration: form.voucher_expiration || null,
-      // Household
       household_size: householdSize,
       adults_count: adultsN,
       adult_names: form.adult_names.filter(n => n.trim()),
       children_count: childrenN,
       children_ages: childrenAges,
       desired_move_in: form.desired_move_in || null,
-      // Income
       monthly_income: form.monthly_income ? parseFloat(form.monthly_income) : null,
       income_source: form.income_source || null,
       employer_name: form.employer_name || null,
       employment_length: form.employment_length || null,
-      // History
       current_address: form.current_address || null,
       time_at_address: form.time_at_address || null,
       move_reason: form.move_reason || null,
       prev_landlord_contact: form.prev_landlord_contact || null,
-      // Background
       has_criminal_history: form.has_criminal_history === 'yes',
       criminal_explanation: form.criminal_explanation || null,
-      // Documents
       id_document_url: form.id_document_url || null,
       voucher_document_url: form.voucher_document_url || null,
       income_document_url: form.income_document_url || null,
       reference_document_url: form.reference_document_url || null,
-      // Intro
       message: form.message || null,
     }
 
@@ -302,7 +344,7 @@ export default function ApplicationForm() {
       return
     }
 
-    // Save reusable profile data (exclude property-specific fields)
+    // Save reusable profile data
     const saveableData = {
       housing_authority: form.housing_authority,
       voucher_size: form.voucher_size,
@@ -338,6 +380,103 @@ export default function ApplicationForm() {
     }
 
     setSubmitted(true)
+    setSubmitting(false)
+  }
+
+  async function handleSubmit() {
+    if (!validateStep()) return
+
+    const appFee = listing?.application_fee ?? 0
+
+    if (appFee > 0) {
+      // Need payment first
+      setPaymentCreating(true)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/create-rent-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ payment_type: 'application', property_id: id }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setClientSecret(data.clientSecret)
+        setPaymentAmountCents(data.amount_cents)
+        setAppFeeCents(data.application_fee_cents)
+        setShowPayment(true)
+      } catch (err) {
+        toast.error(err.message || 'Could not start payment. Please try again.')
+      } finally {
+        setPaymentCreating(false)
+      }
+      return
+    }
+
+    // No application fee — submit directly
+    await submitApplicationToDb()
+  }
+
+  // ── Application fee payment screen ─────────────────────────────────────────
+  if (showPayment && clientSecret) {
+    const appFeeDollars = (appFeeCents / 100).toFixed(2)
+    const serviceFee = '5.00'
+    const totalDollars = (paymentAmountCents / 100).toFixed(2)
+    return (
+      <div className="min-h-screen bg-gray-50 pb-10">
+        <div className="bg-[#1B3A6B] px-4 pt-10 pb-5 flex items-center gap-3">
+          <button
+            onClick={() => { setShowPayment(false); setClientSecret(null) }}
+            className="text-white"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <div>
+            <h1 className="text-white text-lg font-bold">Application Fee</h1>
+            <p className="text-blue-200 text-xs">{listing?.neighborhood}</p>
+          </div>
+        </div>
+        <div className="px-4 mt-4 space-y-4">
+          {/* Fee breakdown */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="bg-[#1B3A6B] px-3 py-2">
+              <p className="text-xs font-semibold text-white">Fee Summary</p>
+            </div>
+            <div className="px-3 py-3 space-y-2 bg-white">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Application Fee <span className="text-gray-400">(to landlord)</span></span>
+                <span className="font-medium text-gray-800">${appFeeDollars}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Service Fee <span className="text-gray-400">(Settleed)</span></span>
+                <span className="font-medium text-gray-800">${serviceFee}</span>
+              </div>
+              <div className="border-t border-gray-100 pt-2 flex justify-between text-xs font-semibold">
+                <span className="text-gray-900">Total due today</span>
+                <span className="text-[#1B3A6B]">${totalDollars}</span>
+              </div>
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                💡 Pay by bank transfer (ACH) to minimize Stripe's processing fee. The application fee goes directly to the landlord. Settleed earns only the $5.00 Service Fee.
+              </p>
+            </div>
+          </div>
+          {/* Stripe payment form */}
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <AppFeePayForm
+              amountCents={paymentAmountCents}
+              onSuccess={async () => {
+                setShowPayment(false)
+                setClientSecret(null)
+                toast.success('Payment received! Submitting your application…')
+                await submitApplicationToDb()
+              }}
+            />
+          </Elements>
+        </div>
+      </div>
+    )
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -748,9 +887,15 @@ export default function ApplicationForm() {
         {alreadyApplied ? (
           <button disabled className="w-full bg-gray-200 text-gray-500 rounded-xl py-4 font-semibold text-sm">Already Applied</button>
         ) : isLastStep ? (
-          <button onClick={handleSubmit} disabled={submitting}
+          <button onClick={handleSubmit} disabled={submitting || paymentCreating}
             className="w-full bg-[#1D9E75] text-white rounded-xl py-4 font-semibold text-sm disabled:opacity-50 shadow-lg shadow-[#1D9E75]/20">
-            {submitting ? 'Submitting…' : 'Submit Application'}
+            {paymentCreating
+              ? 'Loading payment…'
+              : submitting
+              ? 'Submitting…'
+              : (listing?.application_fee ?? 0) > 0
+              ? `Pay $${((listing.application_fee + 5)).toFixed(2)} & Submit`
+              : 'Submit Application'}
           </button>
         ) : (
           <button onClick={nextStep}

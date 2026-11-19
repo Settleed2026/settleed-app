@@ -65,53 +65,82 @@ export default async function handler(req, res) {
   if (event.type === 'payment_intent.succeeded') {
     const pi = event.data.object
     const {
+      payment_type,
       tenant_id,
       landlord_id,
       property_id,
       landlord_stripe_id,
       landlord_payout_cents,
       platform_fee_cents,
+      service_fee_cents,
     } = pi.metadata ?? {}
 
-    // Mark rent_payment as paid
-    const { error: updateErr } = await supabase
-      .from('rent_payments')
-      .update({ status: 'paid', paid_at: new Date().toISOString() })
-      .eq('stripe_payment_intent_id', pi.id)
-
-    if (updateErr) {
-      console.error('[stripe-webhook] Failed to mark payment paid:', updateErr.message)
+    if (payment_type === 'rent_payment') {
+      // Mark rent_payments record as paid
+      const { error: updateErr } = await supabase
+        .from('rent_payments')
+        .update({ status: 'paid', paid_at: new Date().toISOString() })
+        .eq('stripe_payment_intent_id', pi.id)
+      if (updateErr) {
+        console.error('[stripe-webhook] Failed to mark rent paid:', updateErr.message)
+      }
     }
 
-    // Transfer net amount to landlord's Connect account
-    if (landlord_stripe_id && landlord_payout_cents) {
+    if (payment_type === 'application_payment') {
+      // Log the application payment for revenue tracking (no pending DB row was created)
+      console.log(
+        `[stripe-webhook] Application fee paid — property ${property_id} — tenant ${tenant_id}` +
+        ` — landlord payout $${(parseInt(landlord_payout_cents, 10) / 100).toFixed(2)}` +
+        ` — service fee $${(parseInt(service_fee_cents, 10) / 100).toFixed(2)}`
+      )
+    }
+
+    // Transfer net amount to landlord's Connect account (both payment types)
+    if (landlord_stripe_id && landlord_payout_cents && parseInt(landlord_payout_cents, 10) > 0) {
       try {
+        const isApplication = payment_type === 'application_payment'
         await stripe.transfers.create({
           amount: parseInt(landlord_payout_cents, 10),
           currency: 'usd',
           destination: landlord_stripe_id,
           source_transaction: pi.latest_charge,
-          description: `Rent payout — property ${property_id}`,
-          metadata: { tenant_id, landlord_id, property_id, payment_intent_id: pi.id, platform_fee_cents },
+          description: isApplication
+            ? `Application fee payout — property ${property_id}`
+            : `Rent payout — property ${property_id}`,
+          metadata: {
+            payment_type: payment_type ?? 'rent_payment',
+            tenant_id,
+            landlord_id,
+            property_id,
+            payment_intent_id: pi.id,
+            platform_fee_cents: platform_fee_cents ?? '0',
+            service_fee_cents: service_fee_cents ?? '0',
+          },
         })
-        console.log(`[stripe-webhook] Transferred $${(landlord_payout_cents / 100).toFixed(2)} to ${landlord_stripe_id}`)
+        console.log(
+          `[stripe-webhook] Transferred $${(parseInt(landlord_payout_cents, 10) / 100).toFixed(2)}` +
+          ` to ${landlord_stripe_id} (${payment_type ?? 'rent_payment'})`
+        )
       } catch (transferErr) {
         // Log but don't fail — payment already confirmed on tenant side
         console.error('[stripe-webhook] Transfer failed:', transferErr.message)
       }
     } else {
-      console.warn('[stripe-webhook] No landlord_stripe_id in metadata — skipping transfer for PI:', pi.id)
+      console.warn('[stripe-webhook] No landlord_stripe_id or payout amount in metadata — skipping transfer for PI:', pi.id)
     }
   }
 
   // ── payment_intent.payment_failed ───────────────────────────────────────
   if (event.type === 'payment_intent.payment_failed') {
     const pi = event.data.object
-    await supabase
-      .from('rent_payments')
-      .update({ status: 'failed' })
-      .eq('stripe_payment_intent_id', pi.id)
-    console.log('[stripe-webhook] Payment failed for PI:', pi.id)
+    const { payment_type } = pi.metadata ?? {}
+    if (payment_type === 'rent_payment' || !payment_type) {
+      await supabase
+        .from('rent_payments')
+        .update({ status: 'failed' })
+        .eq('stripe_payment_intent_id', pi.id)
+    }
+    console.log(`[stripe-webhook] Payment failed for PI: ${pi.id} (${payment_type ?? 'unknown'})`)
   }
 
   // ── checkout.session.completed (featured listing purchase) ─────────────

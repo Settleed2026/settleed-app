@@ -1,11 +1,18 @@
 /**
  * POST /api/create-rent-payment
  *
- * Creates a Stripe PaymentIntent for a tenant's monthly rent portion.
- * After payment succeeds (via webhook), Settleed transfers funds to the
- * landlord's Stripe Connect account minus a 2% platform fee.
+ * Handles two payment types via req.body.payment_type:
  *
- * Body: { property_id, amount_cents, due_date }
+ *   'rent' (default) — monthly rent from tenant to landlord
+ *     Body: { property_id, amount_cents, due_date }
+ *
+ *   'application' — application fee charged to tenant
+ *     Body: { payment_type: 'application', property_id }
+ *     Charge = listing.application_fee + $5 Settleed service fee
+ *     Landlord receives application_fee; Settleed keeps $5.
+ *
+ * After payment succeeds the stripe-webhook transfers funds to the
+ * landlord's Stripe Connect account.
  *
  * Required env vars:
  *   STRIPE_SECRET_KEY
@@ -20,7 +27,7 @@ function jsonError(res, status, message) {
   return res.status(status).json({ error: message })
 }
 
-const PLATFORM_FEE_PCT = 0 // 0% — Settleed passes Stripe's fee through; revenue comes from subscriptions
+const SERVICE_FEE_CENTS = 500 // $5 flat Settleed service fee on applications
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return jsonError(res, 405, 'Method not allowed')
@@ -41,14 +48,74 @@ export default async function handler(req, res) {
   if (authErr || !authData?.user) return jsonError(res, 401, 'Session expired.')
   const user = authData.user
 
-  const { property_id, amount_cents, due_date } = req.body ?? {}
+  const { payment_type = 'rent', property_id } = req.body ?? {}
+
+  // ── APPLICATION FEE PAYMENT ──────────────────────────────────────────────
+  if (payment_type === 'application') {
+    if (!property_id) return jsonError(res, 400, 'property_id is required.')
+
+    try {
+      const { data: property } = await supabase
+        .from('properties')
+        .select('landlord_id, street_address, unit_number, application_fee, profiles:landlord_id(stripe_account_id)')
+        .eq('id', property_id)
+        .single()
+
+      if (!property) return jsonError(res, 404, 'Property not found.')
+      if (!property.application_fee || property.application_fee <= 0) {
+        return jsonError(res, 400, 'This listing has no application fee.')
+      }
+
+      const landlordStripeId = property.profiles?.stripe_account_id
+      if (!landlordStripeId) {
+        return jsonError(res, 400, 'Landlord has not connected a payout account yet.')
+      }
+
+      const appFeeCents = Math.round(property.application_fee * 100)
+      const totalChargeCents = appFeeCents + SERVICE_FEE_CENTS // tenant pays app fee + $5
+      const landlordPayoutCents = appFeeCents                   // landlord gets app fee only
+
+      const address = property.unit_number
+        ? `${property.street_address} #${property.unit_number}`
+        : property.street_address
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: totalChargeCents,
+        currency: 'usd',
+        automatic_payment_methods: { enabled: true },
+        description: `Application fee — ${address}`,
+        metadata: {
+          payment_type: 'application_payment',
+          tenant_id: user.id,
+          landlord_id: property.landlord_id,
+          property_id,
+          landlord_stripe_id: landlordStripeId,
+          landlord_payout_cents: landlordPayoutCents,
+          service_fee_cents: SERVICE_FEE_CENTS,
+        },
+      })
+
+      return res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+        amount_cents: totalChargeCents,
+        application_fee_cents: appFeeCents,
+        service_fee_cents: SERVICE_FEE_CENTS,
+        landlord_payout_cents: landlordPayoutCents,
+      })
+    } catch (err) {
+      console.error('[create-rent-payment/application]', err.message)
+      return jsonError(res, err.statusCode ?? 500, err.message || 'Failed to create application payment.')
+    }
+  }
+
+  // ── RENT PAYMENT (default) ───────────────────────────────────────────────
+  const { amount_cents, due_date } = req.body ?? {}
   if (!property_id || !amount_cents || !due_date) {
     return jsonError(res, 400, 'property_id, amount_cents, and due_date are required.')
   }
   if (amount_cents < 100) return jsonError(res, 400, 'Minimum payment is $1.00.')
 
   try {
-    // Get property + landlord's stripe_account_id
     const { data: property } = await supabase
       .from('properties')
       .select('landlord_id, street_address, unit_number, profiles:landlord_id(stripe_account_id)')
@@ -62,32 +129,29 @@ export default async function handler(req, res) {
       return jsonError(res, 400, 'Landlord has not connected a payout account yet.')
     }
 
-    const platformFeeCents = Math.round(amount_cents * PLATFORM_FEE_PCT)
-    const landlordPayoutCents = amount_cents - platformFeeCents
+    const landlordPayoutCents = amount_cents // 0% fee — Settleed takes nothing on rent
 
     const address = property.unit_number
       ? `${property.street_address} #${property.unit_number}`
       : property.street_address
 
-    // Create PaymentIntent on the platform account
-    // Transfer to landlord happens in the webhook after payment succeeds
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount_cents,
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
       description: `Rent payment — ${address} — ${due_date}`,
       metadata: {
+        payment_type: 'rent_payment',
         tenant_id: user.id,
         landlord_id: property.landlord_id,
         property_id,
         due_date,
         landlord_stripe_id: landlordStripeId,
         landlord_payout_cents: landlordPayoutCents,
-        platform_fee_cents: platformFeeCents,
+        platform_fee_cents: 0,
       },
     })
 
-    // Create a rent_payments record in pending state
     await supabase.from('rent_payments').insert({
       property_id,
       tenant_id: user.id,
@@ -96,17 +160,17 @@ export default async function handler(req, res) {
       due_date,
       status: 'pending',
       stripe_payment_intent_id: paymentIntent.id,
-      platform_fee_cents: platformFeeCents,
+      platform_fee_cents: 0,
       landlord_payout_cents: landlordPayoutCents,
     })
 
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       amount_cents,
-      platform_fee_cents: platformFeeCents,
+      platform_fee_cents: 0,
     })
   } catch (err) {
-    console.error('[create-rent-payment]', err.message)
+    console.error('[create-rent-payment/rent]', err.message)
     return jsonError(res, err.statusCode ?? 500, err.message || 'Failed to create payment.')
   }
 }

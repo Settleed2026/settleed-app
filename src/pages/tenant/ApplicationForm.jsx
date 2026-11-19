@@ -148,7 +148,7 @@ export default function ApplicationForm() {
       try {
         const [listingRes, dupeRes, profileRes] = await Promise.all([
           supabase.from('properties')
-            .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos, landlord_id')
+            .select('id, neighborhood, zip_code, bedrooms, rent_amount, photos, landlord_id, application_fee')
             .eq('id', id).single(),
           supabase.from('applications')
             .select('id').eq('property_id', id).eq('tenant_id', user.id).maybeSingle(),
@@ -685,6 +685,48 @@ export default function ApplicationForm() {
                 {form.message.length}/800
               </span>
             </div>
+
+            {/* Fee breakdown */}
+            {(() => {
+              const appFee = listing?.application_fee ?? 0
+              const serviceFee = appFee > 0 ? 5 : 0
+              const stripeFee = appFee > 0 ? Math.round((appFee + serviceFee) * 0.029 + 0.30) : 0
+              const total = appFee + serviceFee + stripeFee
+              return (
+                <div className="border border-gray-200 rounded-xl overflow-hidden mt-2">
+                  <div className="bg-[#1B3A6B] px-3 py-2">
+                    <p className="text-xs font-semibold text-white">Fee Summary</p>
+                  </div>
+                  <div className="px-3 py-3 space-y-2 bg-white">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Application Fee</span>
+                      <span className="font-medium text-gray-800">{appFee > 0 ? `$${appFee.toFixed(2)}` : 'Free'}</span>
+                    </div>
+                    {serviceFee > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Service Fee <span className="text-gray-400">(Settleed)</span></span>
+                        <span className="font-medium text-gray-800">${serviceFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {stripeFee > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Processing Fee <span className="text-gray-400">(Stripe · card est.)</span></span>
+                        <span className="font-medium text-gray-800">~${stripeFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="border-t border-gray-100 pt-2 flex justify-between text-xs font-semibold">
+                      <span className="text-gray-900">Total due today</span>
+                      <span className="text-[#1B3A6B]">{total > 0 ? `$${total.toFixed(2)}` : '$0.00 — Free to apply'}</span>
+                    </div>
+                    {appFee > 0 && (
+                      <p className="text-[10px] text-gray-400 leading-relaxed">
+                        💡 Pay by bank transfer (ACH) to lower the processing fee to ~$0.80. Settleed never keeps the application fee — it goes to the landlord minus our $5.00 service fee.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Summary before submit */}
             <div className="border border-gray-100 rounded-xl p-3 mt-2 space-y-1.5 bg-gray-50">

@@ -51,10 +51,44 @@ function PayForm({ clientSecret, amountCents, onSuccess }) {
       >
         {paying ? 'Processing…' : `Pay $${(amountCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
       </button>
-      <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-[#1B3A6B] space-y-0.5">
-        <p className="font-semibold">💡 Pay less with bank transfer</p>
-        <p className="text-blue-700 opacity-80">Bank transfer (ACH): ~$5 max fee · Card: 2.9% + $0.30 · Settleed takes nothing — fees go to Stripe for processing.</p>
-      </div>
+      {/* Fee breakdown */}
+      {amountCents > 0 && (() => {
+        const rentDollars = amountCents / 100
+        const achFee = Math.min(0.80, rentDollars * 0.008)   // Stripe ACH: 0.8% capped at $5 (using $0.80 as typical estimate)
+        const cardFee = Math.round((rentDollars * 0.029 + 0.30) * 100) / 100
+        return (
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="bg-[#1B3A6B] px-3 py-2">
+              <p className="text-xs font-semibold text-white">Fee Summary</p>
+            </div>
+            <div className="px-3 py-3 space-y-2 bg-white">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Rent Amount</span>
+                <span className="font-medium text-gray-800">${rentDollars.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Service Fee <span className="text-gray-400">(Settleed)</span></span>
+                <span className="font-semibold text-[#1D9E75]">$0.00</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Processing Fee <span className="text-gray-400">(Stripe · bank transfer)</span></span>
+                <span className="font-medium text-gray-800">~${achFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Processing Fee <span className="text-gray-300">(Stripe · card)</span></span>
+                <span>~${cardFee.toFixed(2)}</span>
+              </div>
+              <div className="border-t border-gray-100 pt-2 flex justify-between text-xs font-semibold">
+                <span className="text-gray-900">Total (bank transfer)</span>
+                <span className="text-[#1B3A6B]">${(rentDollars + achFee).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                Settleed takes nothing on rent — the only fee is Stripe's payment processing charge. Bank transfer (ACH) is the cheapest option.
+              </p>
+            </div>
+          </div>
+        )
+      })()}
       <p className="text-center text-xs text-gray-400">Payments are processed securely by Stripe.</p>
     </form>
   )

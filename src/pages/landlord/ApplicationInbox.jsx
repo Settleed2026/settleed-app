@@ -9,6 +9,7 @@ import {
   Upload, PenLine, ChevronRight, ChevronLeft,
   MessageSquare, CalendarClock, ThumbsDown, Star,
   DollarSign, Briefcase, MapPin, AlertTriangle, ExternalLink,
+  ShieldCheck,
 } from 'lucide-react'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -640,12 +641,40 @@ function SelectConfirmModal({ tenantName, onConfirm, onClose }) {
 
 // ─── ApplicationCard ───────────────────────────────────────────────────────────
 function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
+  const { user } = useAuth()
   const [expanded, setExpanded] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [showDeclineModal, setShowDeclineModal] = useState(false)
   const [showShowingModal, setShowShowingModal] = useState(false)
   const [showSelectModal, setShowSelectModal] = useState(false)
+  const [bgCheckStatus, setBgCheckStatus] = useState(app.bg_check_status ?? null) // 'pending' | 'in_progress' | 'complete' | null
+  const [bgCheckLoading, setBgCheckLoading] = useState(false)
   const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.pending
+
+  async function handleRequestBgCheck() {
+    setBgCheckLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/request-background-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ application_id: app.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setBgCheckStatus(data.alreadyExists ? data.status : 'pending')
+      toast.success(data.alreadyExists
+        ? 'Background check already requested — check is in progress.'
+        : 'Background check requested! Tenant will receive a consent email.')
+    } catch (err) {
+      toast.error(err.message || 'Could not request background check.')
+    } finally {
+      setBgCheckLoading(false)
+    }
+  }
 
   async function updateStatus(newStatus, extra = {}) {
     setUpdating(true)
@@ -937,6 +966,28 @@ function ApplicationCard({ app, onStatusChange, onCreateLease, propertyId }) {
                 <CalendarClock className="w-3.5 h-3.5" /> Schedule Showing
               </button>
             </div>
+            {/* Background check row */}
+            {bgCheckStatus ? (
+              <div className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold ${
+                bgCheckStatus === 'complete'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}>
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {bgCheckStatus === 'complete' ? 'Background Check Complete' :
+                 bgCheckStatus === 'in_progress' ? 'Background Check In Progress' :
+                 'Background Check Requested'}
+              </div>
+            ) : (
+              <button
+                onClick={handleRequestBgCheck}
+                disabled={bgCheckLoading || updating}
+                className="w-full flex items-center justify-center gap-1.5 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl py-2 text-xs font-semibold hover:bg-[#EEF5FF] disabled:opacity-50 transition-colors"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {bgCheckLoading ? 'Requesting…' : 'Request Background Check · $40'}
+              </button>
+            )}
             <p className="text-[10px] text-gray-400 text-center pt-0.5">
               "Select Tenant" notifies the applicant and closes this unit to others.
             </p>

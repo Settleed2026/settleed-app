@@ -41,9 +41,9 @@ const GUARANTEES = [
     color: 'bg-purple-50',
     iconColor: 'text-purple-600',
     title: 'Simple Pricing Guarantee',
-    tagline: 'No monthly fees. You only pay when you earn.',
+    tagline: 'Free to list during our launch period. No surprises.',
     body:
-      'Settleed charges no subscriptions, no setup fees, and no per-listing fees. Landlords pay nothing to list a property. The only fees are a small service fee on application payments and a flat fee when a background check is ordered — both disclosed upfront before any charge is made.',
+      'Settleed is free for landlords to list properties during our launch period — no setup fees, no monthly subscription, no per-listing charges. The only fees are a small service fee on application payments and a flat fee when a background check is ordered, both disclosed upfront before any charge is made.',
   },
   {
     icon: Ban,
@@ -52,7 +52,7 @@ const GUARANTEES = [
     title: 'No Lock-In Guarantee',
     tagline: 'No contracts. No commitments. No surprises.',
     body:
-      'There is no subscription to cancel. Use Settleed as much or as little as you need — your listings, applications, and lease records are yours and available to export at any time, with no penalties or termination fees.',
+      'Use Settleed as much or as little as you need. Your listings, applications, and lease records are yours and available to export at any time — no penalties, no termination fees, and no awkward phone calls.',
   },
   {
     icon: Home,

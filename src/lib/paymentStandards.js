@@ -91,28 +91,60 @@ export const LOCAL_PHAS = {
     label: 'DeKalb County HA',
     note: 'Payment standards set by DeKalb County HA',
   },
-  ALBANY: {
-    name: 'Albany/Dougherty Housing Authority',
-    label: 'Albany/Dougherty HA',
-    note: 'Payment standards set by Albany HA',
+  GWINNETT: {
+    name: 'Gwinnett County Housing Authority',
+    label: 'Gwinnett County HA',
+    note: 'Payment standards set by Gwinnett County HA',
   },
-  SUMTER: {
-    name: 'Sumter County Housing Authority',
-    label: 'Sumter County HA',
-    note: 'Payment standards set by Sumter HA',
+  CLAYTON: {
+    name: 'Clayton County Housing Authority',
+    label: 'Clayton County HA',
+    note: 'Payment standards set by Clayton County HA',
+  },
+  FULTON: {
+    name: 'Fulton County Housing Authority',
+    label: 'Fulton County HA',
+    note: 'Payment standards set by Fulton County HA',
+  },
+  HENRY: {
+    name: 'Henry County Housing Authority',
+    label: 'Henry County HA',
+    note: 'Payment standards set by Henry County HA',
+  },
+  ROCKDALE: {
+    name: 'Rockdale County Housing Authority',
+    label: 'Rockdale County HA',
+    note: 'Payment standards set by Rockdale County HA',
+  },
+  DECATUR: {
+    name: 'Housing Authority of the City of Decatur',
+    label: 'Decatur HA',
+    cities: ['Decatur'],
+    note: 'Payment standards set by City of Decatur HA',
+  },
+  JONESBORO: {
+    name: 'Housing Authority of the City of Jonesboro',
+    label: 'Jonesboro HA',
+    cities: ['Jonesboro'],
+    note: 'Payment standards set by City of Jonesboro HA',
   },
 }
 
 /**
  * All Housing Authorities available for tenant signup and landlord listing.
+ * Metro Atlanta focus — ordered by prominence/size.
  */
 export const HOUSING_AUTHORITIES = [
-  { value: 'AHA', label: 'Atlanta Housing Authority (AHA)', type: 'local' },
-  { value: 'COBB', label: 'Cobb County Housing Authority', type: 'local' },
-  { value: 'DEKALB', label: 'DeKalb County Housing Authority', type: 'local' },
-  { value: 'DCA_N', label: 'Georgia DCA — Northern Region', type: 'dca', region: 'N' },
-  { value: 'DCA_S', label: 'Georgia DCA — Southern Region', type: 'dca', region: 'S' },
-  { value: 'ALBANY', label: 'Albany/Dougherty Housing Authority', type: 'local' },
-  { value: 'SUMTER', label: 'Sumter County Housing Authority', type: 'local' },
-  { value: 'OTHER', label: 'Other', type: 'other' },
+  { value: 'AHA',       label: 'Atlanta Housing Authority (AHA)',          type: 'local' },
+  { value: 'COBB',      label: 'Cobb County Housing Authority',             type: 'local' },
+  { value: 'DEKALB',    label: 'DeKalb County Housing Authority',           type: 'local' },
+  { value: 'GWINNETT',  label: 'Gwinnett County Housing Authority',         type: 'local' },
+  { value: 'CLAYTON',   label: 'Clayton County Housing Authority',          type: 'local' },
+  { value: 'FULTON',    label: 'Fulton County Housing Authority',           type: 'local' },
+  { value: 'HENRY',     label: 'Henry County Housing Authority',            type: 'local' },
+  { value: 'ROCKDALE',  label: 'Rockdale County Housing Authority',         type: 'local' },
+  { value: 'DECATUR',   label: 'Housing Authority of the City of Decatur',  type: 'local' },
+  { value: 'JONESBORO', label: 'Housing Authority of the City of Jonesboro', type: 'local' },
+  { value: 'DCA',       label: 'Georgia DCA',                               type: 'dca' },
+  { value: 'OTHER',     label: 'Other',                                     type: 'other' },
 ]

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import BottomNav from '../../components/BottomNav'
-import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, FileText, MessageSquare } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Clock, Inbox, FileText, MessageSquare, CreditCard } from 'lucide-react'
 import { differenceInDays, format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -72,6 +72,7 @@ export default function LandlordDashboard() {
     )
   }
 
+  const stripeConnected = !!profile?.stripe_account_id
   const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || 'there'
   const hour = new Date().getHours()
   const greeting = hour >= 5 && hour <= 11 ? 'Good morning'
@@ -193,13 +194,42 @@ export default function LandlordDashboard() {
           </div>
         )}
 
-        <Link to="/landlord/listing/new" className="flex items-center justify-between bg-[#1D9E75] text-white rounded-xl px-4 py-4">
-          <div>
-            <div className="font-semibold text-sm">Add a new listing</div>
-            <div className="text-green-100 text-xs mt-0.5">Attract verified voucher holders</div>
+        {/* ── Stripe Connect required banner ── */}
+        {!stripeConnected && (
+          <div className="bg-red-50 border border-red-300 rounded-xl p-4 flex items-start gap-3">
+            <CreditCard className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-red-900">Connect your bank account to get paid</p>
+              <p className="text-xs text-red-700 mt-0.5 mb-3">
+                Tenants can't pay rent until your payout account is set up. This is required before your listing can go live.
+              </p>
+              <Link
+                to="/landlord/connect"
+                className="inline-block bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Set up payout account →
+              </Link>
+            </div>
           </div>
-          <Plus className="w-5 h-5" />
-        </Link>
+        )}
+
+        {stripeConnected ? (
+          <Link to="/landlord/listing/new" className="flex items-center justify-between bg-[#1D9E75] text-white rounded-xl px-4 py-4">
+            <div>
+              <div className="font-semibold text-sm">Add a new listing</div>
+              <div className="text-green-100 text-xs mt-0.5">Attract verified voucher holders</div>
+            </div>
+            <Plus className="w-5 h-5" />
+          </Link>
+        ) : (
+          <div className="flex items-center justify-between bg-gray-200 text-gray-400 rounded-xl px-4 py-4 cursor-not-allowed">
+            <div>
+              <div className="font-semibold text-sm">Add a new listing</div>
+              <div className="text-gray-400 text-xs mt-0.5">Connect your bank account first</div>
+            </div>
+            <Plus className="w-5 h-5" />
+          </div>
+        )}
 
         {/* Quick tools row */}
         <div className="grid grid-cols-2 gap-3">

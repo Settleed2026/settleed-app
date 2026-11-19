@@ -24,6 +24,7 @@ export default function Signup() {
     preferredContact: 'email',
     bestTimeToContact: '',
     ha: '',
+    haOther: '',
     dateOfBirth: '',
     password: '',
     confirmPassword: '',
@@ -101,7 +102,7 @@ export default function Signup() {
           role,
           phone: form.mobilePhone,
           company_name: form.companyName || null,
-          housing_authority: form.ha || null,
+          housing_authority: form.ha === 'OTHER' ? (form.haOther || 'Other') : (form.ha || null),
         }
       }
     })
@@ -124,7 +125,7 @@ export default function Signup() {
       first_name: form.firstName,
       last_name: form.lastName,
       phone: form.mobilePhone || null,
-      housing_authority: form.ha || null,
+      housing_authority: form.ha === 'OTHER' ? (form.haOther || 'Other') : (form.ha || null),
     }
     if (role === 'landlord') {
       Object.assign(profileUpdate, {
@@ -362,6 +363,16 @@ export default function Signup() {
                         <option key={ha.value} value={ha.value}>{ha.label}</option>
                       ))}
                     </select>
+                    {form.ha === 'OTHER' && (
+                      <input
+                        name="haOther"
+                        type="text"
+                        value={form.haOther}
+                        onChange={handleChange}
+                        placeholder="Enter your housing authority name"
+                        className={`${inputClass('haOther')} mt-2`}
+                      />
+                    )}
                   </div>
                 </>
               )}

@@ -13,7 +13,11 @@ import {
 const VOUCHER_STATUS_LABELS = { yes: 'Active', no: 'No voucher', pending: 'Pending' }
 const HA_LABELS = {
   AHA: 'Atlanta Housing (AHA)', DCA: 'Georgia DCA',
-  COBB: 'Cobb County HA', DEKALB: 'DeKalb County HA', other: 'Other',
+  COBB: 'Cobb County HA', DEKALB: 'DeKalb County HA',
+  GWINNETT: 'Gwinnett County HA', CLAYTON: 'Clayton County HA',
+  FULTON: 'Fulton County HA', HENRY: 'Henry County HA',
+  ROCKDALE: 'Rockdale County HA', DECATUR: 'Decatur HA',
+  JONESBORO: 'Jonesboro HA',
 }
 
 export default function TenantProfile() {
@@ -36,6 +40,7 @@ export default function TenantProfile() {
     secondaryPhone: '',
     bio: '',
     housingAuthority: '',
+    housingAuthorityOther: '',
     voucherStatus: '',
     voucherBedroomSize: '',
     contactPreferences: ['email'],
@@ -67,7 +72,8 @@ export default function TenantProfile() {
         preferredName: data.preferred_name || '',
         secondaryPhone: data.secondary_phone || '',
         bio: data.bio || '',
-        housingAuthority: data.housing_authority || '',
+        housingAuthority: HOUSING_AUTHORITIES.find(h => h.value === data.housing_authority) ? data.housing_authority : (data.housing_authority ? 'OTHER' : ''),
+        housingAuthorityOther: HOUSING_AUTHORITIES.find(h => h.value === data.housing_authority) ? '' : (data.housing_authority || ''),
         voucherStatus: data.voucher_status || '',
         voucherBedroomSize: data.voucher_bedroom_size || '',
         contactPreferences: data.contact_preferences || ['email'],
@@ -120,7 +126,7 @@ export default function TenantProfile() {
       preferred_name: form.preferredName || null,
       secondary_phone: form.secondaryPhone || null,
       bio: form.bio || null,
-      housing_authority: form.housingAuthority || null,
+      housing_authority: form.housingAuthority === 'OTHER' ? (form.housingAuthorityOther || 'Other') : (form.housingAuthority || null),
       voucher_status: form.voucherStatus || null,
       voucher_bedroom_size: form.voucherBedroomSize || null,
       contact_preferences: form.contactPreferences,
@@ -176,7 +182,7 @@ export default function TenantProfile() {
             <p className="text-blue-200 text-sm">{user?.email}</p>
             {profile?.voucher_status === 'yes' && (
               <span className="mt-1 inline-block bg-[#1D9E75] text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">
-                {HA_LABELS[profile?.housing_authority] || 'Voucher Holder'}
+                {HA_LABELS[profile?.housing_authority] || profile?.housing_authority || 'Voucher Holder'}
                 {profile?.voucher_bedroom_size ? ` · ${profile.voucher_bedroom_size.toUpperCase()} voucher` : ''}
               </span>
             )}
@@ -254,6 +260,16 @@ export default function TenantProfile() {
                       <option key={ha.value} value={ha.value}>{ha.label}</option>
                     ))}
                   </select>
+                  {form.housingAuthority === 'OTHER' && (
+                    <input
+                      name="housingAuthorityOther"
+                      type="text"
+                      value={form.housingAuthorityOther}
+                      onChange={handleChange}
+                      placeholder="Enter your housing authority name"
+                      className={`${inputClass} mt-2`}
+                    />
+                  )}
                 </div>
                 <div>
                   <label className={labelClass}>Voucher bedroom size</label>

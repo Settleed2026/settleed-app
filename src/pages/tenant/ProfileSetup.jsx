@@ -55,7 +55,7 @@ export default function TenantProfileSetup() {
     currentStreetAddress: '', currentAptUnit: '',
     currentCity: '', currentState: 'GA', currentZip: '',
     currentHousingSituation: '',
-    voucherStatus: '', housingAuthority: '', voucherBedroomSize: '',
+    voucherStatus: '', housingAuthority: '', housingAuthorityOther: '', voucherBedroomSize: '',
     voucherExpirationDate: '', searchRadius: '', porting: false, portInHousingAuthority: '',
     numAdults: 1, numChildren: 0, totalHouseholdMembers: 1,
     householdMemberAges: '', requiresAccessibleUnit: false, accessibilityNeeds: [],
@@ -102,7 +102,7 @@ export default function TenantProfileSetup() {
       current_zip: data.currentZip || null,
       current_housing_situation: data.currentHousingSituation || null,
       voucher_status: data.voucherStatus || null,
-      housing_authority: data.housingAuthority || null,
+      housing_authority: data.housingAuthority === 'OTHER' ? (data.housingAuthorityOther || 'Other') : (data.housingAuthority || null),
       voucher_bedroom_size: data.voucherBedroomSize || null,
       voucher_expiration_date: data.voucherExpirationDate || null,
       search_radius: data.searchRadius || null,
@@ -326,6 +326,15 @@ export default function TenantProfileSetup() {
                     <option value="">Select your housing authority</option>
                     {HOUSING_AUTHORITIES.map(ha => <option key={ha.value} value={ha.value}>{ha.label}</option>)}
                   </select>
+                  {data.housingAuthority === 'OTHER' && (
+                    <input
+                      className={`${inputClass} mt-2`}
+                      type="text"
+                      value={data.housingAuthorityOther}
+                      onChange={e => set('housingAuthorityOther', e.target.value)}
+                      placeholder="Enter your housing authority name"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className={labelClass}>Voucher bedroom size</label>
